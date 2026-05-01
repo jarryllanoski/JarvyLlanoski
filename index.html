@@ -2187,7 +2187,7 @@ function toggleAutoField(f){
   _autoFields[f]=!_autoFields[f];
   refreshAutoFields();
 }
-function onAutoFieldChange(){
+function onAutoFieldChange(showToast=false){
   const preview={..._autoFields,
     docGuia:_docs&&_docs.guia?_docs.guia:null,
     docEmbalado:_docs&&_docs.embalado?_docs.embalado:null,
@@ -2198,9 +2198,13 @@ function onAutoFieldChange(){
   const box=$('autoStatusSuggestion');
   if(!box) return;
   if(sug){
+    const prev=$('fStatus')?.value;
     box.style.display='block';
-    box.innerHTML=`🤖 Estado sugerido: <b>${stIcon(sug)} ${sug}</b> — se aplicará al guardar`;
-    if($('fStatus'))$('fStatus').value=sug;
+    box.innerHTML=`🤖 Estado actualizado automáticamente: <b>${stIcon(sug)} ${sug}</b>`;
+    if($('fStatus') && prev!==sug){
+      $('fStatus').value=sug;
+      if(showToast) setTimeout(()=>toast('🤖 Estado actualizado automáticamente: '+sug),600);
+    }
   } else {
     box.style.display='none';
   }
