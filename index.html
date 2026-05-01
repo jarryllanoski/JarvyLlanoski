@@ -601,6 +601,41 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     </div>
     <div class="fg"><label class="fl">Notas</label><input class="fi" id="fNotes" placeholder="Llamar antes..."></div>
     <div id="extraForm"></div>
+    <!-- AUTO-STATUS FIELDS (solo visible si está ON) -->
+    <div id="autoStatusForm" style="display:none;margin-bottom:11px">
+      <div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;border-top:1px solid var(--bd);padding-top:12px">🤖 Seguimiento automático</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 11px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px" onclick="toggleAutoField('faltante')">
+          <div id="chkFaltante" class="chk" style="flex-shrink:0"></div>
+          <span style="font-size:12px">⚠️ Tiene faltantes</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 11px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px" onclick="toggleAutoField('stockOk')">
+          <div id="chkStockOk" class="chk" style="flex-shrink:0"></div>
+          <span style="font-size:12px">📦 Stock disponible</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 11px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px" onclick="toggleAutoField('alistado')">
+          <div id="chkAlistado" class="chk" style="flex-shrink:0"></div>
+          <span style="font-size:12px">✅ Preparado / embalado</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 11px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px" onclick="toggleAutoField('arrivedAtDest')">
+          <div id="chkArrivedAtDest" class="chk" style="flex-shrink:0"></div>
+          <span style="font-size:12px">📍 Llegó a destino</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 11px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px" onclick="toggleAutoField('delivered')">
+          <div id="chkDelivered" class="chk" style="flex-shrink:0"></div>
+          <span style="font-size:12px">🤝 Entregado al cliente</span>
+        </label>
+        <div style="padding:9px 11px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px">
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px">💰 Saldo pendiente S/</div>
+          <input class="fi" id="fPendingBalance" type="number" placeholder="0" min="0" step="0.5" style="padding:4px 8px;font-size:13px" oninput="onAutoFieldChange()">
+        </div>
+      </div>
+      <div style="margin-bottom:8px">
+        <label class="fl">🔢 N° de guía / seguimiento</label>
+        <input class="fi" id="fGuideNumber" placeholder="Ej: 123456789" oninput="onAutoFieldChange()">
+      </div>
+      <div id="autoStatusSuggestion" style="display:none;padding:9px 12px;background:rgba(56,139,253,.1);border:1px solid rgba(56,139,253,.3);border-radius:8px;font-size:12px;color:var(--blue)"></div>
+    </div>
     <div class="docs-sec">
       <div class="docs-ttl">📎 DOCUMENTOS DEL ENVÍO</div>
       <div class="docs-grid">
