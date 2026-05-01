@@ -1419,7 +1419,7 @@ function toggleSel(id){const s=S.shipments.find(x=>x.id===id);if(!s)return;s.sel
 function selAll(){const all=S.shipments.every(x=>x.sel);S.shipments.forEach(x=>x.sel=!all);save();render()}
 
 /* DOC TOGGLE */
-function togDoc(id,slot){const s=S.shipments.find(x=>x.id===id);if(!s)return;if(slot==='guia')s.chkGuia=!s.chkGuia;else s.chkTicket=!s.chkTicket;save();render()}
+function togDoc(id,slot){const s=S.shipments.find(x=>x.id===id);if(!s)return;if(slot==='guia')s.chkGuia=!s.chkGuia;else if(slot==='embalado')s.chkEmbalado=!s.chkEmbalado;else s.chkComprobante=!s.chkComprobante;save();render()}
 
 /* QUICK MSG */
 function quickMsg(id,idx){
