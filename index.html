@@ -1193,6 +1193,7 @@ function goPage(id){
   $('page-'+id).classList.add('active');
   ['envios','compartir','configurar'].forEach((n,i)=>{if(n===id)document.querySelectorAll('.tab')[i].classList.add('active')});
   if(id==='configurar')loadCfgUI();
+  if(id==='compartir')renderTokenList();
 }
 
 /* OVERLAYS */
