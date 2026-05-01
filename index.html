@@ -2687,6 +2687,9 @@ $('hdrName').textContent=S.config.name;
 $('hdrPhone').textContent=S.config.phone;
 if(S.config.shareUrl) $('shareUrl').textContent=S.config.shareUrl;
 renderChips();
+// Inicializar badge de modo automático después del DOM
+document.addEventListener('DOMContentLoaded',()=>{updateAutoStatusBadge();},{ once:true });
+if(document.readyState!=='loading') updateAutoStatusBadge();
 
 if(!S.shipments.length){
   S.shipments=[
