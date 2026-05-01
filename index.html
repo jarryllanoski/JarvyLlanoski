@@ -2503,6 +2503,69 @@ function genFormUrl(){
   save();
   navigator.clipboard.writeText(url).then(()=>toast('⚡ Link generado y copiado')).catch(()=>toast('⚡ Link generado'));
 }
+/* TOKEN MANAGEMENT */
+function toggleCourierType(name){
+  if(!S.courierTypes)S.courierTypes={};
+  S.courierTypes[name]=(S.courierTypes[name]||'delivery')==='delivery'?'agencia':'delivery';
+  save();loadCfgUI();toast(`🚚 ${name}: ${S.courierTypes[name]==='agencia'?'Agencia (retiro)':'Delivery (domicilio)'}`);
+}
+function toggleExtraFlag(i,flag){
+  const f=S.extraFields[i];
+  if(typeof f==='string')S.extraFields[i]={name:f,required:false,visible:true};
+  S.extraFields[i][flag]=!S.extraFields[i][flag];
+  save();loadCfgUI();
+}
+async function generateToken(){
+  const fb=window._cloud?window._cloud.getConfig():{};
+  if(!fb.workspaceId||!fb.apiKey||!fb.projectId){toast('⚠️ Configura Firebase primero');return;}
+  if(typeof firebase==='undefined'||!firebase.apps.length){toast('⚠️ Firebase no inicializado');return;}
+  const label=$('tokenLabel').value.trim();
+  const singleUse=$('tokenSingleUseBtn').classList.contains('on');
+  const expiryDays=parseInt($('tokenExpiry').value)||0;
+  const expiresAt=expiryDays?new Date(Date.now()+expiryDays*86400000).toISOString():null;
+  const tokenId='tk_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{
+    const db=firebase.firestore();
+    await db.collection('workspaces').doc(fb.workspaceId).collection('tokens').doc(tokenId).set({
+      id:tokenId,label,singleUse,used:false,usedAt:null,expiresAt,createdAt:new Date().toISOString()
+    });
+    const base=location.origin+location.pathname.replace(/[^/]*$/,'')+'formulario-pedido.html';
+    const url=`${base}?ws=${encodeURIComponent(fb.workspaceId)}&key=${encodeURIComponent(fb.apiKey)}&proj=${encodeURIComponent(fb.projectId)}&token=${encodeURIComponent(tokenId)}`;
+    if(!S.formTokens)S.formTokens=[];
+    S.formTokens.unshift({id:tokenId,label,singleUse,expiresAt,createdAt:new Date().toISOString(),used:false,url});
+    save();renderTokenList();
+    $('tokenLabel').value='';
+    navigator.clipboard.writeText(url).then(()=>toast('🔑 Token generado y copiado')).catch(()=>toast('🔑 Token generado — copia el link de la lista'));
+  }catch(e){toast('❌ Error al crear token: '+e.message);}
+}
+function renderTokenList(){
+  const el=$('tokenList');if(!el)return;
+  const tokens=S.formTokens||[];
+  if(!tokens.length){el.innerHTML='<div style="font-size:12px;color:var(--text2);text-align:center;padding:16px 0">Sin tokens generados</div>';return;}
+  el.innerHTML=tokens.slice(0,15).map((t,i)=>{
+    const used=t.used;
+    const expired=t.expiresAt&&new Date()>new Date(t.expiresAt);
+    const dot=used?'🔴':expired?'🟡':'🟢';
+    const status=used?'Usado':expired?'Expirado':'Activo';
+    const sub=(t.singleUse?'Un uso':'Multi-uso')+(t.expiresAt?' · Vence '+new Date(t.expiresAt).toLocaleDateString('es-PE'):'');
+    return`<div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;margin-bottom:1px">${t.label||'Sin etiqueta'} <span style="font-size:10px;color:var(--text2)">${dot} ${status}</span></div>
+        <div style="font-size:10px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sub}</div>
+      </div>
+      <button onclick="copyTokenUrl(${i})" title="Copiar link" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--bd);background:var(--bg2);color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📋</button>
+      <button onclick="delToken(${i})" title="Eliminar" style="width:30px;height:30px;border-radius:6px;border:1px solid rgba(247,129,102,.3);background:rgba(247,129,102,.08);color:var(--red);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🗑️</button>
+    </div>`;
+  }).join('');
+}
+function copyTokenUrl(i){
+  const t=(S.formTokens||[])[i];if(!t)return;
+  navigator.clipboard.writeText(t.url).then(()=>toast('📋 Link copiado')).catch(()=>toast('📋 '+t.url));
+}
+function delToken(i){
+  if(!S.formTokens||!S.formTokens[i])return;
+  S.formTokens.splice(i,1);save();renderTokenList();toast('🗑️ Token eliminado');
+}
 function changePIN(){
   openPin(()=>{
     _pinEntry=''; updatePinDots();
