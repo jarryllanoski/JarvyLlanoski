@@ -2405,12 +2405,17 @@ function saveConfig(){
   S.config.name=$('cfgName').value.trim()||'Mi Negocio';
   S.config.phone=$('cfgPhone').value.trim()||'999000000';
   S.config.city=$('cfgCity').value.trim();
-  // Save dispatch
   S.dispatch.cutHour=$('dispatchCutHour').value;
   S.dispatch.anticipation=parseInt($('dispatchAnticip').value)||0;
   $('hdrName').textContent=S.config.name;
   $('hdrPhone').textContent=S.config.phone;
   save(); renderChips(); toast('✅ Configuración guardada');
+}
+function toggleAutoStatusCfg(){
+  S.config.autoStatusEnabled=!S.config.autoStatusEnabled;
+  if($('tglAutoStatus'))$('tglAutoStatus').classList.toggle('on',S.config.autoStatusEnabled);
+  save();
+  toast(S.config.autoStatusEnabled?'🤖 Estados automáticos ON':'⚙️ Estados automáticos OFF');
 }
 let _dragIdx=null;
 function dragStart(e,i){_dragIdx=i;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move'}
