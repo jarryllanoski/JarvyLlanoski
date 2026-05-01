@@ -2202,7 +2202,8 @@ function openForm(id){
     $('fCost').value=s.cost||'';$('fNotes').value=s.notes||'';
     document.querySelectorAll('.xf').forEach(el=>{el.value=(s.extra&&s.extra[el.dataset.f])||''});
     if(s.docGuia){_docs.guia=s.docGuia;refreshSlot('guia')}
-    if(s.docTicket){_docs.ticket=s.docTicket;refreshSlot('ticket')}
+    if(s.docEmbalado){_docs.embalado=s.docEmbalado;refreshSlot('embalado')}
+    if(s.docComprobante){_docs.comprobante=s.docComprobante;refreshSlot('comprobante')}
     _links=s.links?JSON.parse(JSON.stringify(s.links)):[];renderLinks();
     _autoFields={faltante:!!s.faltante,stockOk:!!s.stockOk,alistado:!!s.alistado,arrivedAtDest:!!s.arrivedAtDest,delivered:!!s.delivered};
     if($('fGuideNumber'))$('fGuideNumber').value=s.guideNumber||'';
