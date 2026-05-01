@@ -570,19 +570,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     </div>
   </div>
 
+  <!-- ESTADOS AUTOMÁTICOS -->
+  <div class="cfg-sec" style="border:2px solid rgba(46,160,67,.25);background:rgba(46,160,67,.04)">
+    <div class="cfg-ttl" style="color:var(--green)">⚡ Modo automático de estados</div>
+    <div class="tgl-row" style="align-items:flex-start;padding:10px 0 4px">
+      <div style="flex:1">
+        <div class="tgl-n">Cambio automático según adjuntos</div>
+        <div class="tgl-s" style="margin-bottom:8px;line-height:1.6">
+          📦 <b>EMBALADO</b> → cambia a <b>Alistado</b><br>
+          🚚 <b>GUÍA COURIER</b> → cambia a <b>Enviado</b>
+        </div>
+        <div id="autoStatusBadge" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid;transition:.2s"></div>
+      </div>
+      <div id="tglAutoStatus" class="tgl" style="margin-top:2px;flex-shrink:0" onclick="toggleAutoStatusCfg()"></div>
+    </div>
+  </div>
+
   <!-- NOTIFICACIONES -->
   <div class="cfg-sec">
     <div class="cfg-ttl">🔔 Notificaciones</div>
     <div class="tgl-row"><div><div class="tgl-n">Notificar por WhatsApp</div><div class="tgl-s">Al registrar nuevo envío</div></div><div class="tgl on" onclick="this.classList.toggle('on')"></div></div>
     <div class="tgl-row"><div><div class="tgl-n">Notificar al cliente</div><div class="tgl-s">Cuando cambia el estado</div></div><div class="tgl" onclick="this.classList.toggle('on')"></div></div>
-    <div class="tgl-row" style="align-items:flex-start;padding:12px 0">
-      <div style="flex:1">
-        <div class="tgl-n">🤖 Modo automático de estados</div>
-        <div class="tgl-s" style="margin-bottom:7px">EMBALADO → Alistado &nbsp;·&nbsp; GUÍA COURIER → Enviado</div>
-        <div id="autoStatusBadge" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid;transition:.2s"></div>
-      </div>
-      <div id="tglAutoStatus" class="tgl" style="margin-top:2px;flex-shrink:0" onclick="toggleAutoStatusCfg()"></div>
-    </div>
     <div class="tgl-row" style="border:none">
       <div><div class="tgl-n">🔐 Clave para cambiar estado</div><div class="tgl-s">Actualmente: ****</div></div>
       <button class="cfl-btn cfl-btn-edit" onclick="changePIN()">✏️</button>
