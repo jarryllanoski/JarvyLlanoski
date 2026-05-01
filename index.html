@@ -642,10 +642,54 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     </div>
     <div class="docs-sec">
       <div class="docs-ttl">📎 DOCUMENTOS DEL ENVÍO</div>
-      <div class="docs-grid">
+      <div class="docs-grid" style="grid-template-columns:1fr 1fr 1fr">
+
+        <!-- COMPROBANTE -->
         <div class="doc-slot">
           <div class="doc-sw">
-            <div class="doc-tap" id="lblGuia"><div id="prevGuia"><div class="doc-empty"><div style="font-size:28px">🚚</div><div style="font-size:11px;font-weight:700">Guía courier</div></div></div></div>
+            <div class="doc-tap" id="lblComprobante"><div id="prevComprobante"><div class="doc-empty"><div style="font-size:22px">🧾</div><div style="font-size:10px;font-weight:700;text-align:center">Comprobante</div></div></div></div>
+            <div class="doc-menu" id="menuComprobante">
+              <div class="doc-mi" onclick="trigInp('inComprobanteCam','comprobante')">📷 Tomar foto</div>
+              <div class="doc-mi" onclick="trigInp('inComprobanteGal','comprobante')">🖼️ Galería</div>
+              <div class="doc-mi" onclick="trigInp('inComprobantePdf','comprobante')">📄 PDF / doc</div>
+              <div class="doc-mi" style="color:var(--red)" onclick="closeDocMenu('comprobante')">✕ Cancelar</div>
+            </div>
+          </div>
+          <input type="file" id="inComprobanteCam" accept="image/*" capture="environment" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'comprobante')">
+          <input type="file" id="inComprobanteGal" accept="image/*" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'comprobante')">
+          <input type="file" id="inComprobantePdf" accept=".pdf,.doc,.docx,application/pdf" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'comprobante')">
+          <button class="doc-add" id="addBtnComprobante" type="button" onclick="toggleDocMenu('comprobante')">＋ Agregar</button>
+          <div id="actComprobante" style="display:none" class="doc-act">
+            <button class="doc-abtn doc-view" type="button" onclick="viewSlot('comprobante')">👁 Ver</button>
+            <button class="doc-abtn doc-del" type="button" onclick="clearSlot('comprobante')">✕ Quitar</button>
+          </div>
+        </div>
+
+        <!-- EMBALADO -->
+        <div class="doc-slot">
+          <div class="doc-sw">
+            <div class="doc-tap" id="lblEmbalado"><div id="prevEmbalado"><div class="doc-empty"><div style="font-size:22px">📦</div><div style="font-size:10px;font-weight:700;text-align:center">Embalado</div></div></div></div>
+            <div class="doc-menu" id="menuEmbalado">
+              <div class="doc-mi" onclick="trigInp('inEmbalaodCam','embalado')">📷 Tomar foto</div>
+              <div class="doc-mi" onclick="trigInp('inEmbalaodGal','embalado')">🖼️ Galería</div>
+              <div class="doc-mi" onclick="trigInp('inEmbalaodPdf','embalado')">📄 PDF / doc</div>
+              <div class="doc-mi" style="color:var(--red)" onclick="closeDocMenu('embalado')">✕ Cancelar</div>
+            </div>
+          </div>
+          <input type="file" id="inEmbalaodCam" accept="image/*" capture="environment" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'embalado')">
+          <input type="file" id="inEmbalaodGal" accept="image/*" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'embalado')">
+          <input type="file" id="inEmbalaodPdf" accept=".pdf,.doc,.docx,application/pdf" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'embalado')">
+          <button class="doc-add" id="addBtnEmbalado" type="button" onclick="toggleDocMenu('embalado')">＋ Agregar</button>
+          <div id="actEmbalado" style="display:none" class="doc-act">
+            <button class="doc-abtn doc-view" type="button" onclick="viewSlot('embalado')">👁 Ver</button>
+            <button class="doc-abtn doc-del" type="button" onclick="clearSlot('embalado')">✕ Quitar</button>
+          </div>
+        </div>
+
+        <!-- GUÍA COURIER -->
+        <div class="doc-slot">
+          <div class="doc-sw">
+            <div class="doc-tap" id="lblGuia"><div id="prevGuia"><div class="doc-empty"><div style="font-size:22px">🚚</div><div style="font-size:10px;font-weight:700;text-align:center">Guía courier</div></div></div></div>
             <div class="doc-menu" id="menuGuia">
               <div class="doc-mi" onclick="trigInp('inGuiaCam','guia')">📷 Tomar foto</div>
               <div class="doc-mi" onclick="trigInp('inGuiaGal','guia')">🖼️ Galería</div>
@@ -662,25 +706,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
             <button class="doc-abtn doc-del" type="button" onclick="clearSlot('guia')">✕ Quitar</button>
           </div>
         </div>
-        <div class="doc-slot">
-          <div class="doc-sw">
-            <div class="doc-tap" id="lblTicket"><div id="prevTicket"><div class="doc-empty"><div style="font-size:28px">🧾</div><div style="font-size:11px;font-weight:700">Ticket / Boleta</div></div></div></div>
-            <div class="doc-menu" id="menuTicket">
-              <div class="doc-mi" onclick="trigInp('inTicketCam','ticket')">📷 Tomar foto</div>
-              <div class="doc-mi" onclick="trigInp('inTicketGal','ticket')">🖼️ Galería</div>
-              <div class="doc-mi" onclick="trigInp('inTicketPdf','ticket')">📄 PDF / doc</div>
-              <div class="doc-mi" style="color:var(--red)" onclick="closeDocMenu('ticket')">✕ Cancelar</div>
-            </div>
-          </div>
-          <input type="file" id="inTicketCam" accept="image/*" capture="environment" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'ticket')">
-          <input type="file" id="inTicketGal" accept="image/*" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'ticket')">
-          <input type="file" id="inTicketPdf" accept=".pdf,.doc,.docx,application/pdf" style="position:fixed;top:-9999px;opacity:0;width:1px;height:1px" onchange="loadDoc(this,'ticket')">
-          <button class="doc-add" id="addBtnTicket" type="button" onclick="toggleDocMenu('ticket')">＋ Agregar</button>
-          <div id="actTicket" style="display:none" class="doc-act">
-            <button class="doc-abtn doc-view" type="button" onclick="viewSlot('ticket')">👁 Ver</button>
-            <button class="doc-abtn doc-del" type="button" onclick="clearSlot('ticket')">✕ Quitar</button>
-          </div>
-        </div>
+
       </div>
       <div style="border-top:1px solid var(--bd);padding-top:10px">
         <div style="font-size:10px;color:var(--text2);margin-bottom:7px">🔗 Agregar link (Drive, Mega, etc.)</div>
