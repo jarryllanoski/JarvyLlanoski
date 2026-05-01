@@ -1241,7 +1241,7 @@ function updateAdvBar(){
   if(_adv.dateFrom||_adv.dateTo) tags.push(`📅 ${_adv.dateFrom||'...'} → ${_adv.dateTo||'...'}`);
   if(_adv.couriers.length) tags.push(`🚚 ${_adv.couriers.join(', ')}`);
   if(_adv.costMin||_adv.costMax) tags.push(`💰 S/${_adv.costMin||0}–${_adv.costMax||'∞'}`);
-  if(_adv.doc!=='any') tags.push({guia:'🚚 Con guía',ticket:'🧾 Con ticket',none:'Sin docs'}[_adv.doc]||'');
+  if(_adv.doc!=='any') tags.push({guia:'🚚 Con guía courier',comprobante:'🧾 Con comprobante',embalado:'📦 Con embalado',none:'Sin docs'}[_adv.doc]||'');
   if(_adv.sort!=='newest') tags.push({oldest:'📅 Más antiguo',name:'🔤 A-Z',cost:'💰 Mayor costo'}[_adv.sort]||'');
   bar.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;align-items:center';
   bar.innerHTML=tags.map(t=>`<div class="active-filter-tag">${t}</div>`).join('')+
