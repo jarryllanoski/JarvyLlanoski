@@ -203,6 +203,7 @@
       }
 
       startListener();
+      startSubmissionsListener();
       updateBadge('ok');
     } catch (e) {
       console.error('[cloud] init error:', e);
