@@ -2160,33 +2160,39 @@ function renderLinks(){$('linkListForm').innerHTML=_links.map((l,i)=>`<div class
 
 /* FORM */
 /* ── AUTO-STATUS ─────────────────────────────────────────────── */
-// Doc-based rules: always active regardless of the toggle.
-// Si ya tiene GUÍA COURIER no puede volver a estados inferiores automáticamente.
-function calcDocAutoStatus(s){
-  if(s.docGuia || s.guideNumber) return 'Enviado';
-  if(s.docEmbalado) return 'Alistado';
-  return null;
+function calcAutoStatusMode(){
+  if(S.config.autoStatusEnabled) return 'general';
+  const r=S.config.autoRules||{};
+  if(Object.values(r).some(Boolean)) return 'partial';
+  return 'manual';
+}
+// ruleOn: true si el modo general está ON, o si la regla individual está ON
+function _ruleOn(key){
+  return !!S.config.autoStatusEnabled || !!(S.config.autoRules||{})[key];
 }
 function calcAutoStatus(s){
-  if(!S.config.autoStatusEnabled) return null;
-  // Reglas completas (toggle ON)
-  if(s.delivered && !(s.pendingBalance>0)) return 'Finalizado';
-  if(s.arrivedAtDest && s.pendingBalance>0) return 'Pendiente de pago';
-  if(s.arrivedAtDest) return 'Llegó a destino';
-  if(s.docGuia || s.guideNumber) return 'Enviado';
-  if(s.docEmbalado || s.alistado) return 'Alistado';
-  if(s.stockOk) return 'Por alistar';
-  if(s.faltante) return 'Faltante / pedir proveedor';
+  if(calcAutoStatusMode()==='manual') return null;
+  // Priority: highest state first (never downgrade handled by callers)
+  if(_ruleOn('finalizado')    && s.delivered && !(s.pendingBalance>0))          return 'Finalizado';
+  if(_ruleOn('pendingPayment')&& s.arrivedAtDest && s.pendingBalance>0)         return 'Pendiente de pago';
+  if(_ruleOn('arrivedAtDest') && s.arrivedAtDest)                               return 'Llegó a destino';
+  if(_ruleOn('guia')          && (s.docGuia||s.guideNumber))                    return 'Enviado';
+  // Comprobante → Finalizado solo si ya está en Pendiente de pago
+  if(_ruleOn('comprobante')   && s.docComprobante && s.status==='Pendiente de pago') return 'Finalizado';
+  if(_ruleOn('embalado')      && s.docEmbalado)                                 return 'Alistado';
+  if(_ruleOn('embalado')      && s.alistado)                                    return 'Alistado';
+  if(S.config.autoStatusEnabled){
+    if(s.stockOk)   return 'Por alistar';
+    if(s.faltante)  return 'Faltante / pedir proveedor';
+  }
   return null;
 }
 function applyAutoStatus(shipmentId){
-  const s=S.shipments.find(x=>x.id===shipmentId);
-  if(!s) return;
-  const suggested=calcAutoStatus(s);
-  if(suggested && suggested!==s.status){
-    s.status=suggested;
-    save(); render();
-    toast('🤖 Estado actualizado automáticamente: '+suggested);
+  const s=S.shipments.find(x=>x.id===shipmentId);if(!s) return;
+  const sug=calcAutoStatus(s);
+  if(sug && statusPrio(sug)>statusPrio(s.status)){
+    s.status=sug;save();render();
+    toast('🤖 Estado actualizado automáticamente: '+sug);
   }
 }
 
