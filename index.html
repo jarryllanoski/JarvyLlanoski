@@ -2032,15 +2032,16 @@ function selWAMsg(idx){
 }
 async function doWASend(){
   const s=S.shipments.find(x=>x.id===_waId);if(!s)return;
-  const gChk=s.chkGuia||false,tChk=s.chkTicket||false;
+  const gChk=s.chkGuia||false,eChk=s.chkEmbalado||false,cChk=s.chkComprobante||false;
   const phone='51'+s.phone;
   let msg='';
   if(_waMsgIdx>=0){const msgs=S.msgTemplates[s.status]||['',''];const t=msgs[_waMsgIdx];if(t&&t.trim())msg=fillVars(t,s)}
-  if(!gChk&&!tChk){window.open(msg?`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`:`https://wa.me/${phone}`,'_blank');closeOverlay('waOverlay');return}
+  if(!gChk&&!eChk&&!cChk){window.open(msg?`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`:`https://wa.me/${phone}`,'_blank');closeOverlay('waOverlay');return}
   closeOverlay('waOverlay');
   const docs=[];
+  if(cChk&&s.docComprobante)docs.push({doc:s.docComprobante,label:'Comprobante'});
+  if(eChk&&s.docEmbalado)docs.push({doc:s.docEmbalado,label:'Embalado'});
   if(gChk&&s.docGuia)docs.push({doc:s.docGuia,label:'Guia'});
-  if(tChk&&s.docTicket)docs.push({doc:s.docTicket,label:'Ticket'});
   if(navigator.share){
     try{
       async function b2f(d,n){const r=await fetch(d);const b=await r.blob();return new File([b],n,{type:b.type})}
