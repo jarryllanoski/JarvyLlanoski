@@ -605,7 +605,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       <div class="fg"><label class="fl">Fecha</label><input class="fi" id="fDate" type="date"></div>
     </div>
     <div class="frow">
-      <div class="fg"><label class="fl">Estado</label><select class="fs" id="fStatus"></select></div>
+      <div class="fg">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <label class="fl" style="margin:0">Estado</label>
+          <span id="formAutoModeBadge" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;border:1px solid;display:none"></span>
+        </div>
+        <select class="fs" id="fStatus"></select>
+      </div>
       <div class="fg"><label class="fl">Costo S/</label><input class="fi" id="fCost" type="number" placeholder="0.00" min="0" step="0.5"></div>
     </div>
     <div class="fg"><label class="fl">Notas</label><input class="fi" id="fNotes" placeholder="Llamar antes..."></div>
