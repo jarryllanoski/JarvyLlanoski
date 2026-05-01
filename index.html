@@ -2153,8 +2153,29 @@ function changePIN(){
   });
 }
 /* CONFIG */
+function connectCloud(){
+  const wsId=$('cfgWsId').value.trim();
+  const apiKey=$('cfgFbKey').value.trim();
+  const projectId=$('cfgFbProject').value.trim();
+  if(!wsId||!apiKey||!projectId){toast('⚠️ Completa todos los campos de la nube');return;}
+  if(window._cloud) window._cloud.init({apiKey,projectId,workspaceId:wsId,enabled:true});
+  $('btnDisconnectCloud').style.display='block';
+  toast('☁️ Conectando a la nube...');
+}
+function disconnectCloud(){
+  if(window._cloud) window._cloud.disconnect();
+  $('btnDisconnectCloud').style.display='none';
+  toast('☁️ Desconectado de la nube');
+}
+
 function loadCfgUI(){
   $('cfgName').value=S.config.name||'';$('cfgPhone').value=S.config.phone||'';$('cfgCity').value=S.config.city||'';
+  // Poblar campos de nube
+  const fb=window._cloud?window._cloud.getConfig():{};
+  if($('cfgWsId'))    $('cfgWsId').value   =fb.workspaceId||'';
+  if($('cfgFbKey'))   $('cfgFbKey').value  =fb.apiKey||'';
+  if($('cfgFbProject'))$('cfgFbProject').value=fb.projectId||'';
+  if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display=fb.enabled?'block':'none';
 
   // DISPATCH DAYS
   const days=[{n:'Lun',v:1},{n:'Mar',v:2},{n:'Mié',v:3},{n:'Jue',v:4},{n:'Vie',v:5},{n:'Sáb',v:6},{n:'Dom',v:0}];
