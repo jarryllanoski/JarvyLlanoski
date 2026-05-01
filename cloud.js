@@ -63,8 +63,9 @@
     (remoteState.shipments || []).forEach(rsh => {
       const lsh = (local.shipments || []).find(x => x.id === rsh.id);
       if (!lsh) return;
-      if (rsh.docGuia   && rsh.docGuia._hasImg   && lsh.docGuia   && lsh.docGuia.d)   rsh.docGuia   = lsh.docGuia;
-      if (rsh.docTicket && rsh.docTicket._hasImg && lsh.docTicket && lsh.docTicket.d) rsh.docTicket = lsh.docTicket;
+      if (rsh.docGuia        && rsh.docGuia._hasImg        && lsh.docGuia        && lsh.docGuia.d)        rsh.docGuia        = lsh.docGuia;
+      if (rsh.docEmbalado    && rsh.docEmbalado._hasImg    && lsh.docEmbalado    && lsh.docEmbalado.d)    rsh.docEmbalado    = lsh.docEmbalado;
+      if (rsh.docComprobante && rsh.docComprobante._hasImg && lsh.docComprobante && lsh.docComprobante.d) rsh.docComprobante = lsh.docComprobante;
     });
     (remoteState.suppliers || []).forEach(rsup => {
       const lsup = (local.suppliers || []).find(x => x.id === rsup.id);
