@@ -2133,7 +2133,7 @@ function calcAutoStatus(s){
   if(s.arrivedAtDest && s.pendingBalance>0) return 'Pendiente de pago';
   if(s.arrivedAtDest) return 'Llegó a destino';
   if(s.docGuia || s.guideNumber) return 'Enviado';
-  if(s.alistado) return 'Alistado';
+  if(s.docEmbalado || s.alistado) return 'Alistado';
   if(s.stockOk) return 'Por alistar';
   if(s.faltante) return 'Faltante / pedir proveedor';
   return null;
