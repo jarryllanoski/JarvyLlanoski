@@ -1036,9 +1036,21 @@ document.querySelectorAll('.overlay').forEach(el=>el.addEventListener('click',e=
 
 /* HELPERS */
 function allStatuses(){ return S.labels; }
-function stIcon(st){ return FIXED_LABEL_ICONS[st]||(st==='PENDIENTE'?'🕐':st==='ENVIADO'?'🚚':st==='ENTREGADO'?'✅':'🏷️') }
-function stClass(st){ return st==='NUEVO PEDIDO'?'st-pend':st==='EN PROCESO'?'st-env':st==='POR ALISTAR'?'st-env':st==='FINALIZADO'?'st-ent':st==='ENVIADO'?'st-env':st==='ENTREGADO'?'st-ent':'st-cust' }
-function stSoptClass(st){ return st==='NUEVO PEDIDO'?'sopt-pend':st==='EN PROCESO'?'sopt-env':st==='POR ALISTAR'?'sopt-env':st==='FINALIZADO'?'sopt-ent':st==='ENVIADO'?'sopt-env':st==='ENTREGADO'?'sopt-ent':'sopt-cust' }
+function stIcon(st){ return FIXED_LABEL_ICONS[st]||'🏷️'; }
+function stClass(st){
+  if(st==='Nuevo pedido'||st==='Faltante / pedir proveedor'||st==='Pendiente de pago') return 'st-pend';
+  if(st==='Por alistar'||st==='Alistado'||st==='Enviado') return 'st-env';
+  if(st==='Llegó a destino') return 'st-cust';
+  if(st==='Finalizado') return 'st-ent';
+  return 'st-cust';
+}
+function stSoptClass(st){
+  if(st==='Nuevo pedido'||st==='Faltante / pedir proveedor'||st==='Pendiente de pago') return 'sopt-pend';
+  if(st==='Por alistar'||st==='Alistado'||st==='Enviado') return 'sopt-env';
+  if(st==='Llegó a destino') return 'sopt-cust';
+  if(st==='Finalizado') return 'sopt-ent';
+  return 'sopt-cust';
+}
 function fillVars(tpl,s){return tpl.replace(/\{nombre\}/gi,s.name).replace(/\{telefono\}/gi,s.phone).replace(/\{direccion\}/gi,s.address).replace(/\{courier\}/gi,s.courier).replace(/\{fecha\}/gi,s.date||'—').replace(/\{costo\}/gi,s.cost?'S/ '+s.cost:'—').replace(/\{estado\}/gi,s.status)}
 
 /* STATS */
