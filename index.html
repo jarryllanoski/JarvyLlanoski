@@ -2595,14 +2595,25 @@ function saveConfig(){
   save(); renderChips(); toast('✅ Configuración guardada');
 }
 function updateAutoStatusBadge(){
-  const el=$('autoStatusBadge');if(!el)return;
   const on=!!S.config.autoStatusEnabled;
-  el.textContent=on?'✅ Automático activado':'⚙️ Modo manual';
-  Object.assign(el.style,{
-    color:      on?'var(--green)':'var(--text2)',
-    background: on?'rgba(46,160,67,.12)':'rgba(139,148,158,.1)',
-    borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)',
-  });
+  const cfgEl=$('autoStatusBadge');
+  if(cfgEl){
+    cfgEl.textContent=on?'✅ Automático activado':'⚙️ Modo manual';
+    Object.assign(cfgEl.style,{
+      color:      on?'var(--green)':'var(--text2)',
+      background: on?'rgba(46,160,67,.12)':'rgba(139,148,158,.1)',
+      borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)',
+    });
+  }
+  const hdrEl=$('autoModeBadgeHdr');
+  if(hdrEl){
+    hdrEl.textContent=on?'⚡ Auto':'⚙️ Manual';
+    Object.assign(hdrEl.style,{
+      color:      on?'var(--green)':'var(--text2)',
+      background: on?'rgba(46,160,67,.12)':'rgba(139,148,158,.08)',
+      borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)',
+    });
+  }
 }
 function toggleAutoStatusCfg(){
   S.config.autoStatusEnabled=!S.config.autoStatusEnabled;
