@@ -1353,7 +1353,7 @@ function render(){
 }
 
 function cardHTML(s){
-  const gChk=s.chkGuia||false, tChk=s.chkTicket||false;
+  const gChk=s.chkGuia||false, eChk=s.chkEmbalado||false, cChk=s.chkComprobante||false;
   const msgs=S.msgTemplates[s.status]||['',''];
   const m1=msgs[0]&&msgs[0].trim(), m2=msgs[1]&&msgs[1].trim();
   const pvtNote=s.privateNote||'';
