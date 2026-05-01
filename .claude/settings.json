@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); [ -z \"$f\" ] && exit 0; cd /home/user/JarvyLlanoski && git add \"$f\" && git diff --cached --quiet && exit 0; git commit -m \"Auto-commit: $(basename \"$f\")\" --no-verify 2>/dev/null || true",
+            "timeout": 30,
+            "statusMessage": "Guardando cambio..."
+          }
+        ]
+      }
+    ]
+  }
+}
