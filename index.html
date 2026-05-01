@@ -2296,8 +2296,8 @@ function importExcel(input){
           cost:(row['Costo']||row['costo']||'').toString().trim(),
           notes:(row['Notas']||row['notas']||'').toString().trim(),
           privateNote:(row['Nota privada']||'').toString().trim(),
-          extra:{},docGuia:null,docTicket:null,links:[],
-          sel:false,chkGuia:false,chkTicket:false,
+          extra:{},docGuia:null,docEmbalado:null,docComprobante:null,links:[],
+          sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,
           createdAt:new Date().toISOString()
         });
         added++;
