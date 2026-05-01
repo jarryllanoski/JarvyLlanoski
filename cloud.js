@@ -127,6 +127,45 @@
     });
   }
 
+  /* ── Escuchar submissions del formulario público ───────────────────── */
+  function startSubmissionsListener() {
+    if (_unsubSubs) { _unsubSubs(); _unsubSubs = null; }
+    if (!_db || !_cfg.workspaceId) return;
+
+    _unsubSubs = _db.collection('workspaces').doc(_cfg.workspaceId)
+      .collection('submissions')
+      .where('processed', '==', false)
+      .onSnapshot(snapshot => {
+        let newOnes = [];
+        snapshot.docChanges().forEach(change => {
+          if (change.type !== 'added') return;
+          const sub = change.doc.data();
+          const ref = change.doc.ref;
+          if ((window.S.shipments || []).find(s => s.id === sub.id)) {
+            ref.update({ processed: true }).catch(() => {});
+            return;
+          }
+          const { processed, source, ...shipment } = sub;
+          newOnes.push({ shipment, ref });
+        });
+        if (!newOnes.length) return;
+        newOnes.forEach(({ shipment, ref }) => {
+          window.S.shipments.unshift(shipment);
+          ref.update({ processed: true }).catch(() => {});
+        });
+        try { localStorage.setItem('dpanel', JSON.stringify(window.S)); } catch (e) {}
+        if (window.render) window.render();
+        if (window.updateStats) window.updateStats();
+        const names = newOnes.map(({ shipment: s }) => s.name).join(', ');
+        const msg = newOnes.length === 1
+          ? `📥 Nuevo pedido del formulario: ${names}`
+          : `📥 ${newOnes.length} nuevos pedidos: ${names}`;
+        if (window.toast) window.toast(msg);
+      }, err => {
+        console.error('[cloud] submissions listener:', err);
+      });
+  }
+
   /* ── Inicializar Firebase y conectar ───────────────────────────── */
   async function init(cfg) {
     _cfg = Object.assign({}, _cfg, cfg);
