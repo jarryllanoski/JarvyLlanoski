@@ -43,8 +43,9 @@
   function stripImages(state) {
     const s = JSON.parse(JSON.stringify(state));
     s.shipments = (s.shipments || []).map(sh => {
-      if (sh.docGuia   && sh.docGuia.d)   sh.docGuia   = { t: sh.docGuia.t,   n: sh.docGuia.n,   _hasImg: true };
-      if (sh.docTicket && sh.docTicket.d) sh.docTicket = { t: sh.docTicket.t, n: sh.docTicket.n, _hasImg: true };
+      if (sh.docGuia        && sh.docGuia.d)        sh.docGuia        = { t: sh.docGuia.t,        n: sh.docGuia.n,        _hasImg: true };
+      if (sh.docEmbalado    && sh.docEmbalado.d)    sh.docEmbalado    = { t: sh.docEmbalado.t,    n: sh.docEmbalado.n,    _hasImg: true };
+      if (sh.docComprobante && sh.docComprobante.d) sh.docComprobante = { t: sh.docComprobante.t, n: sh.docComprobante.n, _hasImg: true };
       return sh;
     });
     s.suppliers = (s.suppliers || []).map(sup => {
