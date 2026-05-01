@@ -574,18 +574,46 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   </div>
 
   <!-- ESTADOS AUTOMÁTICOS -->
-  <div class="cfg-sec" style="border:2px solid rgba(46,160,67,.25);background:rgba(46,160,67,.04)">
-    <div class="cfg-ttl" style="color:var(--green)">⚡ Modo automático de estados</div>
-    <div class="tgl-row" style="align-items:flex-start;padding:10px 0 4px">
-      <div style="flex:1">
-        <div class="tgl-n">Cambio automático según adjuntos</div>
-        <div class="tgl-s" style="margin-bottom:8px;line-height:1.6">
-          📦 <b>EMBALADO</b> → cambia a <b>Alistado</b><br>
-          🚚 <b>GUÍA COURIER</b> → cambia a <b>Enviado</b>
-        </div>
-        <div id="autoStatusBadge" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid;transition:.2s"></div>
+  <div class="cfg-sec" style="border:2px solid rgba(46,160,67,.2);background:rgba(46,160,67,.03)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="cfg-ttl" style="color:var(--green);margin:0">⚡ Modo automático de estados</div>
+      <div id="autoStatusBadge" style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid;transition:.2s;white-space:nowrap"></div>
+    </div>
+
+    <!-- Switch general -->
+    <div class="tgl-row" style="padding:10px 0;border-bottom:1px solid var(--bd)">
+      <div>
+        <div class="tgl-n" style="font-weight:700">🌐 Modo automático general</div>
+        <div class="tgl-s">Activa TODAS las reglas de una vez</div>
       </div>
-      <div id="tglAutoStatus" class="tgl" style="margin-top:2px;flex-shrink:0" onclick="toggleAutoStatusCfg()"></div>
+      <div id="tglAutoStatus" class="tgl" onclick="toggleAutoStatusCfg()"></div>
+    </div>
+
+    <!-- Reglas individuales -->
+    <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin:10px 0 6px">REGLAS INDIVIDUALES <span style="font-weight:400;font-style:italic">(activas si el general está OFF)</span></div>
+    <div class="tgl-row" id="rowRuleEmbalado">
+      <div><div class="tgl-n">📦 Embalado → Alistado</div><div class="tgl-s">Al subir foto del pedido preparado</div></div>
+      <div id="tglRuleEmbalado" class="tgl" onclick="toggleAutoRule('embalado')"></div>
+    </div>
+    <div class="tgl-row" id="rowRuleGuia">
+      <div><div class="tgl-n">🚚 Guía courier → Enviado</div><div class="tgl-s">Al subir guía o ingresar N° de seguimiento</div></div>
+      <div id="tglRuleGuia" class="tgl" onclick="toggleAutoRule('guia')"></div>
+    </div>
+    <div class="tgl-row" id="rowRuleComprobante">
+      <div><div class="tgl-n">🧾 Comprobante → Finalizado</div><div class="tgl-s">Al subir boleta si está en "Pendiente de pago"</div></div>
+      <div id="tglRuleComprobante" class="tgl" onclick="toggleAutoRule('comprobante')"></div>
+    </div>
+    <div class="tgl-row" id="rowRuleArrived">
+      <div><div class="tgl-n">📍 Llegó a destino</div><div class="tgl-s">Al marcar el checkbox correspondiente</div></div>
+      <div id="tglRuleArrived" class="tgl" onclick="toggleAutoRule('arrivedAtDest')"></div>
+    </div>
+    <div class="tgl-row" id="rowRulePending">
+      <div><div class="tgl-n">💳 Pendiente de pago</div><div class="tgl-s">Al llegar a destino con saldo pendiente</div></div>
+      <div id="tglRulePending" class="tgl" onclick="toggleAutoRule('pendingPayment')"></div>
+    </div>
+    <div class="tgl-row" style="border:none" id="rowRuleFinalizado">
+      <div><div class="tgl-n">✅ Finalizado</div><div class="tgl-s">Al marcar como entregado sin saldo pendiente</div></div>
+      <div id="tglRuleFinalizado" class="tgl" onclick="toggleAutoRule('finalizado')"></div>
     </div>
   </div>
 
