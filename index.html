@@ -2116,7 +2116,7 @@ let _curDoc=null;
 function openViewer(doc,title){_curDoc=doc;if(doc.t&&doc.t.startsWith('image/')){$('viewerImg').src=doc.d;$('viewerTtl').textContent=title;$('viewer').classList.add('open')}else{const a=document.createElement('a');a.href=doc.d;a.target='_blank';a.click()}}
 function closeViewer(){$('viewer').classList.remove('open');$('viewerImg').src=''}
 function dlDoc(){if(!_curDoc)return;const a=document.createElement('a');a.href=_curDoc.d;a.download=_curDoc.n||'doc';a.click()}
-function qView(shipId,slot){const s=S.shipments.find(x=>x.id===shipId);if(!s)return;const d=slot==='guia'?s.docGuia:s.docTicket;if(!d)return;openViewer(d,slot==='guia'?'🚚 Guía Courier':'🧾 Ticket / Boleta')}
+function qView(shipId,slot){const s=S.shipments.find(x=>x.id===shipId);if(!s)return;const d=slot==='guia'?s.docGuia:slot==='embalado'?s.docEmbalado:s.docComprobante;if(!d)return;openViewer(d,DOC_META[slot]?.label||slot)}
 $('viewer').addEventListener('click',e=>{if(e.target===$('viewer'))closeViewer()});
 
 /* LINKS */
