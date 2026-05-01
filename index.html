@@ -1171,6 +1171,10 @@ S.shipments.forEach(s=>{
   if(s.docEmbalado===undefined) s.docEmbalado=null;
   if(s.chkEmbalado===undefined) s.chkEmbalado=false;
 });
+// Migrar extraFields de strings a objetos {name, required, visible}
+S.extraFields=S.extraFields.map(f=>typeof f==='string'?{name:f,required:false,visible:true}:f);
+if(!S.courierTypes) S.courierTypes={};
+if(!S.formTokens) S.formTokens=[];
 const OLD_FIXED=['NUEVO PEDIDO','EN PROCESO','POR ALISTAR','ENVIADO','FINALIZADO','ENTREGADO','PENDIENTE'];
 S.labels=S.labels.filter(l=>!OLD_FIXED.includes(l)&&!FIXED_LABELS.includes(l));
 const customLabels=S.labels.slice();
