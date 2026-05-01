@@ -2230,6 +2230,7 @@ function disconnectCloud(){
 
 function loadCfgUI(){
   $('cfgName').value=S.config.name||'';$('cfgPhone').value=S.config.phone||'';$('cfgCity').value=S.config.city||'';
+  if($('tglAutoStatus'))$('tglAutoStatus').classList.toggle('on',!!S.config.autoStatusEnabled);
   // Poblar campos de nube
   const fb=window._cloud?window._cloud.getConfig():{};
   if($('cfgWsId'))    $('cfgWsId').value   =fb.workspaceId||'';
