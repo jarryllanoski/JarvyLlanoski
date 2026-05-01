@@ -1091,7 +1091,10 @@ if(!S.statusPin)    S.statusPin='1234';
 if(!S.dispatch)     S.dispatch={days:[1,2,3,4,5],cutHour:'11:30',anticipation:0};
 if(!S.config)       S.config={name:'Mi Negocio',phone:'999000000',city:'Lima, Perú'};
 if(S.config.autoStatusEnabled===undefined||S.config.autoStatusEnabled===null) S.config.autoStatusEnabled=true;
+if(!S.config.autoRules) S.config.autoRules={embalado:true,guia:true,comprobante:false,arrivedAtDest:true,pendingPayment:true,finalizado:true};
 const FIXED_LABELS=['Nuevo pedido','Faltante / pedir proveedor','Por alistar','Alistado','Enviado','Llegó a destino','Pendiente de pago','Finalizado'];
+// statusPrio: higher index = more advanced state; -1 for unknown
+function statusPrio(st){return FIXED_LABELS.indexOf(st);}
 const FIXED_LABEL_ICONS={'Nuevo pedido':'🆕','Faltante / pedir proveedor':'⚠️','Por alistar':'📦','Alistado':'✅','Enviado':'🚚','Llegó a destino':'📍','Pendiente de pago':'💰','Finalizado':'🏁'};
 // Migrar estados anteriores
 const STATUS_MIGRATE={'NUEVO PEDIDO':'Nuevo pedido','EN PROCESO':'Faltante / pedir proveedor','POR ALISTAR':'Por alistar','ENVIADO':'Enviado','FINALIZADO':'Finalizado','ENTREGADO':'Finalizado','PENDIENTE':'Nuevo pedido'};
