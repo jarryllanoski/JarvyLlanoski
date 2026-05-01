@@ -1,28 +1,30 @@
 // cloud.js — Sincronización Firebase Firestore
-// Módulo completamente opcional: si Firebase no está configurado,
-// la app funciona igual con localStorage como siempre.
+// Las credenciales se leen de window.FIREBASE_CONFIG (definido en index.html).
+// Por dispositivo solo se guarda el workspaceId y el estado enabled.
 
 (function () {
   'use strict';
 
   const FB_KEY = 'dpanel_fb';
   let _cfg = {};
-  try { _cfg = JSON.parse(localStorage.getItem(FB_KEY) || '{}'); } catch (e) { _cfg = {}; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(FB_KEY) || '{}');
+    _cfg = { workspaceId: raw.workspaceId || '', enabled: !!raw.enabled };
+  } catch (e) { _cfg = {}; }
 
   let _db = null;
   let _unsub = null;
   let _unsubSubs = null;
   let _pushTimer = null;
-  let _ignoreNext = false; // evita loop: nuestro propio push dispara el listener
+  let _ignoreNext = false;
 
-  // ID único por dispositivo para ignorar nuestros propios cambios en el listener
   let _deviceId = localStorage.getItem('dpanel_device');
   if (!_deviceId) {
     _deviceId = 'dev_' + Math.random().toString(36).slice(2, 10);
     localStorage.setItem('dpanel_device', _deviceId);
   }
 
-  /* ── Badge de estado en el header ─────────────────────────────── */
+  /* ── Badge de estado ───────────────────────────────────────────── */
   function updateBadge(state) {
     const el = document.getElementById('cloudBadge');
     if (!el) return;
@@ -35,14 +37,10 @@
     const [text, color, bg, border] = map[state] || map.off;
     el.textContent = text;
     Object.assign(el.style, { color, background: bg, borderColor: border });
-    // Sync status dot in Config if visible
     if (typeof window.updateCloudStatusDot === 'function') window.updateCloudStatusDot();
   }
 
-  /* ── Eliminar imágenes base64 antes de subir a Firestore ───────
-     Firestore tiene límite de 1 MB por documento.
-     Las imágenes se quedan en localStorage del dispositivo.
-     Se guarda un marcador _hasImg:true para saber que existía. */
+  /* ── Eliminar imágenes base64 antes de subir (límite 1 MB) ──── */
   function stripImages(state) {
     const s = JSON.parse(JSON.stringify(state));
     s.shipments = (s.shipments || []).map(sh => {
@@ -55,12 +53,11 @@
       if (sup.cotiz && sup.cotiz.d) sup.cotiz = { t: sup.cotiz.t, n: sup.cotiz.n, _hasImg: true };
       return sup;
     });
-    // La papelera no necesita sincronizarse (demasiado pesada)
     s.trash = [];
     return s;
   }
 
-  /* ── Al recibir datos de la nube, restaurar imágenes locales ─── */
+  /* ── Al recibir datos remotos, restaurar imágenes locales ──────── */
   function restoreLocalImages(remoteState) {
     const local = window.S || {};
     (remoteState.shipments || []).forEach(rsh => {
@@ -74,12 +71,11 @@
       const lsup = (local.suppliers || []).find(x => x.id === rsup.id);
       if (lsup && rsup.cotiz && rsup.cotiz._hasImg && lsup.cotiz && lsup.cotiz.d) rsup.cotiz = lsup.cotiz;
     });
-    // Preservar papelera local
     remoteState.trash = local.trash || [];
     return remoteState;
   }
 
-  /* ── Escribir en Firestore ─────────────────────────────────────── */
+  /* ── Escribir en Firestore ──────────────────────────────────────── */
   async function doPush() {
     if (!_db || !_cfg.workspaceId || !_cfg.enabled) return;
     updateBadge('syncing');
@@ -102,14 +98,13 @@
     _pushTimer = setTimeout(doPush, 800);
   }
 
-  /* ── Escuchar cambios en tiempo real ───────────────────────────── */
+  /* ── Listener principal ─────────────────────────────────────────── */
   function startListener() {
     if (_unsub) { _unsub(); _unsub = null; }
     if (!_db || !_cfg.workspaceId) return;
 
     _unsub = _db.collection('workspaces').doc(_cfg.workspaceId).onSnapshot(snap => {
       if (!snap.exists) return;
-      // Ignorar el eco de nuestro propio push
       if (_ignoreNext) { _ignoreNext = false; return; }
       const remote = snap.data();
       if (remote._updatedBy === _deviceId) return;
@@ -127,7 +122,7 @@
     });
   }
 
-  /* ── Escuchar submissions del formulario público ───────────────────── */
+  /* ── Listener de submissions del formulario público ─────────────── */
   function startSubmissionsListener() {
     if (_unsubSubs) { _unsubSubs(); _unsubSubs = null; }
     if (!_db || !_cfg.workspaceId) return;
@@ -136,7 +131,7 @@
       .collection('submissions')
       .where('processed', '==', false)
       .onSnapshot(snapshot => {
-        let newOnes = [];
+        const newOnes = [];
         snapshot.docChanges().forEach(change => {
           if (change.type !== 'added') return;
           const sub = change.doc.data();
@@ -166,35 +161,40 @@
       });
   }
 
-  /* ── Inicializar Firebase y conectar ───────────────────────────── */
+  /* ── Inicializar Firebase ───────────────────────────────────────── */
   async function init(cfg) {
     _cfg = Object.assign({}, _cfg, cfg);
-    try { localStorage.setItem(FB_KEY, JSON.stringify(_cfg)); } catch (e) {}
+    try { localStorage.setItem(FB_KEY, JSON.stringify({ workspaceId: _cfg.workspaceId, enabled: _cfg.enabled })); } catch (e) {}
 
-    if (!_cfg.apiKey || !_cfg.projectId || !_cfg.workspaceId || !_cfg.enabled) {
+    if (!_cfg.workspaceId || !_cfg.enabled) {
       updateBadge('off');
+      return;
+    }
+
+    const fbConfig = window.FIREBASE_CONFIG;
+    if (!fbConfig || !fbConfig.apiKey || !fbConfig.projectId) {
+      console.error('[cloud] FIREBASE_CONFIG no está definido en index.html');
+      updateBadge('error');
+      if (window.toast) window.toast('❌ Completa FIREBASE_CONFIG en el código fuente');
       return;
     }
 
     try {
       if (!firebase.apps.length) {
         firebase.initializeApp({
-          apiKey:      _cfg.apiKey,
-          projectId:   _cfg.projectId,
-          authDomain:  _cfg.projectId + '.firebaseapp.com',
+          apiKey:     fbConfig.apiKey,
+          projectId:  fbConfig.projectId,
+          authDomain: fbConfig.projectId + '.firebaseapp.com',
         });
       }
       _db = firebase.firestore();
 
       const snap = await _db.collection('workspaces').doc(_cfg.workspaceId).get();
-
       if (!snap.exists) {
-        // Primera vez: migrar datos de localStorage → nube
         updateBadge('syncing');
         await doPush();
         if (window.toast) window.toast('☁️ Datos migrados a la nube exitosamente');
       } else {
-        // Cargar datos de la nube y fusionar con imágenes locales
         const merged = restoreLocalImages(snap.data());
         Object.assign(window.S, merged);
         try { localStorage.setItem('dpanel', JSON.stringify(window.S)); } catch (e) {}
@@ -218,17 +218,18 @@
     if (_pushTimer) { clearTimeout(_pushTimer); }
     _cfg.enabled = false;
     _db = null;
-    try { localStorage.setItem(FB_KEY, JSON.stringify(_cfg)); } catch (e) {}
+    try { localStorage.setItem(FB_KEY, JSON.stringify({ workspaceId: _cfg.workspaceId, enabled: false })); } catch (e) {}
     updateBadge('off');
   }
 
-  function getConfig() { return Object.assign({}, _cfg); }
+  function getConfig() {
+    return Object.assign({}, _cfg, window.FIREBASE_CONFIG || {});
+  }
 
-  // API pública
   window._cloud = { init, disconnect, push: schedulePush, getConfig, updateBadge };
 
-  // Auto-iniciar si ya estaba configurado
-  if (_cfg.enabled && _cfg.apiKey && _cfg.projectId && _cfg.workspaceId) {
+  // Auto-iniciar si ya había workspace guardado en este dispositivo
+  if (_cfg.enabled && _cfg.workspaceId) {
     const tryInit = (n) => {
       if (typeof firebase !== 'undefined') {
         init(_cfg);
