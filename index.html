@@ -2935,7 +2935,7 @@ function addCourierInline(){
 function addExtraInline(){
   const inp=$('newExtraInp');const v=inp.value.trim();
   if(!v){toast('Escribe el nombre del campo');return}
-  S.extraFields.push(v);save();loadCfgUI();inp.value='';
+  S.extraFields.push({name:v,required:false,visible:true});save();loadCfgUI();inp.value='';
 }
 
 // Protected delete — requires hold confirmation
