@@ -2468,19 +2468,81 @@ function changePIN(){
   });
 }
 /* CONFIG */
-function connectCloud(){
+/* ── Cloud credential management ──────────────────────────────── */
+let _cloudSnapshot=null; // valores antes de editar (para cancelar)
+
+function toggleCloudEdit(){
+  _cloudSnapshot={wsId:$('cfgWsId').value,key:$('cfgFbKey').value,proj:$('cfgFbProject').value};
+  ['cfgWsId','cfgFbKey','cfgFbProject'].forEach(id=>{const e=$(id);if(e)e.disabled=false;});
+  $('btnEditCloud').style.display='none';
+  $('btnSaveCloud').style.display='block';
+  $('btnRestoreCloud').style.display='block';
+  $('cloudConfirmBox').style.display='none';
+  $('cfgWsId').focus();
+}
+function saveCloudCreds(){
+  const apiKey=$('cfgFbKey').value.trim();
+  const projectId=$('cfgFbProject').value.trim();
+  const wsId=$('cfgWsId').value.trim();
+  if(!apiKey){toast('⚠️ API Key es requerida');return;}
+  if(!projectId){toast('⚠️ Project ID es requerido');return;}
+  if(!wsId){toast('⚠️ Código de workspace es requerido');return;}
+  $('cloudConfirmBox').style.display='block';
+  $('btnSaveCloud').style.display='none';
+}
+function confirmCloudSave(){
   const wsId=$('cfgWsId').value.trim();
   const apiKey=$('cfgFbKey').value.trim();
   const projectId=$('cfgFbProject').value.trim();
-  if(!wsId||!apiKey||!projectId){toast('⚠️ Completa todos los campos de la nube');return;}
   if(window._cloud) window._cloud.init({apiKey,projectId,workspaceId:wsId,enabled:true});
   $('btnDisconnectCloud').style.display='block';
+  $('cloudConfirmBox').style.display='none';
+  _lockCloudFields();
   toast('☁️ Conectando a la nube...');
+  setTimeout(updateCloudStatusDot,2500);
+}
+function cancelCloudEdit(){
+  if(_cloudSnapshot){
+    $('cfgWsId').value=_cloudSnapshot.wsId;
+    $('cfgFbKey').value=_cloudSnapshot.key;
+    $('cfgFbProject').value=_cloudSnapshot.proj;
+  }
+  _lockCloudFields();
+}
+function _lockCloudFields(){
+  ['cfgWsId','cfgFbProject'].forEach(id=>{const e=$(id);if(e)e.disabled=true;});
+  const k=$('cfgFbKey');if(k){k.disabled=true;k.type='password';}
+  if($('btnEyeKey'))$('btnEyeKey').textContent='👁';
+  $('btnEditCloud').style.display='block';
+  $('btnSaveCloud').style.display='none';
+  $('btnRestoreCloud').style.display='none';
+  $('cloudConfirmBox').style.display='none';
+}
+function restoreCloudConfig(){
+  const fb=window._cloud?window._cloud.getConfig():{};
+  $('cfgWsId').value=fb.workspaceId||'';
+  $('cfgFbKey').value=fb.apiKey||'';
+  $('cfgFbProject').value=fb.projectId||'';
+  toast('↩️ Configuración restaurada');
+}
+function toggleApiKeyVis(){
+  const el=$('cfgFbKey');if(!el)return;
+  el.type=el.type==='password'?'text':'password';
+  if($('btnEyeKey'))$('btnEyeKey').textContent=el.type==='password'?'👁':'🙈';
 }
 function disconnectCloud(){
   if(window._cloud) window._cloud.disconnect();
   $('btnDisconnectCloud').style.display='none';
+  updateCloudStatusDot();
   toast('☁️ Desconectado de la nube');
+}
+function updateCloudStatusDot(){
+  const dot=$('cloudStatusDot');if(!dot)return;
+  const txt=($('cloudBadge')||{}).textContent||'';
+  if(txt.includes('🟢'))      {dot.textContent='🟢 Conectado';       Object.assign(dot.style,{color:'var(--green)',background:'rgba(46,160,67,.12)', borderColor:'rgba(46,160,67,.3)'});}
+  else if(txt.includes('🔴')) {dot.textContent='🔴 Error de conexión';Object.assign(dot.style,{color:'var(--red)',  background:'rgba(247,129,102,.12)',borderColor:'rgba(247,129,102,.3)'});}
+  else if(txt.includes('🔄')) {dot.textContent='🔄 Sincronizando...'; Object.assign(dot.style,{color:'var(--blue)', background:'rgba(56,139,253,.12)', borderColor:'rgba(56,139,253,.3)'});}
+  else                        {dot.textContent='⬜ Sin nube';          Object.assign(dot.style,{color:'var(--text2)',background:'var(--bg2)',          borderColor:'var(--bd)'});}
 }
 
 function loadCfgUI(){
