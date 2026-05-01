@@ -637,7 +637,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       </div>
       <div style="margin-bottom:8px">
         <label class="fl">🔢 N° de guía / seguimiento</label>
-        <input class="fi" id="fGuideNumber" placeholder="Ej: 123456789" oninput="onAutoFieldChange()">
+        <input class="fi" id="fGuideNumber" placeholder="Ej: 123456789" oninput="onAutoFieldChange(this.value.trim().length>0)">
       </div>
       <div id="autoStatusSuggestion" style="display:none;padding:9px 12px;background:rgba(56,139,253,.1);border:1px solid rgba(56,139,253,.3);border-radius:8px;font-size:12px;color:var(--blue)"></div>
     </div>
