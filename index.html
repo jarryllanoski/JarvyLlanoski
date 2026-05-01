@@ -1074,6 +1074,13 @@ const FIXED_LABEL_ICONS={'Nuevo pedido':'🆕','Faltante / pedir proveedor':'⚠
 const STATUS_MIGRATE={'NUEVO PEDIDO':'Nuevo pedido','EN PROCESO':'Faltante / pedir proveedor','POR ALISTAR':'Por alistar','ENVIADO':'Enviado','FINALIZADO':'Finalizado','ENTREGADO':'Finalizado','PENDIENTE':'Nuevo pedido'};
 S.shipments.forEach(s=>{if(STATUS_MIGRATE[s.status])s.status=STATUS_MIGRATE[s.status];});
 (S.trash||[]).forEach(t=>{if(t.shipment&&STATUS_MIGRATE[t.shipment.status])t.shipment.status=STATUS_MIGRATE[t.shipment.status];});
+// Migrar docTicket → docComprobante
+S.shipments.forEach(s=>{
+  if(s.docTicket!==undefined&&s.docComprobante===undefined){s.docComprobante=s.docTicket;delete s.docTicket;}
+  if(s.chkTicket!==undefined&&s.chkComprobante===undefined){s.chkComprobante=s.chkTicket;delete s.chkTicket;}
+  if(s.docEmbalado===undefined) s.docEmbalado=null;
+  if(s.chkEmbalado===undefined) s.chkEmbalado=false;
+});
 const OLD_FIXED=['NUEVO PEDIDO','EN PROCESO','POR ALISTAR','ENVIADO','FINALIZADO','ENTREGADO','PENDIENTE'];
 S.labels=S.labels.filter(l=>!OLD_FIXED.includes(l)&&!FIXED_LABELS.includes(l));
 const customLabels=S.labels.slice();
