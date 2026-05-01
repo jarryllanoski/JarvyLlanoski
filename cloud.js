@@ -34,6 +34,8 @@
     const [text, color, bg, border] = map[state] || map.off;
     el.textContent = text;
     Object.assign(el.style, { color, background: bg, borderColor: border });
+    // Sync status dot in Config if visible
+    if (typeof window.updateCloudStatusDot === 'function') window.updateCloudStatusDot();
   }
 
   /* ── Eliminar imágenes base64 antes de subir a Firestore ───────
