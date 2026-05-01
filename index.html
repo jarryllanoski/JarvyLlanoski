@@ -1055,16 +1055,16 @@ function fillVars(tpl,s){return tpl.replace(/\{nombre\}/gi,s.name).replace(/\{te
 
 /* STATS */
 function updateStats(){
-  if(_filt==='EN PROCESO'){
+  if(_filt==='Faltante / pedir proveedor'){
     renderStatsAsSuppliers();
     return;
   }
   $('statsArea').style.display='grid';
   $('suppStatsArea').style.display='none';
   $('sTotal').textContent=S.shipments.length;
-  $('sPend').textContent=S.shipments.filter(x=>x.status==='NUEVO PEDIDO'||x.status==='EN PROCESO').length;
-  $('sEnv').textContent=S.shipments.filter(x=>x.status==='POR ALISTAR'||x.status==='ENVIADO').length;
-  $('sEnt').textContent=S.shipments.filter(x=>x.status==='FINALIZADO').length;
+  $('sPend').textContent=S.shipments.filter(x=>x.status==='Nuevo pedido'||x.status==='Faltante / pedir proveedor'||x.status==='Pendiente de pago').length;
+  $('sEnv').textContent=S.shipments.filter(x=>x.status==='Por alistar'||x.status==='Alistado'||x.status==='Enviado'||x.status==='Llegó a destino').length;
+  $('sEnt').textContent=S.shipments.filter(x=>x.status==='Finalizado').length;
 }
 
 function renderStatsAsSuppliers(){
