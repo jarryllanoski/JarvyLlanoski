@@ -574,6 +574,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     <div class="cfg-ttl">🔔 Notificaciones</div>
     <div class="tgl-row"><div><div class="tgl-n">Notificar por WhatsApp</div><div class="tgl-s">Al registrar nuevo envío</div></div><div class="tgl on" onclick="this.classList.toggle('on')"></div></div>
     <div class="tgl-row"><div><div class="tgl-n">Notificar al cliente</div><div class="tgl-s">Cuando cambia el estado</div></div><div class="tgl" onclick="this.classList.toggle('on')"></div></div>
+    <div class="tgl-row">
+      <div><div class="tgl-n">🤖 Estados automáticos</div><div class="tgl-s">Cambia estado según guía, stock, entrega…</div></div>
+      <div id="tglAutoStatus" class="tgl" onclick="toggleAutoStatusCfg()"></div>
+    </div>
     <div class="tgl-row" style="border:none">
       <div><div class="tgl-n">🔐 Clave para cambiar estado</div><div class="tgl-s">Actualmente: ****</div></div>
       <button class="cfl-btn cfl-btn-edit" onclick="changePIN()">✏️</button>
