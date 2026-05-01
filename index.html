@@ -2214,21 +2214,24 @@ function toggleAutoField(f){
   refreshAutoFields();
 }
 function onAutoFieldChange(showToast=false){
+  const curSt=$('fStatus')?.value||'';
   const preview={..._autoFields,
     docGuia:_docs&&_docs.guia?_docs.guia:null,
     docEmbalado:_docs&&_docs.embalado?_docs.embalado:null,
+    docComprobante:_docs&&_docs.comprobante?_docs.comprobante:null,
+    status:curSt,
     guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',
     pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0
   };
   const sug=calcAutoStatus(preview);
   const box=$('autoStatusSuggestion');
   if(!box) return;
-  if(sug){
-    const prev=$('fStatus')?.value;
+  // Nunca retroceder
+  if(sug && statusPrio(sug)>statusPrio(curSt)){
     box.style.display='block';
     box.innerHTML=`🤖 Estado actualizado automáticamente: <b>${stIcon(sug)} ${sug}</b>`;
-    if($('fStatus') && prev!==sug){
-      $('fStatus').value=sug;
+    if(curSt!==sug){
+      if($('fStatus'))$('fStatus').value=sug;
       if(showToast) setTimeout(()=>toast('🤖 Estado actualizado automáticamente: '+sug),600);
     }
   } else {
