@@ -1228,7 +1228,7 @@ function toggleAsCourier(c){
   if(idx>=0) _adv.couriers.splice(idx,1); else _adv.couriers.push(c);
   document.querySelectorAll('.as-courier-chip').forEach(el=>el.classList.toggle('active',_adv.couriers.includes(el.textContent.replace('🚚 ','').trim())));
 }
-function setAsDoc(v){ _adv.doc=v; const dm={any:'asDocAny',guia:'asDocGuia',ticket:'asDocTicket',none:'asDocNone'}; ['asDocAny','asDocGuia','asDocTicket','asDocNone'].forEach(id=>$(id)?.classList.remove('active')); $(dm[v])?.classList.add('active'); }
+function setAsDoc(v){ _adv.doc=v; const dm={any:'asDocAny',guia:'asDocGuia',comprobante:'asDocComprobante',embalado:'asDocEmbalado',none:'asDocNone'}; ['asDocAny','asDocGuia','asDocComprobante','asDocEmbalado','asDocNone'].forEach(id=>$(id)?.classList.remove('active')); $(dm[v])?.classList.add('active'); }
 function setSort(v){ _adv.sort=v; const sm={newest:'sortNewest',oldest:'sortOldest',name:'sortName',cost:'sortCost'}; ['sortNewest','sortOldest','sortName','sortCost'].forEach(id=>$(id)?.classList.remove('active')); $(sm[v])?.classList.add('active'); }
 function applyAdvSearch(){ _adv.dateFrom=$('asDateFrom').value; _adv.dateTo=$('asDateTo').value; _adv.costMin=$('asCostMin').value; _adv.costMax=$('asCostMax').value; _advActive=hasAdvFilters(); closeOverlay('advSearchOverlay'); render(); }
 function clearAdvSearch(){ _adv={dateFrom:'',dateTo:'',couriers:[],costMin:'',costMax:'',doc:'any',sort:'newest'}; _advActive=false; render(); }
