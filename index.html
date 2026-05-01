@@ -2144,9 +2144,7 @@ function calcDocAutoStatus(s){
   return null;
 }
 function calcAutoStatus(s){
-  // Doc-based rules run siempre
-  const docSug=calcDocAutoStatus(s);
-  if(!S.config.autoStatusEnabled) return docSug;
+  if(!S.config.autoStatusEnabled) return null;
   // Reglas completas (toggle ON)
   if(s.delivered && !(s.pendingBalance>0)) return 'Finalizado';
   if(s.arrivedAtDest && s.pendingBalance>0) return 'Pendiente de pago';
