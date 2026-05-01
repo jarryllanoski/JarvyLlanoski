@@ -2116,7 +2116,7 @@ function clearSlot(slot){
   _docs[slot]=null;
   (DOC_META[slot]?.inputs||[]).forEach(id=>{const e=$(id);if(e)e.value=''});
   refreshSlot(slot);toast('Documento quitado');
-  if(slot==='embalado'||slot==='guia') onAutoFieldChange();
+  onAutoFieldChange(false);
 }
 function viewSlot(slot){const d=_docs[slot];if(!d)return;openViewer(d,DOC_META[slot]?.label||slot)}
 
