@@ -2072,6 +2072,65 @@ function removeLink(i){_links.splice(i,1);renderLinks()}
 function renderLinks(){$('linkListForm').innerHTML=_links.map((l,i)=>`<div class="link-item"><span>🔗</span><div class="link-name">${l.n}</div><a href="${l.u}" target="_blank" style="color:var(--blue);font-size:12px;text-decoration:none">↗</a><button class="link-del" type="button" onclick="removeLink(${i})">✕</button></div>`).join('')}
 
 /* FORM */
+/* ── AUTO-STATUS ─────────────────────────────────────────────── */
+function calcAutoStatus(s){
+  if(!S.config.autoStatusEnabled) return null;
+  if(s.delivered && !(s.pendingBalance>0)) return 'Finalizado';
+  if(s.arrivedAtDest && s.pendingBalance>0) return 'Pendiente de pago';
+  if(s.arrivedAtDest) return 'Llegó a destino';
+  if(s.docGuia || s.guideNumber) return 'Enviado';
+  if(s.alistado) return 'Alistado';
+  if(s.stockOk) return 'Por alistar';
+  if(s.faltante) return 'Faltante / pedir proveedor';
+  return null;
+}
+function applyAutoStatus(shipmentId){
+  if(!S.config.autoStatusEnabled) return;
+  const s=S.shipments.find(x=>x.id===shipmentId);
+  if(!s) return;
+  const suggested=calcAutoStatus(s);
+  if(suggested && suggested!==s.status){
+    s.status=suggested;
+    save(); render();
+    toast('🤖 Estado actualizado automáticamente: '+suggested);
+  }
+}
+
+/* ── FORM AUTO-STATUS HELPERS ───────────────────────────────── */
+let _autoFields={faltante:false,stockOk:false,alistado:false,arrivedAtDest:false,delivered:false};
+function refreshAutoFields(){
+  ['faltante','stockOk','alistado','arrivedAtDest','delivered'].forEach(f=>{
+    const id='chk'+f.charAt(0).toUpperCase()+f.slice(1);
+    const el=$(id); if(!el) return;
+    el.classList.toggle('on',!!_autoFields[f]);
+    el.textContent=_autoFields[f]?'✓':'';
+  });
+  onAutoFieldChange();
+}
+function toggleAutoField(f){
+  if(f==='faltante'&&_autoFields.stockOk&&!_autoFields[f])_autoFields.stockOk=false;
+  if(f==='stockOk'&&_autoFields.faltante&&!_autoFields[f])_autoFields.faltante=false;
+  _autoFields[f]=!_autoFields[f];
+  refreshAutoFields();
+}
+function onAutoFieldChange(){
+  const preview={..._autoFields,
+    docGuia:_docs&&_docs.guia?_docs.guia:null,
+    guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',
+    pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0
+  };
+  const sug=calcAutoStatus(preview);
+  const box=$('autoStatusSuggestion');
+  if(!box) return;
+  if(sug){
+    box.style.display='block';
+    box.innerHTML=`🤖 Estado sugerido: <b>${stIcon(sug)} ${sug}</b> — se aplicará al guardar`;
+    if($('fStatus'))$('fStatus').value=sug;
+  } else {
+    box.style.display='none';
+  }
+}
+
 let _editId=null;
 function openForm(id){
   _editId=id;$('formTitle').textContent=id?'Editar Envío':'Nuevo Envío';
