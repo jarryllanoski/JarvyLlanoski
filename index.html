@@ -2150,10 +2150,20 @@ function openForm(id){
     if(s.docGuia){_docs.guia=s.docGuia;refreshSlot('guia')}
     if(s.docTicket){_docs.ticket=s.docTicket;refreshSlot('ticket')}
     _links=s.links?JSON.parse(JSON.stringify(s.links)):[];renderLinks();
+    _autoFields={faltante:!!s.faltante,stockOk:!!s.stockOk,alistado:!!s.alistado,arrivedAtDest:!!s.arrivedAtDest,delivered:!!s.delivered};
+    if($('fGuideNumber'))$('fGuideNumber').value=s.guideNumber||'';
+    if($('fPendingBalance'))$('fPendingBalance').value=s.pendingBalance||'';
   }else{
     ['fName','fPhone','fAddr','fCost','fNotes'].forEach(i=>$(i).value='');
     $('fDate').valueAsDate=new Date();
+    _autoFields={faltante:false,stockOk:false,alistado:false,arrivedAtDest:false,delivered:false};
+    if($('fGuideNumber'))$('fGuideNumber').value='';
+    if($('fPendingBalance'))$('fPendingBalance').value='';
+    if(S.config.autoStatusEnabled&&$('fStatus'))$('fStatus').value='Nuevo pedido';
   }
+  const autoForm=$('autoStatusForm');
+  if(autoForm) autoForm.style.display=S.config.autoStatusEnabled?'block':'none';
+  refreshAutoFields();
   openOverlay('formOverlay');
 }
 function saveShipment(){
