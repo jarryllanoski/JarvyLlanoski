@@ -2635,32 +2635,44 @@ function saveConfig(){
   save(); renderChips(); toast('✅ Configuración guardada');
 }
 function updateAutoStatusBadge(){
-  const on=!!S.config.autoStatusEnabled;
+  const mode=calcAutoStatusMode();
+  const MAP={
+    general:{badge:'⚡ Automático general activo', hdr:'⚡ Auto',    c:'var(--green)',   bg:'rgba(46,160,67,.12)',   bc:'rgba(46,160,67,.3)'},
+    partial:{badge:'🔀 Automático parcial',         hdr:'🔀 Parcial', c:'#e3b341',        bg:'rgba(227,179,65,.12)',  bc:'rgba(227,179,65,.3)'},
+    manual: {badge:'⚙️ Modo manual',                hdr:'⚙️ Manual',  c:'var(--text2)',   bg:'rgba(139,148,158,.1)', bc:'rgba(139,148,158,.2)'},
+  };
+  const m=MAP[mode];
   const cfgEl=$('autoStatusBadge');
-  if(cfgEl){
-    cfgEl.textContent=on?'✅ Automático activado':'⚙️ Modo manual';
-    Object.assign(cfgEl.style,{
-      color:      on?'var(--green)':'var(--text2)',
-      background: on?'rgba(46,160,67,.12)':'rgba(139,148,158,.1)',
-      borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)',
-    });
-  }
+  if(cfgEl){cfgEl.textContent=m.badge;Object.assign(cfgEl.style,{color:m.c,background:m.bg,borderColor:m.bc});}
   const hdrEl=$('autoModeBadgeHdr');
-  if(hdrEl){
-    hdrEl.textContent=on?'⚡ Auto':'⚙️ Manual';
-    Object.assign(hdrEl.style,{
-      color:      on?'var(--green)':'var(--text2)',
-      background: on?'rgba(46,160,67,.12)':'rgba(139,148,158,.08)',
-      borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)',
-    });
-  }
+  if(hdrEl){hdrEl.textContent=m.hdr;Object.assign(hdrEl.style,{color:m.c,background:m.bg,borderColor:m.bc});}
+  // Individual rule toggle states
+  const generalOn=!!S.config.autoStatusEnabled;
+  const rules=S.config.autoRules||{};
+  const RULE_IDS={embalado:'tglRuleEmbalado',guia:'tglRuleGuia',comprobante:'tglRuleComprobante',arrivedAtDest:'tglRuleArrived',pendingPayment:'tglRulePending',finalizado:'tglRuleFinalizado'};
+  Object.entries(RULE_IDS).forEach(([k,id])=>{
+    const el=$(id);if(!el)return;
+    el.classList.toggle('on',generalOn||!!rules[k]);
+    el.style.opacity=generalOn?'0.5':'1';
+    el.style.pointerEvents=generalOn?'none':'auto';
+  });
+  // General toggle
+  if($('tglAutoStatus'))$('tglAutoStatus').classList.toggle('on',generalOn);
+}
+function toggleAutoRule(key){
+  if(S.config.autoStatusEnabled){toast('Desactiva el modo general primero para usar reglas individuales');return;}
+  if(!S.config.autoRules) S.config.autoRules={};
+  S.config.autoRules[key]=!S.config.autoRules[key];
+  updateAutoStatusBadge();
+  save();
+  const names={embalado:'📦 Embalado',guia:'🚚 Guía courier',comprobante:'🧾 Comprobante',arrivedAtDest:'📍 Llegó a destino',pendingPayment:'💳 Pendiente de pago',finalizado:'✅ Finalizado'};
+  toast((S.config.autoRules[key]?'✓ Regla activada: ':'✗ Regla desactivada: ')+(names[key]||key));
 }
 function toggleAutoStatusCfg(){
   S.config.autoStatusEnabled=!S.config.autoStatusEnabled;
-  if($('tglAutoStatus'))$('tglAutoStatus').classList.toggle('on',S.config.autoStatusEnabled);
   updateAutoStatusBadge();
   save();
-  toast(S.config.autoStatusEnabled?'🤖 Modo automático activado':'⚙️ Modo manual activado');
+  toast(S.config.autoStatusEnabled?'⚡ Modo automático general ON':'🔀 Usando reglas individuales');
 }
 let _dragIdx=null;
 function dragStart(e,i){_dragIdx=i;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move'}
