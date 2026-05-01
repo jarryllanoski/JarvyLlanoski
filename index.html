@@ -494,6 +494,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       <button class="tb-btn" style="width:auto;padding:0 14px;height:38px;font-size:12px" onclick="shareTG()">✈️ Telegram</button>
     </div>
   </div>
+  <div class="cfg-sec">
+    <div class="cfg-ttl">🔑 Links con token</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">Genera links únicos por cliente con control de uso y vencimiento.</div>
+    <div class="fg">
+      <label class="fl">Etiqueta del link (opcional)</label>
+      <input class="fi" id="tokenLabel" placeholder="Ej. Juan Pérez" maxlength="40">
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span class="fl" style="margin:0;flex:1">De un solo uso</span>
+      <div id="tokenSingleUseBtn" class="courier-toggle on" onclick="this.classList.toggle('on')"><div class="courier-toggle-dot"></div></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Vencimiento</label>
+      <select class="fs" id="tokenExpiry">
+        <option value="">Sin vencimiento</option>
+        <option value="1">1 día</option>
+        <option value="3">3 días</option>
+        <option value="7">7 días</option>
+        <option value="30">30 días</option>
+      </select>
+    </div>
+    <button onclick="generateToken()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1a3a6b,var(--blue));border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:14px">🔑 Generar link con token</button>
+    <div id="tokenList"></div>
+  </div>
 </div>
 
 <!-- CONFIGURAR -->
