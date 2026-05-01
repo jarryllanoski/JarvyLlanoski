@@ -2137,8 +2137,18 @@ function renderLinks(){$('linkListForm').innerHTML=_links.map((l,i)=>`<div class
 
 /* FORM */
 /* ── AUTO-STATUS ─────────────────────────────────────────────── */
+// Doc-based rules: always active regardless of the toggle.
+// Si ya tiene GUÍA COURIER no puede volver a estados inferiores automáticamente.
+function calcDocAutoStatus(s){
+  if(s.docGuia || s.guideNumber) return 'Enviado';
+  if(s.docEmbalado) return 'Alistado';
+  return null;
+}
 function calcAutoStatus(s){
-  if(!S.config.autoStatusEnabled) return null;
+  // Doc-based rules run siempre
+  const docSug=calcDocAutoStatus(s);
+  if(!S.config.autoStatusEnabled) return docSug;
+  // Reglas completas (toggle ON)
   if(s.delivered && !(s.pendingBalance>0)) return 'Finalizado';
   if(s.arrivedAtDest && s.pendingBalance>0) return 'Pendiente de pago';
   if(s.arrivedAtDest) return 'Llegó a destino';
