@@ -214,6 +214,7 @@
 
   function disconnect() {
     if (_unsub) { _unsub(); _unsub = null; }
+    if (_unsubSubs) { _unsubSubs(); _unsubSubs = null; }
     if (_pushTimer) { clearTimeout(_pushTimer); }
     _cfg.enabled = false;
     _db = null;
