@@ -2657,15 +2657,21 @@ function loadCfgUI(){
   }).join('');
 
   // EXTRA FIELDS
-  $('extraFieldsList').innerHTML=S.extraFields.map((f,i)=>`
-    <div class="cfl-item">
+  $('extraFieldsList').innerHTML=S.extraFields.map((f,i)=>{
+    const nm=f.name||f;const req=!!f.required;const vis=f.visible!==false;
+    return`<div class="cfl-item">
       <span class="cfl-icon">📝</span>
-      <span class="cfl-name">${f}</span>
+      <span class="cfl-name">${nm}</span>
+      <div style="display:flex;gap:3px;margin-right:4px;flex-shrink:0">
+        <span onclick="toggleExtraFlag(${i},'required')" title="${req?'Obligatorio (toca para hacer opcional)':'Opcional (toca para hacer obligatorio)'}" style="font-size:9px;font-weight:700;cursor:pointer;padding:2px 5px;border-radius:4px;border:1px solid ${req?'rgba(247,129,102,.5)':'var(--bd)'};color:${req?'var(--red)':'var(--text2)'};background:${req?'rgba(247,129,102,.08)':'transparent'}">*REQ</span>
+        <span onclick="toggleExtraFlag(${i},'visible')" title="${vis?'Visible (toca para ocultar)':'Oculto (toca para mostrar)'}" style="font-size:9px;font-weight:700;cursor:pointer;padding:2px 5px;border-radius:4px;border:1px solid ${vis?'rgba(46,160,67,.5)':'var(--bd)'};color:${vis?'var(--green)':'var(--text2)'};background:${vis?'rgba(46,160,67,.08)':'transparent'}">👁 VIS</span>
+      </div>
       <div class="cfl-actions">
         <button class="cfl-btn cfl-btn-edit" onclick="openExtraEdit(${i})" title="Editar">✏️</button>
         <button class="cfl-btn cfl-btn-del" onclick="confirmDelItem('extra',${i})" title="Eliminar">🗑️</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* LABEL EDIT SHEET */
