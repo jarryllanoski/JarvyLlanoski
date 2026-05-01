@@ -551,6 +551,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     </div>
   </div>
 
+  <!-- NUBE -->
+  <div class="cfg-sec">
+    <div class="cfg-ttl">☁️ Sincronización en la nube</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">Conecta a <b style="color:var(--text)">Firebase Firestore</b> para acceder desde varios celulares y PC en tiempo real. Los datos existentes se migran automáticamente.</div>
+    <div class="fg"><label class="fl">Código de workspace (nombre único de tu negocio)</label><input class="fi" id="cfgWsId" placeholder="mi-negocio-2024" maxlength="60"></div>
+    <div class="fg"><label class="fl">Firebase API Key</label><input class="fi" id="cfgFbKey" placeholder="AIzaSy..." type="password" autocomplete="off"></div>
+    <div class="fg"><label class="fl">Firebase Project ID</label><input class="fi" id="cfgFbProject" placeholder="mi-proyecto-12345"></div>
+    <button onclick="connectCloud()" class="btn-pri" style="background:linear-gradient(135deg,#1a7f37,var(--green));margin-top:2px">☁️ Conectar a la nube</button>
+    <button id="btnDisconnectCloud" onclick="disconnectCloud()" class="btn-sec" style="display:none;color:var(--red);border-color:rgba(247,129,102,.3)">Desconectar nube</button>
+    <div style="margin-top:12px;background:var(--bg2);border:1px solid var(--bd);border-radius:9px;padding:11px 13px;font-size:11px;color:var(--text2);line-height:1.8">
+      <b style="color:var(--blue)">Cómo obtener las credenciales:</b><br>
+      1. Ir a <b>console.firebase.google.com</b><br>
+      2. Crear proyecto → Firestore Database → Modo de prueba<br>
+      3. Configuración del proyecto → Tus apps → Web → copiar <b>apiKey</b> y <b>projectId</b><br>
+      4. Las imágenes (guía/ticket) se guardan solo localmente para no exceder el límite.
+    </div>
+  </div>
+
   <!-- NOTIFICACIONES -->
   <div class="cfg-sec">
     <div class="cfg-ttl">🔔 Notificaciones</div>
