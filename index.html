@@ -2170,6 +2170,7 @@ function toggleAutoField(f){
 function onAutoFieldChange(){
   const preview={..._autoFields,
     docGuia:_docs&&_docs.guia?_docs.guia:null,
+    docEmbalado:_docs&&_docs.embalado?_docs.embalado:null,
     guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',
     pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0
   };
