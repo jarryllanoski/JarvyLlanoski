@@ -1216,8 +1216,8 @@ function openAdvSearch(){
   $('asCourierList').innerHTML=S.couriers.map(c=>`<div class="as-courier-chip ${_adv.couriers.includes(c)?'active':''}" onclick="toggleAsCourier('${c.replace(/'/g,"\\'")}')">🚚 ${c}</div>`).join('');
   $('asDateFrom').value=_adv.dateFrom; $('asDateTo').value=_adv.dateTo;
   $('asCostMin').value=_adv.costMin; $('asCostMax').value=_adv.costMax;
-  ['asDocAny','asDocGuia','asDocTicket','asDocNone'].forEach(id=>$(id)?.classList.remove('active'));
-  const dm={any:'asDocAny',guia:'asDocGuia',ticket:'asDocTicket',none:'asDocNone'};
+  ['asDocAny','asDocGuia','asDocComprobante','asDocEmbalado','asDocNone'].forEach(id=>$(id)?.classList.remove('active'));
+  const dm={any:'asDocAny',guia:'asDocGuia',comprobante:'asDocComprobante',embalado:'asDocEmbalado',none:'asDocNone'};
   $(dm[_adv.doc])?.classList.add('active');
   const sm={newest:'sortNewest',oldest:'sortOldest',name:'sortName',cost:'sortCost'};
   ['sortNewest','sortOldest','sortName','sortCost'].forEach(id=>$(id)?.classList.remove('active'));
