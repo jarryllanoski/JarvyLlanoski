@@ -2564,11 +2564,22 @@ function saveConfig(){
   $('hdrPhone').textContent=S.config.phone;
   save(); renderChips(); toast('✅ Configuración guardada');
 }
+function updateAutoStatusBadge(){
+  const el=$('autoStatusBadge');if(!el)return;
+  const on=!!S.config.autoStatusEnabled;
+  el.textContent=on?'✅ Automático activado':'⚙️ Modo manual';
+  Object.assign(el.style,{
+    color:      on?'var(--green)':'var(--text2)',
+    background: on?'rgba(46,160,67,.12)':'rgba(139,148,158,.1)',
+    borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)',
+  });
+}
 function toggleAutoStatusCfg(){
   S.config.autoStatusEnabled=!S.config.autoStatusEnabled;
   if($('tglAutoStatus'))$('tglAutoStatus').classList.toggle('on',S.config.autoStatusEnabled);
+  updateAutoStatusBadge();
   save();
-  toast(S.config.autoStatusEnabled?'🤖 Estados automáticos ON':'⚙️ Estados automáticos OFF');
+  toast(S.config.autoStatusEnabled?'🤖 Modo automático activado':'⚙️ Modo manual activado');
 }
 let _dragIdx=null;
 function dragStart(e,i){_dragIdx=i;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move'}
