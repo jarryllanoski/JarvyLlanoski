@@ -2012,15 +2012,17 @@ function openWA(id){
   openOverlay('waOverlay');
 }
 function waDT(doc,chk,slot,color){
+  const lbl={guia:'GUÍA COURIER',embalado:'EMBALADO',comprobante:'COMPROBANTE'}[slot]||slot.toUpperCase();
+  const icon={guia:'📄',embalado:'📦',comprobante:'🧾'}[slot]||'📄';
   return`<div onclick="event.stopPropagation();togWADoc('${slot}')" style="position:relative;cursor:pointer;border-radius:9px;overflow:hidden;border:2px solid ${chk?color:'var(--bd)'};${chk?'box-shadow:0 0 0 2px rgba(46,160,67,.25)':''}">
-    ${doc.t&&doc.t.startsWith('image/')?`<img src="${doc.d}" style="width:80px;height:100px;object-fit:cover;display:block">`:`<div class="wa-doc-pdf"><span style="font-size:28px">${slot==='guia'?'📄':'🧾'}</span></div>`}
-    <div class="wa-doc-lbl">${slot==='guia'?'GUÍA':'TICKET'}</div>
-    <div id="waChk_${slot}" class="wa-doc-chk" style="background:${chk?(slot==='guia'?'var(--green)':'var(--purple)'):'rgba(0,0,0,.3)'};">${chk?'✓':''}</div>
+    ${doc.t&&doc.t.startsWith('image/')?`<img src="${doc.d}" style="width:80px;height:100px;object-fit:cover;display:block">`:`<div class="wa-doc-pdf"><span style="font-size:28px">${icon}</span></div>`}
+    <div class="wa-doc-lbl">${lbl}</div>
+    <div id="waChk_${slot}" class="wa-doc-chk" style="background:${chk?color:'rgba(0,0,0,.3)'};">${chk?'✓':''}</div>
   </div>`;
 }
 function togWADoc(slot){
   const s=S.shipments.find(x=>x.id===_waId);if(!s)return;
-  if(slot==='guia')s.chkGuia=!s.chkGuia;else s.chkTicket=!s.chkTicket;
+  if(slot==='guia')s.chkGuia=!s.chkGuia;else if(slot==='embalado')s.chkEmbalado=!s.chkEmbalado;else s.chkComprobante=!s.chkComprobante;
   save();render();openWA(_waId);
 }
 function selWAMsg(idx){
