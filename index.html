@@ -2249,8 +2249,20 @@ function openForm(id){
   }
   const autoForm=$('autoStatusForm');
   if(autoForm) autoForm.style.display=S.config.autoStatusEnabled?'block':'none';
+  syncFormModeBadge();
   refreshAutoFields();
   openOverlay('formOverlay');
+}
+function syncFormModeBadge(){
+  const el=$('formAutoModeBadge');if(!el)return;
+  const on=!!S.config.autoStatusEnabled;
+  el.style.display='inline-block';
+  el.textContent=on?'🤖 Auto':'⚙️ Manual';
+  Object.assign(el.style,{
+    color:      on?'var(--green)':'var(--text2)',
+    background: on?'rgba(46,160,67,.1)':'rgba(139,148,158,.08)',
+    borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)',
+  });
 }
 function saveShipment(){
   const name=$('fName').value.trim(),phone=$('fPhone').value.trim(),addr=$('fAddr').value.trim();
