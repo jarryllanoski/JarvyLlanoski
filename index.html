@@ -2158,7 +2158,6 @@ function calcAutoStatus(s){
   return null;
 }
 function applyAutoStatus(shipmentId){
-  if(!S.config.autoStatusEnabled) return;
   const s=S.shipments.find(x=>x.id===shipmentId);
   if(!s) return;
   const suggested=calcAutoStatus(s);
