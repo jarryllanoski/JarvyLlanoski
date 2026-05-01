@@ -1325,9 +1325,10 @@ function render(){
     if(_adv.couriers.length) data=data.filter(x=>_adv.couriers.includes(x.courier));
     if(_adv.costMin)  data=data.filter(x=>parseFloat(x.cost||0)>=parseFloat(_adv.costMin));
     if(_adv.costMax)  data=data.filter(x=>parseFloat(x.cost||0)<=parseFloat(_adv.costMax));
-    if(_adv.doc==='guia')   data=data.filter(x=>x.docGuia);
-    if(_adv.doc==='ticket') data=data.filter(x=>x.docTicket);
-    if(_adv.doc==='none')   data=data.filter(x=>!x.docGuia&&!x.docTicket);
+    if(_adv.doc==='guia')        data=data.filter(x=>x.docGuia);
+    if(_adv.doc==='comprobante') data=data.filter(x=>x.docComprobante);
+    if(_adv.doc==='embalado')    data=data.filter(x=>x.docEmbalado);
+    if(_adv.doc==='none')        data=data.filter(x=>!x.docGuia&&!x.docEmbalado&&!x.docComprobante);
     // Sort
     if(_adv.sort==='oldest') data=[...data].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     else if(_adv.sort==='newest') data=[...data].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
