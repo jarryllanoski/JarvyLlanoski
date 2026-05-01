@@ -2826,18 +2826,28 @@ function openCourierEdit(i){
   openOverlay('delOverlay');
 }
 
+let _editExtraIdx=null;
 function openExtraEdit(i){
-  const v=S.extraFields[i];
+  _editExtraIdx=i;
+  const f=S.extraFields[i];
+  const n=typeof f==='string'?f:(f.name||'');
   const overlay=document.getElementById('delOverlay');
   const sheet=overlay.querySelector('.sheet');
   sheet.innerHTML=`<div class="sheet-handle"></div>
     <div class="sheet-title">✏️ Editar Campo</div>
-    <div class="fg"><label class="fl">Nombre</label><input class="fi" id="editExtraInp" value="${v}" maxlength="40"></div>
+    <div class="fg"><label class="fl">Nombre</label><input class="fi" id="editExtraInp" value="${n}" maxlength="40"></div>
     <div class="confirm-btns">
       <button class="cbtn-no" onclick="closeOverlay('delOverlay')">Cancelar</button>
-      <button class="cbtn-yes" style="background:var(--blue)" onclick="S.extraFields[${i}]=document.getElementById('editExtraInp').value.trim()||S.extraFields[${i}];save();loadCfgUI();closeOverlay('delOverlay');toast('✅ Guardado')">Guardar</button>
+      <button class="cbtn-yes" style="background:var(--blue)" onclick="saveExtraEdit()">Guardar</button>
     </div>`;
   openOverlay('delOverlay');
+}
+function saveExtraEdit(){
+  const i=_editExtraIdx;if(i===null||i===undefined)return;
+  const f=S.extraFields[i];
+  const n=document.getElementById('editExtraInp').value.trim()||(typeof f==='string'?f:f.name||'');
+  S.extraFields[i]={name:n,required:typeof f==='object'?!!f.required:false,visible:typeof f==='object'?f.visible!==false:true};
+  save();loadCfgUI();closeOverlay('delOverlay');toast('✅ Guardado');
 }
 
 function saveConfig(){
