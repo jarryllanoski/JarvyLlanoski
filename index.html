@@ -2943,7 +2943,7 @@ function confirmDelItem(type,idx){
   let name='';
   if(type==='label') name=S.labels[idx];
   else if(type==='courier') name=S.couriers[idx];
-  else name=S.extraFields[idx];
+  else name=typeof S.extraFields[idx]==='string'?S.extraFields[idx]:(S.extraFields[idx].name||'campo');
   if(type==='courier'&&FIXED_COURIERS.includes(name)){toast('⚠️ Este courier es fijo y no se puede eliminar');return}
   $('delMsg').textContent=`¿Eliminar "${name}"? Esto no se puede deshacer.`;
   $('delYes').style.background='var(--red)';
