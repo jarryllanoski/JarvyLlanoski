@@ -20,6 +20,7 @@
     --blue:  #388bfd;
     --red:   #f78166;
     --yellow:#e3b341;
+    --purple:#a371f7;
   }
 
   body {
@@ -38,7 +39,6 @@
     max-width: 440px;
   }
 
-  /* ── Header ── */
   .biz-header {
     background: var(--bg2);
     border: 1px solid var(--bd);
@@ -47,23 +47,9 @@
     margin-bottom: 16px;
     text-align: center;
   }
-  .biz-name {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .biz-city {
-    font-size: 13px;
-    color: var(--text2);
-    margin-bottom: 12px;
-  }
-  .biz-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: center;
-  }
+  .biz-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .biz-city { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+  .biz-meta { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
   .biz-badge {
     background: var(--bg3);
     border: 1px solid var(--bd);
@@ -72,13 +58,8 @@
     font-size: 11px;
     color: var(--text2);
   }
-  .biz-badge.warn {
-    color: var(--yellow);
-    border-color: rgba(227,179,65,.4);
-    background: rgba(227,179,65,.08);
-  }
+  .biz-badge.warn { color: var(--yellow); border-color: rgba(227,179,65,.4); background: rgba(227,179,65,.08); }
 
-  /* ── Form card ── */
   .form-card {
     background: var(--bg2);
     border: 1px solid var(--bd);
@@ -95,7 +76,6 @@
     text-transform: uppercase;
   }
 
-  /* ── Field group ── */
   .fg { margin-bottom: 14px; }
   .fl {
     display: block;
@@ -106,6 +86,7 @@
     text-transform: uppercase;
     margin-bottom: 5px;
   }
+  .fl .req { color: var(--red); margin-left: 2px; }
   .fi, .fs {
     width: 100%;
     background: var(--bg3);
@@ -120,9 +101,7 @@
     appearance: none;
     -webkit-appearance: none;
   }
-  .fi:focus, .fs:focus {
-    border-color: var(--blue);
-  }
+  .fi:focus, .fs:focus { border-color: var(--blue); }
   .fi::placeholder { color: var(--text2); }
   textarea.fi { resize: vertical; }
   .fs {
@@ -133,15 +112,9 @@
     cursor: pointer;
   }
   .fi.err, .fs.err { border-color: var(--red); }
-  .field-err {
-    font-size: 11px;
-    color: var(--red);
-    margin-top: 4px;
-    display: none;
-  }
+  .field-err { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
   .field-err.show { display: block; }
 
-  /* ── Buttons ── */
   .btn-primary {
     width: 100%;
     background: linear-gradient(135deg, #1a7f37, var(--green));
@@ -197,14 +170,9 @@
   }
   .btn-wa:hover { opacity: .9; }
 
-  /* ── Spinner ── */
-  .spinner-wrap {
-    text-align: center;
-    padding: 60px 20px;
-  }
+  .spinner-wrap { text-align: center; padding: 60px 20px; }
   .spinner {
-    width: 44px;
-    height: 44px;
+    width: 44px; height: 44px;
     border: 3px solid var(--bd);
     border-top-color: var(--green);
     border-radius: 50%;
@@ -212,31 +180,13 @@
     margin: 0 auto 16px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner-txt {
-    color: var(--text2);
-    font-size: 14px;
-  }
+  .spinner-txt { color: var(--text2); font-size: 14px; }
 
-  /* ── Success state ── */
-  .success-wrap {
-    text-align: center;
-    padding: 20px;
-  }
-  .success-icon {
-    font-size: 56px;
-    margin-bottom: 12px;
-  }
-  .success-ttl {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 8px;
-  }
-  .success-sub {
-    font-size: 13px;
-    color: var(--text2);
-    margin-bottom: 20px;
-  }
+  .success-wrap { text-align: center; padding: 20px; }
+  .success-icon { font-size: 56px; margin-bottom: 12px; }
+  .success-ttl { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .success-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+
   .summary-card {
     background: var(--bg3);
     border: 1px solid var(--bd);
@@ -245,31 +195,17 @@
     text-align: left;
     margin-bottom: 16px;
   }
-  .summary-card .row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-size: 13px;
-  }
+  .summary-card .row { display: flex; gap: 8px; margin-bottom: 8px; font-size: 13px; }
   .summary-card .row:last-child { margin-bottom: 0; }
-  .summary-card .lbl {
-    color: var(--text2);
-    min-width: 80px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding-top: 1px;
-  }
-  .summary-card .val {
-    color: var(--text);
-    flex: 1;
-  }
+  .summary-card .lbl { color: var(--text2); min-width: 80px; font-size: 11px; font-weight: 600; text-transform: uppercase; padding-top: 1px; }
+  .summary-card .val { color: var(--text); flex: 1; }
 
-  /* ── Error state ── */
-  .error-wrap {
-    text-align: center;
-    padding: 20px;
-  }
+  .used-wrap { text-align: center; padding: 20px; }
+  .used-icon { font-size: 56px; margin-bottom: 12px; }
+  .used-ttl { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .used-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+
+  .error-wrap { text-align: center; padding: 20px; }
   .error-icon { font-size: 48px; margin-bottom: 12px; }
   .error-ttl { font-size: 18px; font-weight: 700; color: var(--red); margin-bottom: 8px; }
   .error-msg { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
@@ -284,13 +220,8 @@
     margin-bottom: 16px;
     text-align: left;
   }
-  .error-box .note {
-    font-size: 11px;
-    color: var(--text2);
-    margin-top: 6px;
-  }
+  .error-box .note { font-size: 11px; color: var(--text2); margin-top: 6px; }
 
-  /* ── Accordion for backup ── */
   details {
     background: var(--bg3);
     border: 1px solid var(--bd);
@@ -315,19 +246,21 @@
     word-break: break-all;
   }
 
-  /* ── Footer ── */
-  .footer {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text2);
-    padding: 20px 0 10px;
-    opacity: .5;
+  .courier-only {
+    background: var(--bg3);
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 600;
   }
+
+  .footer { text-align: center; font-size: 11px; color: var(--text2); padding: 20px 0 10px; opacity: .5; }
 </style>
 </head>
 <body>
 <div class="container">
-  <!-- Content injected by JS -->
   <div id="root">
     <div class="spinner-wrap">
       <div class="spinner"></div>
@@ -343,138 +276,158 @@
 (function () {
   'use strict';
 
-  /* ── Helpers ───────────────────────────────────────────────────── */
   const root = document.getElementById('root');
-
   function $(id) { return document.getElementById(id); }
-
   function setRoot(html) { root.innerHTML = html; }
 
-  /* ── 1. Resolve Firebase config ────────────────────────────────── */
+  /* ── 1. Resolve Firebase config ── */
   let fbCfg = null;
-
-  // Try localStorage first (same-domain)
   try {
     const stored = localStorage.getItem('dpanel_fb');
     if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.apiKey && parsed.projectId && parsed.workspaceId) {
-        fbCfg = parsed;
-      }
+      const p = JSON.parse(stored);
+      if (p.apiKey && p.projectId && p.workspaceId) fbCfg = p;
     }
   } catch (e) {}
 
-  // Fallback: URL params
+  const params = new URLSearchParams(location.search);
   if (!fbCfg) {
-    const params = new URLSearchParams(location.search);
-    const key  = params.get('key');
-    const proj = params.get('proj');
-    const ws   = params.get('ws');
-    if (key && proj && ws) {
-      fbCfg = { apiKey: key, projectId: proj, workspaceId: ws };
-    }
+    const key = params.get('key'), proj = params.get('proj'), ws = params.get('ws');
+    if (key && proj && ws) fbCfg = { apiKey: key, projectId: proj, workspaceId: ws };
   }
 
-  if (!fbCfg) {
-    showErrorState('No se encontró la configuración de Firebase.', true);
-    return;
-  }
+  const tokenId = params.get('token') || null;
 
-  /* ── 2. Init Firebase ───────────────────────────────────────────── */
+  if (!fbCfg) { showErrorState('No se encontró la configuración. Usa el link proporcionado.', true); return; }
+
+  /* ── 2. Init Firebase ── */
   let db;
   try {
     if (!firebase.apps.length) {
       firebase.initializeApp({
-        apiKey:     fbCfg.apiKey,
-        projectId:  fbCfg.projectId,
+        apiKey: fbCfg.apiKey,
+        projectId: fbCfg.projectId,
         authDomain: fbCfg.projectId + '.firebaseapp.com',
       });
     }
     db = firebase.firestore();
-  } catch (e) {
-    showErrorState('Error al inicializar Firebase: ' + e.message, false);
-    return;
-  }
+  } catch (e) { showErrorState('Error al inicializar Firebase: ' + e.message, false); return; }
 
-  /* ── 3. Load workspace ──────────────────────────────────────────── */
-  db.collection('workspaces').doc(fbCfg.workspaceId).get()
-    .then(snap => {
-      if (!snap.exists) {
-        showErrorState('Espacio de trabajo no encontrado. Verifica el link.', false);
-        return;
+  /* ── 3. Load workspace (+ token if present) ── */
+  const wsRef = db.collection('workspaces').doc(fbCfg.workspaceId);
+  const promises = [wsRef.get()];
+  if (tokenId) promises.push(db.collection('workspaces').doc(fbCfg.workspaceId).collection('tokens').doc(tokenId).get());
+
+  Promise.all(promises)
+    .then(([wsSnap, tokenSnap]) => {
+      if (!wsSnap.exists) { showErrorState('Espacio de trabajo no encontrado. Verifica el link.', false); return; }
+
+      // Token validation
+      if (tokenId && tokenSnap) {
+        if (!tokenSnap.exists) { showErrorState('Este link no es válido o ya fue eliminado.', false); return; }
+        const tok = tokenSnap.data();
+        if (tok.expiresAt && new Date() > new Date(tok.expiresAt)) {
+          showExpiredState(); return;
+        }
+        if (tok.singleUse && tok.used) {
+          showUsedState(tok); return;
+        }
       }
-      renderForm(snap.data());
+
+      renderForm(wsSnap.data());
     })
-    .catch(err => {
-      showErrorState('Error de conexión: ' + err.message, false);
+    .catch(err => showErrorState('Error de conexión: ' + err.message, false));
+
+  /* ── 4. Build and render form ── */
+  function renderForm(ws) {
+    const cfg          = ws.config        || {};
+    const dispatch     = ws.dispatch      || {};
+    const couriers     = ws.couriers      || [];
+    const courierAct   = ws.courierActive || {};
+    const courierTypes = ws.courierTypes  || {};
+    const extraFields  = (ws.extraFields  || []).filter(f => {
+      if (typeof f === 'string') return true;
+      return f.visible !== false;
     });
 
-  /* ── 4. Build and render form ───────────────────────────────────── */
-  function renderForm(ws) {
-    const cfg         = ws.config       || {};
-    const dispatch    = ws.dispatch     || {};
-    const couriers    = ws.couriers     || [];
-    const courierAct  = ws.courierActive || {};
-    const extraFields = ws.extraFields  || [];
-
-    const bizName    = cfg.name  || 'Formulario de Pedido';
-    const bizPhone   = cfg.phone || '';
-    const bizCity    = cfg.city  || '';
-    const days       = Array.isArray(dispatch.days) ? dispatch.days : [];
-    const cutHour    = dispatch.cutHour    != null ? Number(dispatch.cutHour)    : null;
+    const bizName  = cfg.name  || 'Formulario de Pedido';
+    const bizPhone = cfg.phone || '';
+    const bizCity  = cfg.city  || '';
+    const days     = Array.isArray(dispatch.days) ? dispatch.days : [];
+    const cutHour  = dispatch.cutHour != null ? Number(dispatch.cutHour) : null;
     const anticipation = dispatch.anticipation != null ? Number(dispatch.anticipation) : 0;
 
     const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     const dayLabels = days.map(d => DAY_NAMES[d] || d).join(', ');
-
     const activeCouriers = couriers.filter(c => courierAct[c] !== false);
 
     // Cutoff warning
-    const now = new Date();
-    const todayDay = now.getDay();
     let cutoffWarn = '';
     if (cutHour !== null) {
+      const now = new Date();
       const nowH = now.getHours() + now.getMinutes() / 60;
       if (nowH >= cutHour) {
-        const cutStr = cutHour.toString().padStart(2,'0') + ':00';
-        cutoffWarn = `⚠️ Pasó la hora de corte (${cutStr}). Tu pedido se procesará el siguiente día disponible.`;
+        const cutStr = String(Math.floor(cutHour)).padStart(2,'0') + ':00';
+        cutoffWarn = `⚠️ Pasó la hora de corte (${cutStr}). Pedido procesado el siguiente día disponible.`;
       }
     }
 
-    // Compute min date for dispatch
     const minDate = computeMinDate(anticipation, days);
 
-    /* Header HTML */
-    let headerHtml = `
+    // Header
+    const headerHtml = `
       <div class="biz-header">
         <div class="biz-name">${esc(bizName)}</div>
         ${bizCity ? `<div class="biz-city">📍 ${esc(bizCity)}</div>` : ''}
         <div class="biz-meta">
           ${dayLabels ? `<span class="biz-badge">📅 ${esc(dayLabels)}</span>` : ''}
-          ${cutHour !== null ? `<span class="biz-badge">⏰ Corte ${String(cutHour).padStart(2,'0')}:00</span>` : ''}
+          ${cutHour !== null ? `<span class="biz-badge">⏰ Corte ${String(Math.floor(cutHour)).padStart(2,'0')}:00</span>` : ''}
           ${cutoffWarn ? `<span class="biz-badge warn">${cutoffWarn}</span>` : ''}
         </div>
-      </div>
-    `;
+      </div>`;
 
-    /* Extra fields HTML */
+    // Extra fields HTML (visible only)
     let extraHtml = '';
     extraFields.forEach(ef => {
-      const fname = typeof ef === 'string' ? ef : (ef.name || ef);
+      const fname   = typeof ef === 'string' ? ef : (ef.name || ef);
+      const isReq   = typeof ef === 'object' && !!ef.required;
       extraHtml += `
         <div class="fg">
-          <label class="fl" for="ex_${esc(fname)}">${esc(fname)}</label>
-          <input class="fi" id="ex_${esc(fname)}" data-extra="${esc(fname)}" placeholder="${esc(fname)}">
-        </div>
-      `;
+          <label class="fl" for="ex_${esc(fname)}">${esc(fname)}${isReq ? '<span class="req">*</span>' : ''}</label>
+          <input class="fi" id="ex_${esc(fname)}" data-extra="${esc(fname)}" data-req="${isReq?'1':'0'}" placeholder="${esc(fname)}">
+          ${isReq ? `<div class="field-err" id="exerr_${esc(fname)}">Este campo es obligatorio</div>` : ''}
+        </div>`;
     });
 
-    /* Courier options */
-    const courierOptions = activeCouriers.length
-      ? activeCouriers.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('')
-      : '<option value="">— Sin courier configurado —</option>';
+    // Courier select or display
+    let courierHtml = '';
+    const singleCourier = activeCouriers.length === 1 ? activeCouriers[0] : null;
+    if (singleCourier) {
+      courierHtml = `
+        <div class="fg">
+          <label class="fl">Courier</label>
+          <div class="courier-only">${esc(singleCourier)}</div>
+          <input type="hidden" id="f_courier" value="${esc(singleCourier)}">
+        </div>`;
+    } else {
+      const opts = activeCouriers.length
+        ? activeCouriers.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('')
+        : '<option value="">— Sin courier configurado —</option>';
+      courierHtml = `
+        <div class="fg">
+          <label class="fl">Courier <span class="req">*</span></label>
+          <select class="fs" id="f_courier" required onchange="updateAddressLabel()">
+            <option value="">— Selecciona un courier —</option>
+            ${opts}
+          </select>
+          <div class="field-err" id="err_courier">Selecciona un courier</div>
+        </div>`;
+    }
 
-    /* Main form HTML */
+    // Address field — label changes dynamically based on courier type
+    const initialType = singleCourier ? (courierTypes[singleCourier] || 'delivery') : 'delivery';
+    const addrLabel = initialType === 'agencia' ? 'Agencia de destino' : 'Dirección de destino';
+
     const formHtml = `
       ${headerHtml}
       <div class="form-card">
@@ -482,13 +435,13 @@
         <form id="orderForm" novalidate autocomplete="off">
 
           <div class="fg">
-            <label class="fl" for="f_name">Nombre completo *</label>
+            <label class="fl" for="f_name">Nombre completo <span class="req">*</span></label>
             <input class="fi" id="f_name" type="text" placeholder="Juan Pérez" required>
             <div class="field-err" id="err_name">Ingresa tu nombre completo</div>
           </div>
 
           <div class="fg">
-            <label class="fl" for="f_phone">Teléfono *</label>
+            <label class="fl" for="f_phone">Teléfono <span class="req">*</span></label>
             <input class="fi" id="f_phone" type="tel" placeholder="987654321" maxlength="9" required>
             <div class="field-err" id="err_phone">Ingresa un número de 9 dígitos</div>
           </div>
@@ -498,18 +451,11 @@
             <input class="fi" id="f_dni" type="text" placeholder="12345678" maxlength="12">
           </div>
 
-          <div class="fg">
-            <label class="fl" for="f_courier">Courier *</label>
-            <select class="fs" id="f_courier" required>
-              <option value="">— Selecciona un courier —</option>
-              ${courierOptions}
-            </select>
-            <div class="field-err" id="err_courier">Selecciona un courier</div>
-          </div>
+          ${courierHtml}
 
           <div class="fg">
-            <label class="fl" for="f_address">Agencia o dirección de destino *</label>
-            <textarea class="fi" id="f_address" rows="2" placeholder="Ej. Olva Courier - Av. Lima 123" required></textarea>
+            <label class="fl" for="f_address" id="addrLabel">${esc(addrLabel)} <span class="req">*</span></label>
+            <textarea class="fi" id="f_address" rows="2" placeholder="${initialType === 'agencia' ? 'Ej. Olva Courier - Agencia Lima Centro' : 'Ej. Av. Lima 123, Miraflores'}" required></textarea>
             <div class="field-err" id="err_address">Ingresa la dirección de destino</div>
           </div>
 
@@ -519,8 +465,8 @@
           </div>
 
           <div class="fg">
-            <label class="fl" for="f_notes">Observaciones</label>
-            <textarea class="fi" id="f_notes" rows="2" placeholder="Indicaciones adicionales..."></textarea>
+            <label class="fl" for="f_notes">Pedido / Descripción</label>
+            <textarea class="fi" id="f_notes" rows="2" placeholder="Describe tu pedido o producto..."></textarea>
           </div>
 
           ${extraHtml}
@@ -529,15 +475,14 @@
 
           <button class="btn-primary" type="submit" id="submitBtn">Registrar pedido</button>
         </form>
-      </div>
-    `;
+      </div>`;
 
     setRoot(formHtml);
 
-    // Set min date value if today is after cutoff
-    if (minDate) {
-      $('f_date').value = minDate;
-    }
+    if (minDate) $('f_date').value = minDate;
+
+    // Store courier types for dynamic label updates
+    window._courierTypes = courierTypes;
 
     // Prefill from backup
     try {
@@ -546,21 +491,39 @@
         if (bkp.name)    $('f_name').value    = bkp.name;
         if (bkp.phone)   $('f_phone').value   = bkp.phone;
         if (bkp.dni)     $('f_dni').value     = bkp.dni;
-        if (bkp.courier) $('f_courier').value = bkp.courier;
+        const courierEl = $('f_courier');
+        if (bkp.courier && courierEl && courierEl.tagName === 'SELECT') courierEl.value = bkp.courier;
         if (bkp.address) $('f_address').value = bkp.address;
         if (bkp.date)    $('f_date').value    = bkp.date;
         if (bkp.notes)   $('f_notes').value   = bkp.notes;
+        if (bkp.extra) {
+          document.querySelectorAll('[data-extra]').forEach(el => {
+            if (bkp.extra[el.dataset.extra]) el.value = bkp.extra[el.dataset.extra];
+          });
+        }
       }
     } catch (e) {}
 
-    // Attach submit handler
     $('orderForm').addEventListener('submit', function (e) {
       e.preventDefault();
       handleSubmit(ws, bizName, bizPhone, extraFields);
     });
   }
 
-  /* ── 5. Form submission ─────────────────────────────────────────── */
+  /* ── Dynamic address label ── */
+  window.updateAddressLabel = function () {
+    const sel = $('f_courier');
+    const addr = $('f_address');
+    const lbl = $('addrLabel');
+    if (!sel || !addr || !lbl) return;
+    const courier = sel.value;
+    const ctype = (window._courierTypes || {})[courier] || 'delivery';
+    const isAgencia = ctype === 'agencia';
+    lbl.innerHTML = (isAgencia ? 'Agencia de destino' : 'Dirección de destino') + ' <span class="req">*</span>';
+    addr.placeholder = isAgencia ? 'Ej. Olva Courier - Agencia Lima Centro' : 'Ej. Av. Lima 123, Miraflores';
+  };
+
+  /* ── 5. Form submission ── */
   function handleSubmit(ws, bizName, bizPhone, extraFields) {
     const name    = $('f_name').value.trim();
     const phone   = $('f_phone').value.trim();
@@ -570,45 +533,47 @@
     const date    = $('f_date').value.trim();
     const notes   = $('f_notes').value.trim();
 
-    // Collect extra fields
     const extra = {};
     document.querySelectorAll('[data-extra]').forEach(el => {
       extra[el.dataset.extra] = el.value.trim();
     });
 
-    // Validate
     let valid = true;
     function setErr(fieldId, errId, condition) {
-      const fEl = $(fieldId);
-      const eEl = $(errId);
-      if (!condition) {
-        fEl.classList.remove('err');
-        eEl.classList.remove('show');
-      } else {
-        fEl.classList.add('err');
-        eEl.classList.add('show');
-        valid = false;
-      }
+      const fEl = $(fieldId), eEl = $(errId);
+      if (!condition) { fEl && fEl.classList.remove('err'); eEl && eEl.classList.remove('show'); }
+      else { fEl && fEl.classList.add('err'); eEl && eEl.classList.add('show'); valid = false; }
     }
 
     setErr('f_name',    'err_name',    !name);
     setErr('f_phone',   'err_phone',   !phone || !/^\d{9}$/.test(phone));
-    setErr('f_courier', 'err_courier', !courier);
+    // Only validate courier select if it's actually a select element
+    const courierEl = $('f_courier');
+    if (courierEl && courierEl.tagName === 'SELECT') setErr('f_courier', 'err_courier', !courier);
     setErr('f_address', 'err_address', !address);
+
+    // Validate required extra fields
+    document.querySelectorAll('[data-extra][data-req="1"]').forEach(el => {
+      const errEl = $('exerr_' + el.dataset.extra);
+      if (!el.value.trim()) {
+        el.classList.add('err');
+        if (errEl) errEl.classList.add('show');
+        valid = false;
+      } else {
+        el.classList.remove('err');
+        if (errEl) errEl.classList.remove('show');
+      }
+    });
 
     if (!valid) return;
 
-    // Save backup
-    const bkpData = { name, phone, dni, courier, address, date, notes, extra };
-    try { localStorage.setItem('dpanel_form_bkp', JSON.stringify(bkpData)); } catch (e) {}
+    try { localStorage.setItem('dpanel_form_bkp', JSON.stringify({ name, phone, dni, courier, address, date, notes, extra })); } catch (e) {}
 
-    // Disable button
     const btn = $('submitBtn');
     btn.disabled = true;
     btn.textContent = 'Registrando...';
     $('submitErr').style.display = 'none';
 
-    // Build order object
     const order = {
       id: 'pub_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
       name, phone, dni, address, courier, date, notes,
@@ -625,12 +590,20 @@
       docComprobante: null,
       createdAt: new Date().toISOString(),
       source: 'formulario_publico',
+      tokenId: tokenId || null,
       processed: false,
     };
 
-    // Write to Firestore
-    db.collection('workspaces').doc(fbCfg.workspaceId)
-      .collection('submissions').doc(order.id).set(order)
+    // Write submission + mark token as used (if single-use)
+    const batch = db.batch();
+    batch.set(db.collection('workspaces').doc(fbCfg.workspaceId).collection('submissions').doc(order.id), order);
+    if (tokenId) {
+      batch.update(db.collection('workspaces').doc(fbCfg.workspaceId).collection('tokens').doc(tokenId), {
+        used: true, usedAt: new Date().toISOString(), usedBy: order.id
+      });
+    }
+
+    batch.commit()
       .then(() => {
         try { localStorage.removeItem('dpanel_form_bkp'); } catch (e) {}
         showSuccessState(order, bizName, bizPhone);
@@ -640,27 +613,46 @@
         btn.textContent = 'Registrar pedido';
         const errBox = $('submitErr');
         errBox.style.display = 'block';
-        errBox.innerHTML = `<strong>Error:</strong> ${esc(err.message)}<div class="note">Tus datos están guardados, intenta de nuevo</div>`;
+        errBox.innerHTML = `<strong>Error:</strong> ${esc(err.message)}<div class="note">Tus datos están guardados localmente, intenta de nuevo</div>`;
       });
   }
 
-  /* ── 6. Success state ───────────────────────────────────────────── */
+  /* ── 6. Success state ── */
   function showSuccessState(order, bizName, bizPhone) {
-    const waText = encodeURIComponent(
-      `¡Hola ${bizName}! Acabo de registrar mi pedido:\n` +
-      `👤 Nombre: ${order.name}\n` +
-      `📱 Teléfono: ${order.phone}\n` +
-      `🚚 Courier: ${order.courier}\n` +
-      `📍 Destino: ${order.address}\n` +
-      `📅 Fecha: ${order.date || 'Por definir'}\n` +
-      `📝 Notas: ${order.notes || '—'}\n` +
-      `🆔 ID: ${order.id}`
-    );
-    const waUrl = `https://wa.me/51${bizPhone}?text=${waText}`;
+    const courierType = (window._courierTypes || {})[order.courier] || 'delivery';
+    const addrLabel = courierType === 'agencia' ? 'Agencia' : 'Dirección';
+
+    // Extra fields summary
+    const extraSummary = Object.entries(order.extra || {})
+      .filter(([, v]) => v)
+      .map(([k, v]) => `📌 ${k}: ${v}`)
+      .join('\n');
+
+    // WA message — exact format requested
+    const waLines = [
+      '📦 NUEVO ENVÍO',
+      `👤 Nombre: ${order.name}`,
+      `📱 Teléfono: ${order.phone}`,
+      order.dni ? `🆔 DNI: ${order.dni}` : null,
+      `🚚 Courier: ${order.courier}`,
+      `📍 ${addrLabel}: ${order.address}`,
+      `📅 Fecha: ${order.date ? new Date(order.date+'T12:00:00').toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : 'Por definir'}`,
+      order.notes ? `📝 Pedido: ${order.notes}` : null,
+    ].filter(Boolean);
+
+    if (extraSummary) waLines.push(extraSummary);
+
+    const waText = encodeURIComponent(waLines.join('\n'));
+    const waUrl  = bizPhone ? `https://wa.me/51${bizPhone}?text=${waText}` : null;
 
     const dateDisplay = order.date
       ? new Date(order.date + 'T12:00:00').toLocaleDateString('es-PE', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
       : '—';
+
+    const extraRows = Object.entries(order.extra || {})
+      .filter(([, v]) => v)
+      .map(([k, v]) => `<div class="row"><span class="lbl">${esc(k)}</span><span class="val">${esc(v)}</span></div>`)
+      .join('');
 
     setRoot(`
       <div class="form-card success-wrap">
@@ -670,31 +662,45 @@
         <div class="summary-card">
           <div class="row"><span class="lbl">Nombre</span><span class="val">${esc(order.name)}</span></div>
           <div class="row"><span class="lbl">Teléfono</span><span class="val">${esc(order.phone)}</span></div>
+          ${order.dni ? `<div class="row"><span class="lbl">DNI</span><span class="val">${esc(order.dni)}</span></div>` : ''}
           <div class="row"><span class="lbl">Courier</span><span class="val">${esc(order.courier)}</span></div>
-          <div class="row"><span class="lbl">Destino</span><span class="val">${esc(order.address)}</span></div>
+          <div class="row"><span class="lbl">${esc(addrLabel)}</span><span class="val">${esc(order.address)}</span></div>
           <div class="row"><span class="lbl">Fecha</span><span class="val">${dateDisplay}</span></div>
+          ${order.notes ? `<div class="row"><span class="lbl">Pedido</span><span class="val">${esc(order.notes)}</span></div>` : ''}
+          ${extraRows}
         </div>
-        ${bizPhone ? `<a class="btn-wa" href="${waUrl}" target="_blank" rel="noopener">
-          <span>💬</span> Confirmar por WhatsApp
-        </a>` : ''}
+        ${waUrl ? `<a class="btn-wa" href="${waUrl}" target="_blank" rel="noopener"><span>💬</span> Confirmar por WhatsApp</a>` : ''}
         <button class="btn-sec" onclick="location.reload()">🔄 Registrar otro pedido</button>
-      </div>
-    `);
+      </div>`);
   }
 
-  /* ── 7. Error state ─────────────────────────────────────────────── */
+  /* ── 7. Special states ── */
+  function showUsedState(tok) {
+    setRoot(`
+      <div class="form-card used-wrap">
+        <div class="used-icon">🔒</div>
+        <div class="used-ttl">Este formulario ya fue registrado</div>
+        <div class="used-sub">Este link era de un solo uso y ya fue utilizado.<br>Si crees que es un error, contacta al vendedor para obtener un nuevo link.</div>
+        ${tok.usedAt ? `<div style="font-size:11px;color:var(--text2)">Registrado el ${new Date(tok.usedAt).toLocaleString('es-PE')}</div>` : ''}
+      </div>`);
+  }
+
+  function showExpiredState() {
+    setRoot(`
+      <div class="form-card used-wrap">
+        <div class="used-icon">⌛</div>
+        <div class="used-ttl">Link expirado</div>
+        <div class="used-sub">Este link ya venció y no puede usarse.<br>Solicita un nuevo link al vendedor.</div>
+      </div>`);
+  }
+
   function showErrorState(msg, isConfig) {
     let bkpHtml = '';
     try {
       const bkp = localStorage.getItem('dpanel_form_bkp');
       if (bkp) {
         const parsed = JSON.parse(bkp);
-        bkpHtml = `
-          <details style="margin-top:16px">
-            <summary>💾 Guarda tus datos (toca para ver)</summary>
-            <div class="bkp-content">${esc(JSON.stringify(parsed, null, 2))}</div>
-          </details>
-        `;
+        bkpHtml = `<details style="margin-top:16px"><summary>💾 Guarda tus datos (toca para ver)</summary><div class="bkp-content">${esc(JSON.stringify(parsed,null,2))}</div></details>`;
       }
     } catch (e) {}
 
@@ -705,38 +711,20 @@
         <div class="error-msg">${esc(msg)}</div>
         ${bkpHtml}
         <button class="btn-sec" onclick="location.reload()" style="margin-top:16px">🔄 Intentar de nuevo</button>
-      </div>
-    `);
+      </div>`);
   }
 
-  /* ── 8. Utilities ───────────────────────────────────────────────── */
-
-  /** Escape HTML special chars */
+  /* ── 8. Utilities ── */
   function esc(str) {
     if (str == null) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
-  /**
-   * Compute the minimum allowed date for dispatch.
-   * Adds `anticipation` days from today and finds the next allowed dispatch day.
-   */
   function computeMinDate(anticipation, allowedDays) {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() + Math.max(0, anticipation));
-
-    // If no days restriction, just return the date after anticipation
-    if (!allowedDays || allowedDays.length === 0) {
-      return dateStr(d);
-    }
-
-    // Find the next day that matches an allowed dispatch day (max 14 iterations)
+    if (!allowedDays || allowedDays.length === 0) return dateStr(d);
     for (let i = 0; i < 14; i++) {
       if (allowedDays.includes(d.getDay())) break;
       d.setDate(d.getDate() + 1);
@@ -745,10 +733,7 @@
   }
 
   function dateStr(d) {
-    const y  = d.getFullYear();
-    const m  = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${dd}`;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
 })();
