@@ -2314,7 +2314,7 @@ function openForm(id){
   const activeCouriers = S.couriers.filter(c => S.courierActive[c] !== false);
   $('fCourier').innerHTML = (activeCouriers.length ? activeCouriers : S.couriers).map(c=>`<option>${c}</option>`).join('');
   $('fStatus').innerHTML=allStatuses().map(s=>`<option>${s}</option>`).join('');
-  $('extraForm').innerHTML=S.extraFields.map(f=>`<div class="fg"><label class="fl">${f}</label><input class="fi xf" data-f="${f}" placeholder="${f}..."></div>`).join('');
+  $('extraForm').innerHTML=S.extraFields.map(f=>{const nm=f.name||f;return`<div class="fg"><label class="fl">${nm}</label><input class="fi xf" data-f="${nm}" placeholder="${nm}..."></div>`;}).join('');
   _docs={comprobante:null,embalado:null,guia:null};_links=[];
   ['comprobante','embalado','guia'].forEach(sl=>refreshSlot(sl));renderLinks();
   Object.values(DOC_META).flatMap(m=>m.inputs).forEach(i=>{const e=$(i);if(e)e.value=''});
