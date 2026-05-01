@@ -2043,7 +2043,7 @@ function loadDoc(input,slot){
   const file=input.files[0];if(!file)return;
   if(file.size>8*1024*1024){toast('⚠️ Máximo 8MB');return}
   const r=new FileReader();
-  r.onload=e=>{_docs[slot]={d:e.target.result,n:file.name,t:file.type};refreshSlot(slot);toast(slot==='guia'?'🚚 Guía subida ✓':'🧾 Ticket subido ✓')};
+  r.onload=e=>{_docs[slot]={d:e.target.result,n:file.name,t:file.type};refreshSlot(slot);toast(slot==='guia'?'🚚 Guía subida ✓':'🧾 Ticket subido ✓');if(slot==='guia')onAutoFieldChange();};
   r.readAsDataURL(file);
 }
 function refreshSlot(slot){
