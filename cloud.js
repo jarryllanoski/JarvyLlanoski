@@ -11,6 +11,7 @@
 
   let _db = null;
   let _unsub = null;
+  let _unsubSubs = null;
   let _pushTimer = null;
   let _ignoreNext = false; // evita loop: nuestro propio push dispara el listener
 
