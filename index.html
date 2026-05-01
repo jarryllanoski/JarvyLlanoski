@@ -1006,7 +1006,7 @@ const customLabels=S.labels.filter(l=>!FIXED_LABELS.includes(l));
 S.labels=[...FIXED_LABELS,...customLabels];
 const FIXED_COURIERS=['SHALOM','OLVA COURIER','MARVISUR','DINSIDES','DELIVERY','RETIRO EN TIENDA','ENCOMIENDA'];
 FIXED_COURIERS.forEach(c=>{ if(!S.couriers.includes(c)) S.couriers.unshift(c); });
-const save=()=>lsSet('dpanel',JSON.stringify(S));
+const save=()=>{lsSet('dpanel',JSON.stringify(S));if(window._cloud)window._cloud.push();};
 
 /* TOAST */
 function toast(m){const e=$('toastEl');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2600)}
