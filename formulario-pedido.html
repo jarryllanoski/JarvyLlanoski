@@ -189,13 +189,27 @@
   'use strict';
 
   // ══════════════════════════════════════════════════════════════
-  // CONFIGURACIÓN FIREBASE — mismos valores que en index.html
+  // CONFIGURACIÓN FIREBASE — editar si no se usa el panel admin
+  // en el mismo dominio (se usa dpanel_fb del localStorage primero)
   // ══════════════════════════════════════════════════════════════
-  const FIREBASE_CONFIG = {
+  const FIREBASE_CONFIG_FALLBACK = {
     apiKey:    'TU_API_KEY_AQUI',    // AIzaSy...
     projectId: 'TU_PROJECT_ID_AQUI', // mi-proyecto-12345
   };
   // ══════════════════════════════════════════════════════════════
+
+  // Leer credenciales: localStorage (mismo dominio que el panel) > constante de arriba
+  function resolveFirebaseCreds() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('dpanel_fb') || '{}');
+      if (stored.apiKey && stored.projectId) return { apiKey: stored.apiKey, projectId: stored.projectId };
+    } catch (e) {}
+    const fb = FIREBASE_CONFIG_FALLBACK;
+    if (fb.apiKey && !fb.apiKey.includes('TU_') && fb.projectId && !fb.projectId.includes('TU_')) {
+      return { apiKey: fb.apiKey, projectId: fb.projectId };
+    }
+    return null;
+  }
 
   const root = document.getElementById('root');
   function $(id) { return document.getElementById(id); }
@@ -211,13 +225,18 @@
   }
 
   /* ── 2. Inicializar Firebase ── */
+  const creds = resolveFirebaseCreds();
+  if (!creds) {
+    showErrorState('Firebase no configurado. Contacta al administrador.', false);
+    return;
+  }
   let db;
   try {
     if (!firebase.apps.length) {
       firebase.initializeApp({
-        apiKey:     FIREBASE_CONFIG.apiKey,
-        projectId:  FIREBASE_CONFIG.projectId,
-        authDomain: FIREBASE_CONFIG.projectId + '.firebaseapp.com',
+        apiKey:     creds.apiKey,
+        projectId:  creds.projectId,
+        authDomain: creds.projectId + '.firebaseapp.com',
       });
     }
     db = firebase.firestore();
