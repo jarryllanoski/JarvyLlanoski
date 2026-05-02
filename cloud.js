@@ -1,19 +1,17 @@
-// cloud.js — Sincronización Firebase Firestore
+// cloud.js — Sincronización Firebase Firestore (subcollecciones)
 
 (function () {
   'use strict';
 
   const FB_KEY = 'dpanel_fb';
 
-  // Leer config completa de localStorage (apiKey, projectId, workspaceId, enabled)
+  // Credenciales SIEMPRE desde localStorage — nunca hardcodeadas
   let _cfg = {};
   try { _cfg = JSON.parse(localStorage.getItem(FB_KEY) || '{}'); } catch (e) { _cfg = {}; }
 
   let _db = null;
-  let _unsub = null;
-  let _unsubSubs = null;
+  let _unsubs = [];
   let _pushTimer = null;
-  let _ignoreNext = false;
 
   let _deviceId = localStorage.getItem('dpanel_device');
   if (!_deviceId) {
@@ -21,7 +19,7 @@
     localStorage.setItem('dpanel_device', _deviceId);
   }
 
-  /* ── Badge de estado ─────────────────────────────────────────────── */
+  /* ── Badge ─────────────────────────────────────────────────────── */
   function updateBadge(state) {
     const el = document.getElementById('cloudBadge');
     if (!el) return;
@@ -37,64 +35,74 @@
     if (typeof window.updateCloudStatusDot === 'function') window.updateCloudStatusDot();
   }
 
-  /* ── Resolver credenciales Firebase ─────────────────────────────────
-     Prioridad: window.FIREBASE_CONFIG (si no tiene placeholder) > dpanel_fb localStorage */
+  /* ── Credenciales solo desde localStorage ────────────────────── */
   function resolveFirebaseConfig() {
-    const wfc = window.FIREBASE_CONFIG || {};
-    if (wfc.apiKey && !wfc.apiKey.includes('TU_') && wfc.projectId && !wfc.projectId.includes('TU_')) {
-      return { apiKey: wfc.apiKey, projectId: wfc.projectId };
-    }
-    if (_cfg.apiKey && _cfg.projectId) {
-      return { apiKey: _cfg.apiKey, projectId: _cfg.projectId };
-    }
+    if (_cfg.apiKey && _cfg.projectId) return { apiKey: _cfg.apiKey, projectId: _cfg.projectId };
     return null;
   }
 
-  /* ── Eliminar imágenes base64 antes de subir (límite 1 MB) ─────── */
-  function stripImages(state) {
-    const s = JSON.parse(JSON.stringify(state));
-    s.shipments = (s.shipments || []).map(sh => {
-      if (sh.docGuia        && sh.docGuia.d)        sh.docGuia        = { t: sh.docGuia.t,        n: sh.docGuia.n,        _hasImg: true };
-      if (sh.docEmbalado    && sh.docEmbalado.d)    sh.docEmbalado    = { t: sh.docEmbalado.t,    n: sh.docEmbalado.n,    _hasImg: true };
-      if (sh.docComprobante && sh.docComprobante.d) sh.docComprobante = { t: sh.docComprobante.t, n: sh.docComprobante.n, _hasImg: true };
-      return sh;
-    });
-    s.suppliers = (s.suppliers || []).map(sup => {
-      if (sup.cotiz && sup.cotiz.d) sup.cotiz = { t: sup.cotiz.t, n: sup.cotiz.n, _hasImg: true };
-      return sup;
-    });
-    s.trash = [];
+  /* ── Strips / restaura imágenes ──────────────────────────────── */
+  function stripShipmentImages(s) {
+    const sh = Object.assign({}, s);
+    if (sh.docGuia        && sh.docGuia.d)        sh.docGuia        = { t: sh.docGuia.t,        n: sh.docGuia.n,        _hasImg: true };
+    if (sh.docEmbalado    && sh.docEmbalado.d)    sh.docEmbalado    = { t: sh.docEmbalado.t,    n: sh.docEmbalado.n,    _hasImg: true };
+    if (sh.docComprobante && sh.docComprobante.d) sh.docComprobante = { t: sh.docComprobante.t, n: sh.docComprobante.n, _hasImg: true };
+    return sh;
+  }
+
+  function restoreShipmentImages(remote, local) {
+    if (!local) return remote;
+    const s = Object.assign({}, remote);
+    if (s.docGuia        && s.docGuia._hasImg        && local.docGuia        && local.docGuia.d)        s.docGuia        = local.docGuia;
+    if (s.docEmbalado    && s.docEmbalado._hasImg    && local.docEmbalado    && local.docEmbalado.d)    s.docEmbalado    = local.docEmbalado;
+    if (s.docComprobante && s.docComprobante._hasImg && local.docComprobante && local.docComprobante.d) s.docComprobante = local.docComprobante;
     return s;
   }
 
-  /* ── Restaurar imágenes locales al recibir datos remotos ─────────── */
-  function restoreLocalImages(remoteState) {
-    const local = window.S || {};
-    (remoteState.shipments || []).forEach(rsh => {
-      const lsh = (local.shipments || []).find(x => x.id === rsh.id);
-      if (!lsh) return;
-      if (rsh.docGuia        && rsh.docGuia._hasImg        && lsh.docGuia        && lsh.docGuia.d)        rsh.docGuia        = lsh.docGuia;
-      if (rsh.docEmbalado    && rsh.docEmbalado._hasImg    && lsh.docEmbalado    && lsh.docEmbalado.d)    rsh.docEmbalado    = lsh.docEmbalado;
-      if (rsh.docComprobante && rsh.docComprobante._hasImg && lsh.docComprobante && lsh.docComprobante.d) rsh.docComprobante = lsh.docComprobante;
-    });
-    (remoteState.suppliers || []).forEach(rsup => {
-      const lsup = (local.suppliers || []).find(x => x.id === rsup.id);
-      if (lsup && rsup.cotiz && rsup.cotiz._hasImg && lsup.cotiz && lsup.cotiz.d) rsup.cotiz = lsup.cotiz;
-    });
-    remoteState.trash = local.trash || [];
-    return remoteState;
-  }
+  /* ── Log ─────────────────────────────────────────────────────── */
+  function cloudLog(msg) { console.log('[cloud] ' + msg); }
 
-  /* ── Escribir en Firestore ──────────────────────────────────────── */
+  /* ── Batch push completo: config + todos los pedidos ─────────── */
   async function doPush() {
     if (!_db || !_cfg.workspaceId || !_cfg.enabled) return;
     updateBadge('syncing');
     try {
-      const data = stripImages(window.S);
-      data._updatedAt = new Date().toISOString();
-      data._updatedBy = _deviceId;
-      _ignoreNext = true;
-      await _db.collection('workspaces').doc(_cfg.workspaceId).set(data);
+      const S = window.S;
+      const wsRef = _db.collection('workspaces').doc(_cfg.workspaceId);
+      const shipments = S.shipments || [];
+      const now = new Date().toISOString();
+
+      const configData = {
+        config:        S.config,
+        couriers:      S.couriers,
+        courierActive: S.courierActive,
+        courierTypes:  S.courierTypes,
+        extraFields:   S.extraFields,
+        labels:        S.labels,
+        msgTemplates:  S.msgTemplates,
+        dispatch:      S.dispatch,
+        statusPin:     S.statusPin,
+        suppliers:     S.suppliers,
+        formTokens:    S.formTokens || [],
+        _updatedAt:    now,
+        _updatedBy:    _deviceId,
+      };
+
+      const batches = [_db.batch()];
+      let opCount = 1;
+      batches[0].set(wsRef.collection('config').doc('main'), configData);
+
+      for (const s of shipments) {
+        if (opCount >= 499) { batches.push(_db.batch()); opCount = 0; }
+        const stripped = stripShipmentImages(Object.assign({}, s));
+        stripped._updatedAt = now;
+        stripped._updatedBy = _deviceId;
+        batches[batches.length - 1].set(wsRef.collection('pedidos').doc(s.id), stripped);
+        opCount++;
+      }
+
+      cloudLog('Guardando en Firestore (' + (shipments.length + 1) + ' docs)');
+      for (const batch of batches) await batch.commit();
       updateBadge('ok');
     } catch (e) {
       console.error('[cloud] push error:', e);
@@ -108,68 +116,115 @@
     _pushTimer = setTimeout(doPush, 800);
   }
 
-  /* ── Listener principal ─────────────────────────────────────────── */
-  function startListener() {
-    if (_unsub) { _unsub(); _unsub = null; }
-    if (!_db || !_cfg.workspaceId) return;
-    _unsub = _db.collection('workspaces').doc(_cfg.workspaceId).onSnapshot(snap => {
+  /* ── Eliminar un pedido de Firestore ─────────────────────────── */
+  async function deleteShipment(id) {
+    if (!_db || !_cfg.workspaceId || !_cfg.enabled) return;
+    cloudLog('Guardando en Firestore (eliminar pedido ' + id + ')');
+    try {
+      await _db.collection('workspaces').doc(_cfg.workspaceId).collection('pedidos').doc(id).delete();
+    } catch (e) {
+      console.error('[cloud] delete error:', e);
+    }
+  }
+
+  /* ── Listener config ──────────────────────────────────────────── */
+  function listenConfig() {
+    const ref = _db.collection('workspaces').doc(_cfg.workspaceId).collection('config').doc('main');
+    cloudLog('onSnapshot activo (config)');
+    const unsub = ref.onSnapshot(snap => {
       if (!snap.exists) return;
-      if (_ignoreNext) { _ignoreNext = false; return; }
-      const remote = snap.data();
-      if (remote._updatedBy === _deviceId) return;
-      const merged = restoreLocalImages(remote);
-      Object.assign(window.S, merged);
+      const d = snap.data();
+      if (d._updatedBy === _deviceId) return;
+      cloudLog('onSnapshot activo — config desde otro dispositivo');
+      const S = window.S;
+      ['config','couriers','courierActive','courierTypes','extraFields','labels','msgTemplates','dispatch','statusPin','suppliers','formTokens'].forEach(k => {
+        if (d[k] !== undefined) S[k] = d[k];
+      });
+      try { localStorage.setItem('dpanel', JSON.stringify(S)); } catch (e) {}
+      if (window.loadCfgUI) window.loadCfgUI();
+      if (window.render) window.render();
+      if (window.updateStats) window.updateStats();
+      updateBadge('ok');
+      if (window.toast) window.toast('☁️ Configuración actualizada desde otro dispositivo');
+    }, err => { console.error('[cloud] config listener:', err); updateBadge('error'); });
+    _unsubs.push(unsub);
+  }
+
+  /* ── Listener pedidos ─────────────────────────────────────────── */
+  function listenShipments() {
+    const ref = _db.collection('workspaces').doc(_cfg.workspaceId).collection('pedidos');
+    cloudLog('onSnapshot activo (pedidos)');
+    const unsub = ref.onSnapshot(snapshot => {
+      const changes = snapshot.docChanges().filter(c => c.doc.data()._updatedBy !== _deviceId);
+      if (!changes.length) return;
+      cloudLog('onSnapshot activo — ' + changes.length + ' pedido(s) desde otro dispositivo');
+      changes.forEach(change => {
+        const remote = change.doc.data();
+        if (change.type === 'removed') {
+          window.S.shipments = window.S.shipments.filter(s => s.id !== remote.id);
+        } else {
+          const local = window.S.shipments.find(s => s.id === remote.id);
+          const merged = restoreShipmentImages(remote, local);
+          if (local) {
+            Object.assign(local, merged);
+          } else {
+            window.S.shipments.unshift(merged);
+          }
+        }
+      });
       try { localStorage.setItem('dpanel', JSON.stringify(window.S)); } catch (e) {}
       if (window.render) window.render();
       if (window.updateStats) window.updateStats();
       updateBadge('ok');
-      if (window.toast) window.toast('☁️ Datos actualizados desde otro dispositivo');
-    }, err => {
-      console.error('[cloud] listener:', err);
-      updateBadge('error');
-    });
+      if (window.toast) window.toast('☁️ Pedidos actualizados desde otro dispositivo');
+    }, err => { console.error('[cloud] shipments listener:', err); updateBadge('error'); });
+    _unsubs.push(unsub);
   }
 
-  /* ── Listener de submissions del formulario público ─────────────── */
-  function startSubmissionsListener() {
-    if (_unsubSubs) { _unsubSubs(); _unsubSubs = null; }
-    if (!_db || !_cfg.workspaceId) return;
-    _unsubSubs = _db.collection('workspaces').doc(_cfg.workspaceId)
-      .collection('submissions')
-      .where('processed', '==', false)
-      .onSnapshot(snapshot => {
-        const newOnes = [];
-        snapshot.docChanges().forEach(change => {
-          if (change.type !== 'added') return;
-          const sub = change.doc.data();
-          const ref = change.doc.ref;
-          if ((window.S.shipments || []).find(s => s.id === sub.id)) {
-            ref.update({ processed: true }).catch(() => {});
-            return;
-          }
-          const { processed, source, ...shipment } = sub;
-          newOnes.push({ shipment, ref });
-        });
-        if (!newOnes.length) return;
-        newOnes.forEach(({ shipment, ref }) => {
-          window.S.shipments.unshift(shipment);
-          ref.update({ processed: true }).catch(() => {});
-        });
-        try { localStorage.setItem('dpanel', JSON.stringify(window.S)); } catch (e) {}
-        if (window.render) window.render();
-        if (window.updateStats) window.updateStats();
-        const names = newOnes.map(({ shipment: s }) => s.name).join(', ');
-        const msg = newOnes.length === 1
-          ? `📥 Nuevo pedido del formulario: ${names}`
-          : `📥 ${newOnes.length} nuevos pedidos: ${names}`;
-        if (window.toast) window.toast(msg);
-      }, err => { console.error('[cloud] submissions listener:', err); });
+  /* ── Listener submissions del formulario público ─────────────── */
+  function listenSubmissions() {
+    const ref = _db.collection('workspaces').doc(_cfg.workspaceId)
+      .collection('submissions').where('processed', '==', false);
+    cloudLog('onSnapshot activo (submissions)');
+    const unsub = ref.onSnapshot(snapshot => {
+      const newOnes = [];
+      snapshot.docChanges().forEach(change => {
+        if (change.type !== 'added') return;
+        const sub = change.doc.data();
+        const docRef = change.doc.ref;
+        if ((window.S.shipments || []).find(s => s.id === sub.id)) {
+          docRef.update({ processed: true }).catch(() => {});
+          return;
+        }
+        // eslint-disable-next-line no-unused-vars
+        const { processed, source, ...shipment } = sub;
+        newOnes.push({ shipment, docRef });
+      });
+      if (!newOnes.length) return;
+      newOnes.forEach(({ shipment, docRef }) => {
+        window.S.shipments.unshift(shipment);
+        docRef.update({ processed: true }).catch(() => {});
+        // Mirror to pedidos subcollection
+        const stripped = stripShipmentImages(Object.assign({}, shipment));
+        stripped._updatedAt = new Date().toISOString();
+        stripped._updatedBy = _deviceId;
+        _db.collection('workspaces').doc(_cfg.workspaceId).collection('pedidos').doc(shipment.id).set(stripped).catch(() => {});
+      });
+      try { localStorage.setItem('dpanel', JSON.stringify(window.S)); } catch (e) {}
+      if (window.render) window.render();
+      if (window.updateStats) window.updateStats();
+      const names = newOnes.map(({ shipment: s }) => s.name).join(', ');
+      const msg = newOnes.length === 1
+        ? `📥 Nuevo pedido del formulario: ${names}`
+        : `📥 ${newOnes.length} nuevos pedidos: ${names}`;
+      if (window.toast) window.toast(msg);
+    }, err => { console.error('[cloud] submissions listener:', err); });
+    _unsubs.push(unsub);
   }
 
-  /* ── Inicializar Firebase ───────────────────────────────────────── */
+  /* ── Inicializar Firebase ─────────────────────────────────────── */
   async function init(cfg) {
     _cfg = Object.assign({}, _cfg, cfg);
-    // Guardar config completa (preservar apiKey/projectId existentes)
     try { localStorage.setItem(FB_KEY, JSON.stringify(_cfg)); } catch (e) {}
 
     if (!_cfg.workspaceId || !_cfg.enabled) {
@@ -177,39 +232,62 @@
       return;
     }
 
-    const creds = resolveFirebaseConfig();
-    if (!creds) {
+    if (!_cfg.apiKey || !_cfg.projectId) {
       updateBadge('error');
-      if (window.toast) window.toast('❌ Ingresa las credenciales Firebase en ⚙️ Configuración');
+      if (window.toast) window.toast('❌ Ingresa el API Key y Project ID en ⚙️ Configuración');
       return;
     }
 
     try {
       if (!firebase.apps.length) {
         firebase.initializeApp({
-          apiKey:     creds.apiKey,
-          projectId:  creds.projectId,
-          authDomain: creds.projectId + '.firebaseapp.com',
+          apiKey:     _cfg.apiKey,
+          projectId:  _cfg.projectId,
+          authDomain: _cfg.projectId + '.firebaseapp.com',
         });
       }
       _db = firebase.firestore();
 
-      const snap = await _db.collection('workspaces').doc(_cfg.workspaceId).get();
-      if (!snap.exists) {
-        updateBadge('syncing');
-        await doPush();
-        if (window.toast) window.toast('☁️ Datos migrados a la nube exitosamente');
-      } else {
-        const merged = restoreLocalImages(snap.data());
-        Object.assign(window.S, merged);
-        try { localStorage.setItem('dpanel', JSON.stringify(window.S)); } catch (e) {}
-        if (window.render) window.render();
-        if (window.updateStats) window.updateStats();
+      cloudLog('Leyendo desde Firestore');
+
+      const wsRef = _db.collection('workspaces').doc(_cfg.workspaceId);
+      const [configSnap, shipmentsSnap] = await Promise.all([
+        wsRef.collection('config').doc('main').get(),
+        wsRef.collection('pedidos').get(),
+      ]);
+
+      const S = window.S;
+
+      if (configSnap.exists) {
+        const d = configSnap.data();
+        ['config','couriers','courierActive','courierTypes','extraFields','labels','msgTemplates','dispatch','statusPin','suppliers','formTokens'].forEach(k => {
+          if (d[k] !== undefined) S[k] = d[k];
+        });
       }
 
-      startListener();
-      startSubmissionsListener();
+      if (!shipmentsSnap.empty) {
+        S.shipments = shipmentsSnap.docs.map(doc => {
+          const r = doc.data();
+          const local = S.shipments.find(s => s.id === r.id);
+          return restoreShipmentImages(r, local);
+        });
+        S.shipments.sort((a, b) => ((b.createdAt || '') > (a.createdAt || '') ? 1 : -1));
+      } else if (!configSnap.exists) {
+        cloudLog('Guardando en Firestore (migración inicial)');
+        await doPush();
+        if (window.toast) window.toast('☁️ Datos migrados a la nube exitosamente');
+      }
+
+      try { localStorage.setItem('dpanel', JSON.stringify(S)); } catch (e) {}
+      if (window.render) window.render();
+      if (window.updateStats) window.updateStats();
+      if (window.loadCfgUI) window.loadCfgUI();
+
+      listenConfig();
+      listenShipments();
+      listenSubmissions();
       updateBadge('ok');
+
     } catch (e) {
       console.error('[cloud] init error:', e);
       updateBadge('error');
@@ -218,9 +296,9 @@
   }
 
   function disconnect() {
-    if (_unsub) { _unsub(); _unsub = null; }
-    if (_unsubSubs) { _unsubSubs(); _unsubSubs = null; }
-    if (_pushTimer) { clearTimeout(_pushTimer); }
+    _unsubs.forEach(u => u());
+    _unsubs = [];
+    clearTimeout(_pushTimer);
     _cfg.enabled = false;
     _db = null;
     try { localStorage.setItem(FB_KEY, JSON.stringify(_cfg)); } catch (e) {}
@@ -228,14 +306,13 @@
   }
 
   function getConfig() {
-    const creds = resolveFirebaseConfig() || {};
-    return Object.assign({}, _cfg, creds);
+    return Object.assign({}, _cfg);
   }
 
-  window._cloud = { init, disconnect, push: schedulePush, getConfig, updateBadge };
+  window._cloud = { init, disconnect, push: schedulePush, deleteShipment, getConfig, updateBadge };
 
-  // Auto-iniciar si ya estaba configurado
-  if (_cfg.enabled && _cfg.workspaceId && (_cfg.apiKey || resolveFirebaseConfig())) {
+  // Auto-iniciar si ya estaba configurado con credenciales en localStorage
+  if (_cfg.enabled && _cfg.workspaceId && _cfg.apiKey && _cfg.projectId) {
     const tryInit = (n) => {
       if (typeof firebase !== 'undefined') {
         init(_cfg);
