@@ -1,16 +1,13 @@
 // cloud.js — Sincronización Firebase Firestore
-// Las credenciales se leen de window.FIREBASE_CONFIG (definido en index.html).
-// Por dispositivo solo se guarda el workspaceId y el estado enabled.
 
 (function () {
   'use strict';
 
   const FB_KEY = 'dpanel_fb';
+
+  // Leer config completa de localStorage (apiKey, projectId, workspaceId, enabled)
   let _cfg = {};
-  try {
-    const raw = JSON.parse(localStorage.getItem(FB_KEY) || '{}');
-    _cfg = { workspaceId: raw.workspaceId || '', enabled: !!raw.enabled };
-  } catch (e) { _cfg = {}; }
+  try { _cfg = JSON.parse(localStorage.getItem(FB_KEY) || '{}'); } catch (e) { _cfg = {}; }
 
   let _db = null;
   let _unsub = null;
@@ -24,7 +21,7 @@
     localStorage.setItem('dpanel_device', _deviceId);
   }
 
-  /* ── Badge de estado ───────────────────────────────────────────── */
+  /* ── Badge de estado ─────────────────────────────────────────────── */
   function updateBadge(state) {
     const el = document.getElementById('cloudBadge');
     if (!el) return;
@@ -40,7 +37,20 @@
     if (typeof window.updateCloudStatusDot === 'function') window.updateCloudStatusDot();
   }
 
-  /* ── Eliminar imágenes base64 antes de subir (límite 1 MB) ──── */
+  /* ── Resolver credenciales Firebase ─────────────────────────────────
+     Prioridad: window.FIREBASE_CONFIG (si no tiene placeholder) > dpanel_fb localStorage */
+  function resolveFirebaseConfig() {
+    const wfc = window.FIREBASE_CONFIG || {};
+    if (wfc.apiKey && !wfc.apiKey.includes('TU_') && wfc.projectId && !wfc.projectId.includes('TU_')) {
+      return { apiKey: wfc.apiKey, projectId: wfc.projectId };
+    }
+    if (_cfg.apiKey && _cfg.projectId) {
+      return { apiKey: _cfg.apiKey, projectId: _cfg.projectId };
+    }
+    return null;
+  }
+
+  /* ── Eliminar imágenes base64 antes de subir (límite 1 MB) ─────── */
   function stripImages(state) {
     const s = JSON.parse(JSON.stringify(state));
     s.shipments = (s.shipments || []).map(sh => {
@@ -57,7 +67,7 @@
     return s;
   }
 
-  /* ── Al recibir datos remotos, restaurar imágenes locales ──────── */
+  /* ── Restaurar imágenes locales al recibir datos remotos ─────────── */
   function restoreLocalImages(remoteState) {
     const local = window.S || {};
     (remoteState.shipments || []).forEach(rsh => {
@@ -102,13 +112,11 @@
   function startListener() {
     if (_unsub) { _unsub(); _unsub = null; }
     if (!_db || !_cfg.workspaceId) return;
-
     _unsub = _db.collection('workspaces').doc(_cfg.workspaceId).onSnapshot(snap => {
       if (!snap.exists) return;
       if (_ignoreNext) { _ignoreNext = false; return; }
       const remote = snap.data();
       if (remote._updatedBy === _deviceId) return;
-
       const merged = restoreLocalImages(remote);
       Object.assign(window.S, merged);
       try { localStorage.setItem('dpanel', JSON.stringify(window.S)); } catch (e) {}
@@ -126,7 +134,6 @@
   function startSubmissionsListener() {
     if (_unsubSubs) { _unsubSubs(); _unsubSubs = null; }
     if (!_db || !_cfg.workspaceId) return;
-
     _unsubSubs = _db.collection('workspaces').doc(_cfg.workspaceId)
       .collection('submissions')
       .where('processed', '==', false)
@@ -156,35 +163,33 @@
           ? `📥 Nuevo pedido del formulario: ${names}`
           : `📥 ${newOnes.length} nuevos pedidos: ${names}`;
         if (window.toast) window.toast(msg);
-      }, err => {
-        console.error('[cloud] submissions listener:', err);
-      });
+      }, err => { console.error('[cloud] submissions listener:', err); });
   }
 
   /* ── Inicializar Firebase ───────────────────────────────────────── */
   async function init(cfg) {
     _cfg = Object.assign({}, _cfg, cfg);
-    try { localStorage.setItem(FB_KEY, JSON.stringify({ workspaceId: _cfg.workspaceId, enabled: _cfg.enabled })); } catch (e) {}
+    // Guardar config completa (preservar apiKey/projectId existentes)
+    try { localStorage.setItem(FB_KEY, JSON.stringify(_cfg)); } catch (e) {}
 
     if (!_cfg.workspaceId || !_cfg.enabled) {
       updateBadge('off');
       return;
     }
 
-    const fbConfig = window.FIREBASE_CONFIG;
-    if (!fbConfig || !fbConfig.apiKey || !fbConfig.projectId) {
-      console.error('[cloud] FIREBASE_CONFIG no está definido en index.html');
+    const creds = resolveFirebaseConfig();
+    if (!creds) {
       updateBadge('error');
-      if (window.toast) window.toast('❌ Completa FIREBASE_CONFIG en el código fuente');
+      if (window.toast) window.toast('❌ Ingresa las credenciales Firebase en ⚙️ Configuración');
       return;
     }
 
     try {
       if (!firebase.apps.length) {
         firebase.initializeApp({
-          apiKey:     fbConfig.apiKey,
-          projectId:  fbConfig.projectId,
-          authDomain: fbConfig.projectId + '.firebaseapp.com',
+          apiKey:     creds.apiKey,
+          projectId:  creds.projectId,
+          authDomain: creds.projectId + '.firebaseapp.com',
         });
       }
       _db = firebase.firestore();
@@ -218,18 +223,19 @@
     if (_pushTimer) { clearTimeout(_pushTimer); }
     _cfg.enabled = false;
     _db = null;
-    try { localStorage.setItem(FB_KEY, JSON.stringify({ workspaceId: _cfg.workspaceId, enabled: false })); } catch (e) {}
+    try { localStorage.setItem(FB_KEY, JSON.stringify(_cfg)); } catch (e) {}
     updateBadge('off');
   }
 
   function getConfig() {
-    return Object.assign({}, _cfg, window.FIREBASE_CONFIG || {});
+    const creds = resolveFirebaseConfig() || {};
+    return Object.assign({}, _cfg, creds);
   }
 
   window._cloud = { init, disconnect, push: schedulePush, getConfig, updateBadge };
 
-  // Auto-iniciar si ya había workspace guardado en este dispositivo
-  if (_cfg.enabled && _cfg.workspaceId) {
+  // Auto-iniciar si ya estaba configurado
+  if (_cfg.enabled && _cfg.workspaceId && (_cfg.apiKey || resolveFirebaseConfig())) {
     const tryInit = (n) => {
       if (typeof firebase !== 'undefined') {
         init(_cfg);
