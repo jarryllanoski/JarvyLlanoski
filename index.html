@@ -2501,25 +2501,26 @@ function toggleExtraFlag(i,flag){
 }
 async function generateToken(){
   const fb=window._cloud?window._cloud.getConfig():{};
-  if(!fb.workspaceId||!fb.apiKey||!fb.projectId){toast('⚠️ Configura Firebase primero');return;}
+  if(!fb.workspaceId||!fb.enabled){toast('⚠️ Conecta la nube primero');return;}
   if(typeof firebase==='undefined'||!firebase.apps.length){toast('⚠️ Firebase no inicializado');return;}
   const label=$('tokenLabel').value.trim();
-  const singleUse=$('tokenSingleUseBtn').classList.contains('on');
+  const unUso=$('tokenSingleUseBtn').classList.contains('on');
   const expiryDays=parseInt($('tokenExpiry').value)||0;
-  const expiresAt=expiryDays?new Date(Date.now()+expiryDays*86400000).toISOString():null;
+  const vencimiento=expiryDays?new Date(Date.now()+expiryDays*86400000).toISOString():null;
   const tokenId='tk_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   try{
-    const db=firebase.firestore();
-    await db.collection('workspaces').doc(fb.workspaceId).collection('tokens').doc(tokenId).set({
-      id:tokenId,label,singleUse,used:false,usedAt:null,expiresAt,createdAt:new Date().toISOString()
+    await firebase.firestore().collection('tokens').doc(tokenId).set({
+      id:tokenId,workspace:fb.workspaceId,label,
+      activo:true,usado:false,usadoEn:null,unUso,
+      creadoEn:new Date().toISOString(),vencimiento,
     });
     const base=location.origin+location.pathname.replace(/[^/]*$/,'')+'formulario-pedido.html';
-    const url=`${base}?ws=${encodeURIComponent(fb.workspaceId)}&key=${encodeURIComponent(fb.apiKey)}&proj=${encodeURIComponent(fb.projectId)}&token=${encodeURIComponent(tokenId)}`;
+    const url=`${base}?token=${encodeURIComponent(tokenId)}`;
     if(!S.formTokens)S.formTokens=[];
-    S.formTokens.unshift({id:tokenId,label,singleUse,expiresAt,createdAt:new Date().toISOString(),used:false,url});
+    S.formTokens.unshift({id:tokenId,label,singleUse:unUso,expiresAt:vencimiento,createdAt:new Date().toISOString(),used:false,url});
     save();renderTokenList();
     $('tokenLabel').value='';
-    navigator.clipboard.writeText(url).then(()=>toast('🔑 Token generado y copiado')).catch(()=>toast('🔑 Token generado — copia el link de la lista'));
+    navigator.clipboard.writeText(url).then(()=>toast('🔑 Token generado y copiado')).catch(()=>toast('🔑 Token generado'));
   }catch(e){toast('❌ Error al crear token: '+e.message);}
 }
 function renderTokenList(){
