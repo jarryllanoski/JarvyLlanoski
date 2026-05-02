@@ -2000,6 +2000,7 @@ function openDel(id){
   $('delYes').onclick=()=>{
     S.trash.push({shipment:s, deletedAt:Date.now()});
     S.shipments=S.shipments.filter(x=>x.id!==id);
+    if(window._cloud) window._cloud.deleteShipment(id);
     save();render();closeOverlay('delOverlay');toast('🗑️ Movido a papelera');
   };
   openOverlay('delOverlay');
