@@ -2608,9 +2608,11 @@ function updateCloudStatusDot(){
 function loadCfgUI(){
   $('cfgName').value=S.config.name||'';$('cfgPhone').value=S.config.phone||'';$('cfgCity').value=S.config.city||'';
   updateAutoStatusBadge();
-  // Poblar campo de workspace
+  // Poblar campos de Firebase
   const fb=window._cloud?window._cloud.getConfig():{};
   if($('cfgWsId'))$('cfgWsId').value=fb.workspaceId||'';
+  if($('cfgFbKey'))$('cfgFbKey').value=fb.apiKey||'';
+  if($('cfgFbProject'))$('cfgFbProject').value=fb.projectId||'';
   if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display=fb.enabled?'block':'none';
   updateCloudStatusDot();
 
