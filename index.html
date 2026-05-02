@@ -1161,6 +1161,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 const $=id=>document.getElementById(id);
 
+// ═══════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN FIREBASE — completar una sola vez para toda la app
+// Obtén estos valores en: console.firebase.google.com
+// ═══════════════════════════════════════════════════════════════════
+window.FIREBASE_CONFIG = {
+  apiKey:    'TU_API_KEY_AQUI',    // AIzaSy...
+  projectId: 'TU_PROJECT_ID_AQUI', // mi-proyecto-12345
+};
+// ═══════════════════════════════════════════════════════════════════
+
 /* STATE */
 let _mem={};
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return _mem[k]||null}}
