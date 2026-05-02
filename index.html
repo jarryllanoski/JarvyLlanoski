@@ -2971,7 +2971,61 @@ $('hdrPhone').textContent=S.config.phone;
 if(S.config.shareUrl) $('shareUrl').textContent=S.config.shareUrl;
 renderChips();
 // Inicializar badge de modo automático después del DOM
-document.addEventListener('DOMContentLoaded',()=>{updateAutoStatusBadge();},{ once:true });
+/* ── Login / sesión ─────────────────────────────────────────────── */
+const _SESSION_KEY = 'dpanel_session';
+const _SESSION_TTL = 30 * 24 * 60 * 60 * 1000; // 30 días
+
+function checkSession(){
+  try{
+    const s=JSON.parse(localStorage.getItem(_SESSION_KEY)||'null');
+    if(s&&s.expires&&Date.now()<s.expires) return true;
+  }catch(e){}
+  return false;
+}
+
+function showPanel(){
+  const ls=document.getElementById('loginScreen');
+  if(ls) ls.style.display='none';
+}
+
+function doLogin(){
+  const code=(document.getElementById('loginCode').value||'').trim();
+  const pin=(document.getElementById('loginPin').value||'').trim();
+  const expectedCode=(S.config.accessCode||'jarvyllanoski').trim();
+  const expectedPin=S.statusPin||'1234';
+  if(code===expectedCode&&pin===expectedPin){
+    localStorage.setItem(_SESSION_KEY,JSON.stringify({expires:Date.now()+_SESSION_TTL}));
+    showPanel();
+    document.getElementById('loginMsg').textContent='';
+  }else{
+    document.getElementById('loginMsg').textContent='⚠️ Código o PIN incorrecto';
+    document.getElementById('loginPin').value='';
+    setTimeout(()=>{ document.getElementById('loginMsg').textContent=''; },2500);
+  }
+}
+
+function doLogout(){
+  localStorage.removeItem(_SESSION_KEY);
+  document.getElementById('loginCode').value='';
+  document.getElementById('loginPin').value='';
+  const ls=document.getElementById('loginScreen');
+  if(ls) ls.style.display='flex';
+  toast('🔒 Sesión cerrada');
+}
+
+function saveAccessCode(){
+  const v=($('cfgAccessCode')||{value:''}).value.trim();
+  if(!v){toast('⚠️ Escribe un código de equipo');return;}
+  S.config.accessCode=v;
+  save();
+  toast('✅ Código de equipo actualizado');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  updateAutoStatusBadge();
+  if(checkSession()) showPanel();
+  // else: loginScreen is visible by default
+},{ once:true });
 if(document.readyState!=='loading') updateAutoStatusBadge();
 
 if(!S.shipments.length){
