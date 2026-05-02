@@ -2470,18 +2470,22 @@ function updateShareUrl(){
 function copyLink(){ navigator.clipboard.writeText($('shareUrl').textContent.trim()).then(()=>toast('🔗 Copiado')).catch(()=>toast('Copia manualmente')); }
 function shareWA(){ window.open(`https://wa.me/?text=${encodeURIComponent('📦 Registra tu pedido aquí: '+$('shareUrl').textContent.trim())}`); }
 function shareTG(){ window.open(`https://t.me/share/url?url=${encodeURIComponent($('shareUrl').textContent.trim())}`); }
-function genFormUrl(){
+async function genFormUrl(){
   const fb=window._cloud?window._cloud.getConfig():{};
-  if(!fb.workspaceId||!fb.apiKey||!fb.projectId){
-    toast('⚠️ Configura Firebase primero (pestaña ⚙️ Configuración)');
-    return;
-  }
+  if(!fb.workspaceId||!fb.enabled){toast('⚠️ Conecta la nube primero (pestaña ⚙️ Configuración)');return;}
+  if(typeof firebase==='undefined'||!firebase.apps.length){toast('⚠️ Firebase no inicializado');return;}
+  const tokenId='tk_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const base=location.origin+location.pathname.replace(/[^/]*$/,'')+'formulario-pedido.html';
-  const url=`${base}?ws=${encodeURIComponent(fb.workspaceId)}&key=${encodeURIComponent(fb.apiKey)}&proj=${encodeURIComponent(fb.projectId)}`;
-  S.config.shareUrl=url;
-  $('shareUrl').textContent=url;
-  save();
-  navigator.clipboard.writeText(url).then(()=>toast('⚡ Link generado y copiado')).catch(()=>toast('⚡ Link generado'));
+  const url=`${base}?token=${encodeURIComponent(tokenId)}`;
+  try{
+    await firebase.firestore().collection('tokens').doc(tokenId).set({
+      id:tokenId,workspace:fb.workspaceId,label:'General',
+      activo:true,usado:false,usadoEn:null,unUso:false,
+      creadoEn:new Date().toISOString(),vencimiento:null,
+    });
+    S.config.shareUrl=url;$('shareUrl').textContent=url;save();
+    navigator.clipboard.writeText(url).then(()=>toast('⚡ Link generado y copiado')).catch(()=>toast('⚡ Link generado'));
+  }catch(e){toast('❌ Error al generar link: '+e.message);}
 }
 /* TOKEN MANAGEMENT */
 function toggleCourierType(name){
