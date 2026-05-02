@@ -34,10 +34,7 @@
     align-items: center;
   }
 
-  .container {
-    width: 100%;
-    max-width: 440px;
-  }
+  .container { width: 100%; max-width: 440px; }
 
   .biz-header {
     background: var(--bg2);
@@ -50,42 +47,14 @@
   .biz-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
   .biz-city { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
   .biz-meta { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-  .biz-badge {
-    background: var(--bg3);
-    border: 1px solid var(--bd);
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 11px;
-    color: var(--text2);
-  }
+  .biz-badge { background: var(--bg3); border: 1px solid var(--bd); border-radius: 20px; padding: 4px 10px; font-size: 11px; color: var(--text2); }
   .biz-badge.warn { color: var(--yellow); border-color: rgba(227,179,65,.4); background: rgba(227,179,65,.08); }
 
-  .form-card {
-    background: var(--bg2);
-    border: 1px solid var(--bd);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 16px;
-  }
-  .form-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text2);
-    letter-spacing: .6px;
-    margin-bottom: 16px;
-    text-transform: uppercase;
-  }
+  .form-card { background: var(--bg2); border: 1px solid var(--bd); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .form-title { font-size: 15px; font-weight: 700; color: var(--text2); letter-spacing: .6px; margin-bottom: 16px; text-transform: uppercase; }
 
   .fg { margin-bottom: 14px; }
-  .fl {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-    letter-spacing: .6px;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-  }
+  .fl { display: block; font-size: 11px; font-weight: 600; color: var(--text2); letter-spacing: .6px; text-transform: uppercase; margin-bottom: 5px; }
   .fl .req { color: var(--red); margin-left: 2px; }
   .fi, .fs {
     width: 100%;
@@ -127,7 +96,6 @@
     padding: 13px;
     cursor: pointer;
     transition: opacity .15s, transform .1s;
-    letter-spacing: .3px;
   }
   .btn-primary:hover { opacity: .9; }
   .btn-primary:active { transform: scale(.98); }
@@ -144,10 +112,8 @@
     font-weight: 500;
     padding: 11px;
     cursor: pointer;
-    transition: background .15s;
     margin-top: 10px;
   }
-  .btn-sec:hover { background: var(--bd); }
 
   .btn-wa {
     width: 100%;
@@ -160,7 +126,6 @@
     font-weight: 600;
     padding: 13px;
     cursor: pointer;
-    transition: opacity .15s;
     margin-top: 10px;
     text-decoration: none;
     display: flex;
@@ -168,7 +133,6 @@
     justify-content: center;
     gap: 6px;
   }
-  .btn-wa:hover { opacity: .9; }
 
   .spinner-wrap { text-align: center; padding: 60px 20px; }
   .spinner {
@@ -182,79 +146,27 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner-txt { color: var(--text2); font-size: 14px; }
 
-  .success-wrap { text-align: center; padding: 20px; }
-  .success-icon { font-size: 56px; margin-bottom: 12px; }
-  .success-ttl { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-  .success-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .status-wrap { text-align: center; padding: 20px; }
+  .status-icon { font-size: 56px; margin-bottom: 12px; }
+  .status-ttl { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .status-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+  .status-ttl.red { color: var(--red); }
 
-  .summary-card {
-    background: var(--bg3);
-    border: 1px solid var(--bd);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: left;
-    margin-bottom: 16px;
-  }
+  .summary-card { background: var(--bg3); border: 1px solid var(--bd); border-radius: 12px; padding: 16px; text-align: left; margin-bottom: 16px; }
   .summary-card .row { display: flex; gap: 8px; margin-bottom: 8px; font-size: 13px; }
   .summary-card .row:last-child { margin-bottom: 0; }
   .summary-card .lbl { color: var(--text2); min-width: 80px; font-size: 11px; font-weight: 600; text-transform: uppercase; padding-top: 1px; }
   .summary-card .val { color: var(--text); flex: 1; }
 
-  .used-wrap { text-align: center; padding: 20px; }
-  .used-icon { font-size: 56px; margin-bottom: 12px; }
-  .used-ttl { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-  .used-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
-
-  .error-wrap { text-align: center; padding: 20px; }
-  .error-icon { font-size: 48px; margin-bottom: 12px; }
-  .error-ttl { font-size: 18px; font-weight: 700; color: var(--red); margin-bottom: 8px; }
-  .error-msg { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
-
-  .error-box {
-    background: rgba(247,129,102,.08);
-    border: 1px solid rgba(247,129,102,.3);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 13px;
-    color: var(--red);
-    margin-bottom: 16px;
-    text-align: left;
-  }
+  .error-box { background: rgba(247,129,102,.08); border: 1px solid rgba(247,129,102,.3); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--red); margin-bottom: 16px; text-align: left; }
   .error-box .note { font-size: 11px; color: var(--text2); margin-top: 6px; }
 
-  details {
-    background: var(--bg3);
-    border: 1px solid var(--bd);
-    border-radius: 10px;
-    overflow: hidden;
-    text-align: left;
-  }
-  summary {
-    padding: 12px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--text2);
-    list-style: none;
-  }
-  summary::-webkit-details-marker { display: none; }
-  .bkp-content {
-    padding: 0 14px 12px;
-    font-size: 12px;
-    color: var(--text2);
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
+  .courier-only { background: var(--bg3); border: 1px solid var(--bd); border-radius: 8px; padding: 9px 12px; font-size: 14px; color: var(--text); font-weight: 600; }
 
-  .courier-only {
-    background: var(--bg3);
-    border: 1px solid var(--bd);
-    border-radius: 8px;
-    padding: 9px 12px;
-    font-size: 14px;
-    color: var(--text);
-    font-weight: 600;
-  }
+  details { background: var(--bg3); border: 1px solid var(--bd); border-radius: 10px; overflow: hidden; text-align: left; }
+  summary { padding: 12px 14px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text2); list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  .bkp-content { padding: 0 14px 12px; font-size: 12px; color: var(--text2); white-space: pre-wrap; word-break: break-all; }
 
   .footer { text-align: center; font-size: 11px; color: var(--text2); padding: 20px 0 10px; opacity: .5; }
 </style>
@@ -276,79 +188,89 @@
 (function () {
   'use strict';
 
+  // ══════════════════════════════════════════════════════════════
+  // CONFIGURACIÓN FIREBASE — mismos valores que en index.html
+  // ══════════════════════════════════════════════════════════════
+  const FIREBASE_CONFIG = {
+    apiKey:    'TU_API_KEY_AQUI',    // AIzaSy...
+    projectId: 'TU_PROJECT_ID_AQUI', // mi-proyecto-12345
+  };
+  // ══════════════════════════════════════════════════════════════
+
   const root = document.getElementById('root');
   function $(id) { return document.getElementById(id); }
   function setRoot(html) { root.innerHTML = html; }
 
-  /* ── 1. Resolve Firebase config ── */
-  let fbCfg = null;
-  try {
-    const stored = localStorage.getItem('dpanel_fb');
-    if (stored) {
-      const p = JSON.parse(stored);
-      if (p.apiKey && p.projectId && p.workspaceId) fbCfg = p;
-    }
-  } catch (e) {}
+  /* ── 1. Leer token desde URL ── */
+  const params  = new URLSearchParams(location.search);
+  const tokenId = params.get('token');
 
-  const params = new URLSearchParams(location.search);
-  if (!fbCfg) {
-    const key = params.get('key'), proj = params.get('proj'), ws = params.get('ws');
-    if (key && proj && ws) fbCfg = { apiKey: key, projectId: proj, workspaceId: ws };
+  if (!tokenId) {
+    showErrorState('Link inválido. No se encontró el código de acceso.', true);
+    return;
   }
 
-  const tokenId = params.get('token') || null;
-
-  if (!fbCfg) { showErrorState('No se encontró la configuración. Usa el link proporcionado.', true); return; }
-
-  /* ── 2. Init Firebase ── */
+  /* ── 2. Inicializar Firebase ── */
   let db;
   try {
     if (!firebase.apps.length) {
       firebase.initializeApp({
-        apiKey: fbCfg.apiKey,
-        projectId: fbCfg.projectId,
-        authDomain: fbCfg.projectId + '.firebaseapp.com',
+        apiKey:     FIREBASE_CONFIG.apiKey,
+        projectId:  FIREBASE_CONFIG.projectId,
+        authDomain: FIREBASE_CONFIG.projectId + '.firebaseapp.com',
       });
     }
     db = firebase.firestore();
-  } catch (e) { showErrorState('Error al inicializar Firebase: ' + e.message, false); return; }
+  } catch (e) {
+    showErrorState('Error al inicializar Firebase: ' + e.message, false);
+    return;
+  }
 
-  /* ── 3. Load workspace (+ token if present) ── */
-  const wsRef = db.collection('workspaces').doc(fbCfg.workspaceId);
-  const promises = [wsRef.get()];
-  if (tokenId) promises.push(db.collection('workspaces').doc(fbCfg.workspaceId).collection('tokens').doc(tokenId).get());
-
-  Promise.all(promises)
-    .then(([wsSnap, tokenSnap]) => {
-      if (!wsSnap.exists) { showErrorState('Espacio de trabajo no encontrado. Verifica el link.', false); return; }
-
-      // Token validation
-      if (tokenId && tokenSnap) {
-        if (!tokenSnap.exists) { showErrorState('Este link no es válido o ya fue eliminado.', false); return; }
-        const tok = tokenSnap.data();
-        if (tok.expiresAt && new Date() > new Date(tok.expiresAt)) {
-          showExpiredState(); return;
-        }
-        if (tok.singleUse && tok.used) {
-          showUsedState(tok); return;
-        }
+  /* ── 3. Buscar token → workspace → config ── */
+  db.collection('tokens').doc(tokenId).get()
+    .then(tokenSnap => {
+      if (!tokenSnap.exists) {
+        showErrorState('Link inválido o no encontrado. Solicita un nuevo enlace.', false);
+        return;
       }
 
-      renderForm(wsSnap.data());
+      const tok = tokenSnap.data();
+
+      if (!tok.activo) {
+        showErrorState('Este link ha sido desactivado. Solicita un nuevo enlace.', false);
+        return;
+      }
+      if (tok.vencimiento && new Date() > new Date(tok.vencimiento)) {
+        showSpecialState('⌛', 'Link expirado', 'Este enlace ha vencido. Solicita un nuevo enlace al vendedor.');
+        return;
+      }
+      if (tok.unUso && tok.usado) {
+        showSpecialState('🔒', 'Formulario ya registrado',
+          'Este link es de un solo uso y ya fue utilizado.\nSolicita un nuevo enlace al vendedor.',
+          tok.usadoEn ? 'Registrado el ' + new Date(tok.usadoEn).toLocaleString('es-PE') : '');
+        return;
+      }
+
+      // Cargar workspace
+      return db.collection('workspaces').doc(tok.workspace).get()
+        .then(wsSnap => {
+          if (!wsSnap.exists) {
+            showErrorState('Espacio de trabajo no encontrado. El negocio aún no ha configurado su panel.', false);
+            return;
+          }
+          renderForm(wsSnap.data(), tok);
+        });
     })
     .catch(err => showErrorState('Error de conexión: ' + err.message, false));
 
-  /* ── 4. Build and render form ── */
-  function renderForm(ws) {
+  /* ── 4. Renderizar formulario ── */
+  function renderForm(ws, tok) {
     const cfg          = ws.config        || {};
     const dispatch     = ws.dispatch      || {};
     const couriers     = ws.couriers      || [];
     const courierAct   = ws.courierActive || {};
     const courierTypes = ws.courierTypes  || {};
-    const extraFields  = (ws.extraFields  || []).filter(f => {
-      if (typeof f === 'string') return true;
-      return f.visible !== false;
-    });
+    const extraFields  = (ws.extraFields  || []).filter(f => typeof f === 'string' || f.visible !== false);
 
     const bizName  = cfg.name  || 'Formulario de Pedido';
     const bizPhone = cfg.phone || '';
@@ -361,20 +283,19 @@
     const dayLabels = days.map(d => DAY_NAMES[d] || d).join(', ');
     const activeCouriers = couriers.filter(c => courierAct[c] !== false);
 
-    // Cutoff warning
+    // Advertencia hora de corte
     let cutoffWarn = '';
     if (cutHour !== null) {
       const now = new Date();
       const nowH = now.getHours() + now.getMinutes() / 60;
       if (nowH >= cutHour) {
-        const cutStr = String(Math.floor(cutHour)).padStart(2,'0') + ':00';
-        cutoffWarn = `⚠️ Pasó la hora de corte (${cutStr}). Pedido procesado el siguiente día disponible.`;
+        cutoffWarn = `⚠️ Pasó la hora de corte (${String(Math.floor(cutHour)).padStart(2,'0')}:00). Tu pedido se procesará el siguiente día disponible.`;
       }
     }
 
     const minDate = computeMinDate(anticipation, days);
 
-    // Header
+    // Header del negocio
     const headerHtml = `
       <div class="biz-header">
         <div class="biz-name">${esc(bizName)}</div>
@@ -386,11 +307,11 @@
         </div>
       </div>`;
 
-    // Extra fields HTML (visible only)
+    // Campos extra visibles
     let extraHtml = '';
     extraFields.forEach(ef => {
-      const fname   = typeof ef === 'string' ? ef : (ef.name || ef);
-      const isReq   = typeof ef === 'object' && !!ef.required;
+      const fname = typeof ef === 'string' ? ef : (ef.name || ef);
+      const isReq = typeof ef === 'object' && !!ef.required;
       extraHtml += `
         <div class="fg">
           <label class="fl" for="ex_${esc(fname)}">${esc(fname)}${isReq ? '<span class="req">*</span>' : ''}</label>
@@ -399,9 +320,9 @@
         </div>`;
     });
 
-    // Courier select or display
-    let courierHtml = '';
+    // Courier: si solo hay uno, se muestra fijo
     const singleCourier = activeCouriers.length === 1 ? activeCouriers[0] : null;
+    let courierHtml = '';
     if (singleCourier) {
       courierHtml = `
         <div class="fg">
@@ -416,7 +337,7 @@
       courierHtml = `
         <div class="fg">
           <label class="fl">Courier <span class="req">*</span></label>
-          <select class="fs" id="f_courier" required onchange="updateAddressLabel()">
+          <select class="fs" id="f_courier" onchange="updateAddressLabel()">
             <option value="">— Selecciona un courier —</option>
             ${opts}
           </select>
@@ -424,9 +345,9 @@
         </div>`;
     }
 
-    // Address field — label changes dynamically based on courier type
+    // Etiqueta de dirección dinámica
     const initialType = singleCourier ? (courierTypes[singleCourier] || 'delivery') : 'delivery';
-    const addrLabel = initialType === 'agencia' ? 'Agencia de destino' : 'Dirección de destino';
+    const addrLabel   = initialType === 'agencia' ? 'Agencia de destino' : 'Dirección de destino';
 
     const formHtml = `
       ${headerHtml}
@@ -455,7 +376,9 @@
 
           <div class="fg">
             <label class="fl" for="f_address" id="addrLabel">${esc(addrLabel)} <span class="req">*</span></label>
-            <textarea class="fi" id="f_address" rows="2" placeholder="${initialType === 'agencia' ? 'Ej. Olva Courier - Agencia Lima Centro' : 'Ej. Av. Lima 123, Miraflores'}" required></textarea>
+            <textarea class="fi" id="f_address" rows="2"
+              placeholder="${initialType === 'agencia' ? 'Ej. Olva Courier - Agencia Lima Centro' : 'Ej. Av. Lima 123, Miraflores'}"
+              required></textarea>
             <div class="field-err" id="err_address">Ingresa la dirección de destino</div>
           </div>
 
@@ -472,7 +395,6 @@
           ${extraHtml}
 
           <div id="submitErr" class="error-box" style="display:none"></div>
-
           <button class="btn-primary" type="submit" id="submitBtn">Registrar pedido</button>
         </form>
       </div>`;
@@ -481,50 +403,40 @@
 
     if (minDate) $('f_date').value = minDate;
 
-    // Store courier types for dynamic label updates
     window._courierTypes = courierTypes;
 
-    // Prefill from backup
+    // Pre-rellenar desde backup
     try {
       const bkp = JSON.parse(localStorage.getItem('dpanel_form_bkp') || 'null');
       if (bkp) {
         if (bkp.name)    $('f_name').value    = bkp.name;
         if (bkp.phone)   $('f_phone').value   = bkp.phone;
         if (bkp.dni)     $('f_dni').value     = bkp.dni;
-        const courierEl = $('f_courier');
-        if (bkp.courier && courierEl && courierEl.tagName === 'SELECT') courierEl.value = bkp.courier;
+        if (bkp.courier) { const c=$('f_courier'); if(c&&c.tagName==='SELECT') c.value=bkp.courier; }
         if (bkp.address) $('f_address').value = bkp.address;
         if (bkp.date)    $('f_date').value    = bkp.date;
         if (bkp.notes)   $('f_notes').value   = bkp.notes;
-        if (bkp.extra) {
-          document.querySelectorAll('[data-extra]').forEach(el => {
-            if (bkp.extra[el.dataset.extra]) el.value = bkp.extra[el.dataset.extra];
-          });
-        }
+        if (bkp.extra) document.querySelectorAll('[data-extra]').forEach(el => { if(bkp.extra[el.dataset.extra]) el.value=bkp.extra[el.dataset.extra]; });
       }
     } catch (e) {}
 
-    $('orderForm').addEventListener('submit', function (e) {
+    $('orderForm').addEventListener('submit', e => {
       e.preventDefault();
-      handleSubmit(ws, bizName, bizPhone, extraFields);
+      handleSubmit(ws, tok, bizName, bizPhone, extraFields);
     });
   }
 
-  /* ── Dynamic address label ── */
+  /* ── Etiqueta dinámica según tipo de courier ── */
   window.updateAddressLabel = function () {
-    const sel = $('f_courier');
-    const addr = $('f_address');
-    const lbl = $('addrLabel');
+    const sel = $('f_courier'), addr = $('f_address'), lbl = $('addrLabel');
     if (!sel || !addr || !lbl) return;
-    const courier = sel.value;
-    const ctype = (window._courierTypes || {})[courier] || 'delivery';
-    const isAgencia = ctype === 'agencia';
-    lbl.innerHTML = (isAgencia ? 'Agencia de destino' : 'Dirección de destino') + ' <span class="req">*</span>';
-    addr.placeholder = isAgencia ? 'Ej. Olva Courier - Agencia Lima Centro' : 'Ej. Av. Lima 123, Miraflores';
+    const ctype = (window._courierTypes || {})[sel.value] || 'delivery';
+    lbl.innerHTML = (ctype === 'agencia' ? 'Agencia de destino' : 'Dirección de destino') + ' <span class="req">*</span>';
+    addr.placeholder = ctype === 'agencia' ? 'Ej. Olva Courier - Agencia Lima Centro' : 'Ej. Av. Lima 123, Miraflores';
   };
 
-  /* ── 5. Form submission ── */
-  function handleSubmit(ws, bizName, bizPhone, extraFields) {
+  /* ── 5. Enviar pedido ── */
+  function handleSubmit(ws, tok, bizName, bizPhone, extraFields) {
     const name    = $('f_name').value.trim();
     const phone   = $('f_phone').value.trim();
     const dni     = $('f_dni').value.trim();
@@ -534,40 +446,30 @@
     const notes   = $('f_notes').value.trim();
 
     const extra = {};
-    document.querySelectorAll('[data-extra]').forEach(el => {
-      extra[el.dataset.extra] = el.value.trim();
-    });
+    document.querySelectorAll('[data-extra]').forEach(el => { extra[el.dataset.extra] = el.value.trim(); });
 
     let valid = true;
-    function setErr(fieldId, errId, condition) {
-      const fEl = $(fieldId), eEl = $(errId);
-      if (!condition) { fEl && fEl.classList.remove('err'); eEl && eEl.classList.remove('show'); }
-      else { fEl && fEl.classList.add('err'); eEl && eEl.classList.add('show'); valid = false; }
+    function setErr(fId, eId, cond) {
+      const fEl=$(fId), eEl=$(eId);
+      if (!cond) { fEl&&fEl.classList.remove('err'); eEl&&eEl.classList.remove('show'); }
+      else { fEl&&fEl.classList.add('err'); eEl&&eEl.classList.add('show'); valid=false; }
     }
 
     setErr('f_name',    'err_name',    !name);
     setErr('f_phone',   'err_phone',   !phone || !/^\d{9}$/.test(phone));
-    // Only validate courier select if it's actually a select element
-    const courierEl = $('f_courier');
-    if (courierEl && courierEl.tagName === 'SELECT') setErr('f_courier', 'err_courier', !courier);
+    const cEl = $('f_courier');
+    if (cEl && cEl.tagName === 'SELECT') setErr('f_courier', 'err_courier', !courier);
     setErr('f_address', 'err_address', !address);
 
-    // Validate required extra fields
     document.querySelectorAll('[data-extra][data-req="1"]').forEach(el => {
       const errEl = $('exerr_' + el.dataset.extra);
-      if (!el.value.trim()) {
-        el.classList.add('err');
-        if (errEl) errEl.classList.add('show');
-        valid = false;
-      } else {
-        el.classList.remove('err');
-        if (errEl) errEl.classList.remove('show');
-      }
+      if (!el.value.trim()) { el.classList.add('err'); errEl&&errEl.classList.add('show'); valid=false; }
+      else { el.classList.remove('err'); errEl&&errEl.classList.remove('show'); }
     });
 
     if (!valid) return;
 
-    try { localStorage.setItem('dpanel_form_bkp', JSON.stringify({ name, phone, dni, courier, address, date, notes, extra })); } catch (e) {}
+    try { localStorage.setItem('dpanel_form_bkp', JSON.stringify({name,phone,dni,courier,address,date,notes,extra})); } catch(e){}
 
     const btn = $('submitBtn');
     btn.disabled = true;
@@ -575,90 +477,79 @@
     $('submitErr').style.display = 'none';
 
     const order = {
-      id: 'pub_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      name, phone, dni, address, courier, date, notes,
-      extra,
+      id: 'pub_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      name, phone, dni, address, courier, date, notes, extra,
       status: 'Nuevo pedido',
-      cost: '',
-      links: [],
-      sel: false,
-      chkGuia: false,
-      chkEmbalado: false,
-      chkComprobante: false,
-      docGuia: null,
-      docEmbalado: null,
-      docComprobante: null,
+      cost: '', links: [], sel: false,
+      chkGuia: false, chkEmbalado: false, chkComprobante: false,
+      docGuia: null, docEmbalado: null, docComprobante: null,
       createdAt: new Date().toISOString(),
       source: 'formulario_publico',
       tokenId: tokenId || null,
       processed: false,
     };
 
-    // Write submission + mark token as used (if single-use)
+    const workspace = tok.workspace;
     const batch = db.batch();
-    batch.set(db.collection('workspaces').doc(fbCfg.workspaceId).collection('submissions').doc(order.id), order);
-    if (tokenId) {
-      batch.update(db.collection('workspaces').doc(fbCfg.workspaceId).collection('tokens').doc(tokenId), {
-        used: true, usedAt: new Date().toISOString(), usedBy: order.id
+    batch.set(db.collection('workspaces').doc(workspace).collection('submissions').doc(order.id), order);
+    if (tok.unUso) {
+      batch.update(db.collection('tokens').doc(tokenId), {
+        usado: true, usadoEn: new Date().toISOString(), usadoPor: order.id,
       });
     }
 
     batch.commit()
       .then(() => {
-        try { localStorage.removeItem('dpanel_form_bkp'); } catch (e) {}
-        showSuccessState(order, bizName, bizPhone);
+        try { localStorage.removeItem('dpanel_form_bkp'); } catch(e){}
+        showSuccessState(order, tok, bizName, bizPhone);
       })
       .catch(err => {
         btn.disabled = false;
         btn.textContent = 'Registrar pedido';
-        const errBox = $('submitErr');
-        errBox.style.display = 'block';
-        errBox.innerHTML = `<strong>Error:</strong> ${esc(err.message)}<div class="note">Tus datos están guardados localmente, intenta de nuevo</div>`;
+        const eb = $('submitErr');
+        eb.style.display = 'block';
+        eb.innerHTML = `<strong>Error:</strong> ${esc(err.message)}<div class="note">Tus datos están guardados localmente, intenta de nuevo</div>`;
       });
   }
 
-  /* ── 6. Success state ── */
-  function showSuccessState(order, bizName, bizPhone) {
-    const courierType = (window._courierTypes || {})[order.courier] || 'delivery';
-    const addrLabel = courierType === 'agencia' ? 'Agencia' : 'Dirección';
+  /* ── 6. Pantalla de éxito ── */
+  function showSuccessState(order, tok, bizName, bizPhone) {
+    const ctype = (window._courierTypes || {})[order.courier] || 'delivery';
+    const addrLabel = ctype === 'agencia' ? 'Agencia' : 'Dirección';
 
-    // Extra fields summary
     const extraSummary = Object.entries(order.extra || {})
       .filter(([, v]) => v)
       .map(([k, v]) => `📌 ${k}: ${v}`)
       .join('\n');
 
-    // WA message — exact format requested
+    const dateDisplay = order.date
+      ? new Date(order.date + 'T12:00:00').toLocaleDateString('es-PE', {weekday:'long',year:'numeric',month:'long',day:'numeric'})
+      : 'Por definir';
+
     const waLines = [
       '📦 NUEVO ENVÍO',
       `👤 Nombre: ${order.name}`,
       `📱 Teléfono: ${order.phone}`,
-      order.dni ? `🆔 DNI: ${order.dni}` : null,
+      order.dni   ? `🆔 DNI: ${order.dni}` : null,
       `🚚 Courier: ${order.courier}`,
       `📍 ${addrLabel}: ${order.address}`,
-      `📅 Fecha: ${order.date ? new Date(order.date+'T12:00:00').toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : 'Por definir'}`,
+      `📅 Fecha: ${dateDisplay}`,
       order.notes ? `📝 Pedido: ${order.notes}` : null,
     ].filter(Boolean);
-
     if (extraSummary) waLines.push(extraSummary);
 
-    const waText = encodeURIComponent(waLines.join('\n'));
-    const waUrl  = bizPhone ? `https://wa.me/51${bizPhone}?text=${waText}` : null;
-
-    const dateDisplay = order.date
-      ? new Date(order.date + 'T12:00:00').toLocaleDateString('es-PE', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
-      : '—';
+    const waUrl = bizPhone ? `https://wa.me/51${bizPhone}?text=${encodeURIComponent(waLines.join('\n'))}` : null;
 
     const extraRows = Object.entries(order.extra || {})
-      .filter(([, v]) => v)
-      .map(([k, v]) => `<div class="row"><span class="lbl">${esc(k)}</span><span class="val">${esc(v)}</span></div>`)
+      .filter(([,v]) => v)
+      .map(([k,v]) => `<div class="row"><span class="lbl">${esc(k)}</span><span class="val">${esc(v)}</span></div>`)
       .join('');
 
     setRoot(`
-      <div class="form-card success-wrap">
-        <div class="success-icon">✅</div>
-        <div class="success-ttl">¡Pedido registrado!</div>
-        <div class="success-sub">Tu pedido fue enviado correctamente. Pronto nos pondremos en contacto.</div>
+      <div class="form-card status-wrap">
+        <div class="status-icon">✅</div>
+        <div class="status-ttl">¡Pedido registrado!</div>
+        <div class="status-sub">Tu pedido fue enviado correctamente. Pronto nos pondremos en contacto.</div>
         <div class="summary-card">
           <div class="row"><span class="lbl">Nombre</span><span class="val">${esc(order.name)}</span></div>
           <div class="row"><span class="lbl">Teléfono</span><span class="val">${esc(order.phone)}</span></div>
@@ -670,27 +561,18 @@
           ${extraRows}
         </div>
         ${waUrl ? `<a class="btn-wa" href="${waUrl}" target="_blank" rel="noopener"><span>💬</span> Confirmar por WhatsApp</a>` : ''}
-        <button class="btn-sec" onclick="location.reload()">🔄 Registrar otro pedido</button>
+        ${!tok.unUso ? `<button class="btn-sec" onclick="location.reload()">🔄 Registrar otro pedido</button>` : ''}
       </div>`);
   }
 
-  /* ── 7. Special states ── */
-  function showUsedState(tok) {
+  /* ── 7. Estados especiales ── */
+  function showSpecialState(icon, title, subtitle, note='') {
     setRoot(`
-      <div class="form-card used-wrap">
-        <div class="used-icon">🔒</div>
-        <div class="used-ttl">Este formulario ya fue registrado</div>
-        <div class="used-sub">Este link era de un solo uso y ya fue utilizado.<br>Si crees que es un error, contacta al vendedor para obtener un nuevo link.</div>
-        ${tok.usedAt ? `<div style="font-size:11px;color:var(--text2)">Registrado el ${new Date(tok.usedAt).toLocaleString('es-PE')}</div>` : ''}
-      </div>`);
-  }
-
-  function showExpiredState() {
-    setRoot(`
-      <div class="form-card used-wrap">
-        <div class="used-icon">⌛</div>
-        <div class="used-ttl">Link expirado</div>
-        <div class="used-sub">Este link ya venció y no puede usarse.<br>Solicita un nuevo link al vendedor.</div>
+      <div class="form-card status-wrap">
+        <div class="status-icon">${icon}</div>
+        <div class="status-ttl">${esc(title)}</div>
+        <div class="status-sub">${esc(subtitle)}</div>
+        ${note ? `<div style="font-size:11px;color:var(--text2)">${esc(note)}</div>` : ''}
       </div>`);
   }
 
@@ -699,22 +581,22 @@
     try {
       const bkp = localStorage.getItem('dpanel_form_bkp');
       if (bkp) {
-        const parsed = JSON.parse(bkp);
-        bkpHtml = `<details style="margin-top:16px"><summary>💾 Guarda tus datos (toca para ver)</summary><div class="bkp-content">${esc(JSON.stringify(parsed,null,2))}</div></details>`;
+        const p = JSON.parse(bkp);
+        bkpHtml = `<details style="margin-top:16px"><summary>💾 Guarda tus datos (toca para ver)</summary><div class="bkp-content">${esc(JSON.stringify(p,null,2))}</div></details>`;
       }
-    } catch (e) {}
+    } catch(e){}
 
     setRoot(`
-      <div class="form-card error-wrap">
-        <div class="error-icon">❌</div>
-        <div class="error-ttl">${isConfig ? 'Formulario no configurado' : 'Error de conexión'}</div>
-        <div class="error-msg">${esc(msg)}</div>
+      <div class="form-card status-wrap">
+        <div class="status-icon">❌</div>
+        <div class="status-ttl red">${isConfig ? 'Link inválido' : 'Error de conexión'}</div>
+        <div class="status-sub">${esc(msg)}</div>
         ${bkpHtml}
         <button class="btn-sec" onclick="location.reload()" style="margin-top:16px">🔄 Intentar de nuevo</button>
       </div>`);
   }
 
-  /* ── 8. Utilities ── */
+  /* ── 8. Utilidades ── */
   function esc(str) {
     if (str == null) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -722,7 +604,7 @@
 
   function computeMinDate(anticipation, allowedDays) {
     const d = new Date();
-    d.setHours(0, 0, 0, 0);
+    d.setHours(0,0,0,0);
     d.setDate(d.getDate() + Math.max(0, anticipation));
     if (!allowedDays || allowedDays.length === 0) return dateStr(d);
     for (let i = 0; i < 14; i++) {
