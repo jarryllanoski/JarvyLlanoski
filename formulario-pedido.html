@@ -188,26 +188,12 @@
 (function () {
   'use strict';
 
-  // ══════════════════════════════════════════════════════════════
-  // CONFIGURACIÓN FIREBASE — editar si no se usa el panel admin
-  // en el mismo dominio (se usa dpanel_fb del localStorage primero)
-  // ══════════════════════════════════════════════════════════════
-  const FIREBASE_CONFIG_FALLBACK = {
-    apiKey:    'TU_API_KEY_AQUI',    // AIzaSy...
-    projectId: 'TU_PROJECT_ID_AQUI', // mi-proyecto-12345
-  };
-  // ══════════════════════════════════════════════════════════════
-
-  // Leer credenciales: localStorage (mismo dominio que el panel) > constante de arriba
+  // Leer credenciales desde localStorage (mismo dominio que el panel admin)
   function resolveFirebaseCreds() {
     try {
       const stored = JSON.parse(localStorage.getItem('dpanel_fb') || '{}');
       if (stored.apiKey && stored.projectId) return { apiKey: stored.apiKey, projectId: stored.projectId };
     } catch (e) {}
-    const fb = FIREBASE_CONFIG_FALLBACK;
-    if (fb.apiKey && !fb.apiKey.includes('TU_') && fb.projectId && !fb.projectId.includes('TU_')) {
-      return { apiKey: fb.apiKey, projectId: fb.projectId };
-    }
     return null;
   }
 
