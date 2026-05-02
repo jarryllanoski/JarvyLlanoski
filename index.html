@@ -700,6 +700,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       <button class="cfl-btn cfl-btn-edit" onclick="changePIN()">✏️</button>
     </div>
   </div>
+
+  <!-- ACCESO AL PANEL -->
+  <div class="cfg-sec">
+    <div class="cfg-ttl">🔒 Acceso al panel</div>
+    <div class="fg">
+      <label class="fl">Código de equipo (login)</label>
+      <div style="display:flex;gap:6px">
+        <input class="fi" id="cfgAccessCode" placeholder="ej. jarvyllanoski" style="flex:1" autocomplete="off">
+        <button onclick="saveAccessCode()" style="flex-shrink:0;padding:0 14px;height:40px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--text);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">Guardar</button>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-top:5px">El PIN de empleado es el mismo que el PIN de estados: <b>****</b>. Cámbialo arriba con ✏️</div>
+    </div>
+    <button onclick="doLogout()" style="margin-top:8px;padding:10px 16px;background:rgba(247,129,102,.08);border:1px solid rgba(247,129,102,.3);border-radius:8px;color:var(--red);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;width:100%">🚪 Cerrar sesión</button>
+  </div>
 </div>
 
 <!-- MODAL NUEVO/EDITAR -->
