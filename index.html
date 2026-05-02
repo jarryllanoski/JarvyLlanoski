@@ -406,6 +406,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 </head>
 <body>
 
+<!-- ══════════════════════════════════════════════════════════════════
+     PANTALLA DE ACCESO — se oculta tras login válido
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto">
+  <div style="width:100%;max-width:340px">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-size:52px;margin-bottom:10px">📦</div>
+      <div style="font-size:21px;font-weight:800;color:var(--text)">Panel de Empleados</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:6px">Ingresa tus credenciales para acceder</div>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Código de equipo</label>
+        <input id="loginCode" class="fi" placeholder="ej. jarvyllanoski" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">PIN de empleado</label>
+        <input id="loginPin" class="fi" type="password" placeholder="••••" maxlength="20" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="loginMsg" style="font-size:12px;color:var(--red);text-align:center;min-height:16px;margin:-4px 0"></div>
+      <button onclick="doLogin()" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a3a6b,var(--blue));border:none;border-radius:10px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px">Entrar →</button>
+    </div>
+
+    <div style="text-align:center;margin-top:18px;font-size:11px;color:var(--text2)">
+      ¿Eres cliente? El formulario de pedido no requiere acceso.
+    </div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div class="hdr">
   <div class="hdr-logo" onclick="openOverlay('excelOverlay')" style="cursor:pointer" title="Importar / Exportar Excel">📦</div>
