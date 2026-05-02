@@ -2011,7 +2011,7 @@ function delSelected(){
   $('delYes').style.background='var(--red)';
   $('delYes').textContent='Mover a papelera';
   $('delYes').onclick=()=>{
-    sel.forEach(s=>S.trash.push({shipment:s, deletedAt:Date.now()}));
+    sel.forEach(s=>{ S.trash.push({shipment:s, deletedAt:Date.now()}); if(window._cloud) window._cloud.deleteShipment(s.id); });
     S.shipments=S.shipments.filter(x=>!x.sel);
     save();render();closeOverlay('delOverlay');toast(`🗑️ ${sel.length} movidos a papelera`);
   };
