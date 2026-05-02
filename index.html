@@ -2636,16 +2636,9 @@ function updateCloudStatusDot(){
 function loadCfgUI(){
   $('cfgName').value=S.config.name||'';$('cfgPhone').value=S.config.phone||'';$('cfgCity').value=S.config.city||'';
   updateAutoStatusBadge();
-  // Poblar campos de nube en modo bloqueado
+  // Poblar campo de workspace
   const fb=window._cloud?window._cloud.getConfig():{};
-  if($('cfgWsId'))     {$('cfgWsId').value=fb.workspaceId||'';     $('cfgWsId').disabled=true;}
-  if($('cfgFbKey'))    {$('cfgFbKey').value=fb.apiKey||'';         $('cfgFbKey').disabled=true; $('cfgFbKey').type='password';}
-  if($('cfgFbProject')){$('cfgFbProject').value=fb.projectId||'';  $('cfgFbProject').disabled=true;}
-  if($('btnEyeKey'))   $('btnEyeKey').textContent='👁';
-  if($('btnEditCloud'))$('btnEditCloud').style.display='block';
-  if($('btnSaveCloud'))$('btnSaveCloud').style.display='none';
-  if($('btnRestoreCloud'))$('btnRestoreCloud').style.display='none';
-  if($('cloudConfirmBox'))$('cloudConfirmBox').style.display='none';
+  if($('cfgWsId'))$('cfgWsId').value=fb.workspaceId||'';
   if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display=fb.enabled?'block':'none';
   updateCloudStatusDot();
 
