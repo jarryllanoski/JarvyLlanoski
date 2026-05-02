@@ -2577,10 +2577,15 @@ function changePIN(){
 /* ── Cloud management ─────────────────────────────────────────── */
 function connectCloud(){
   const wsId=$('cfgWsId').value.trim();
+  const apiKey=($('cfgFbKey')||{value:''}).value.trim();
+  const projectId=($('cfgFbProject')||{value:''}).value.trim();
   if(!wsId){toast('⚠️ Escribe el código de equipo');return;}
-  const fc=window.FIREBASE_CONFIG||{};
-  if(!fc.apiKey||fc.apiKey.includes('TU_')){toast('⚠️ Completa FIREBASE_CONFIG en el código fuente');return;}
-  if(window._cloud) window._cloud.init({workspaceId:wsId,enabled:true});
+  // Use UI values if provided; otherwise fall back to window.FIREBASE_CONFIG
+  const wfc=window.FIREBASE_CONFIG||{};
+  const resolvedKey=apiKey||(wfc.apiKey&&!wfc.apiKey.includes('TU_')?wfc.apiKey:'');
+  const resolvedProj=projectId||(wfc.projectId&&!wfc.projectId.includes('TU_')?wfc.projectId:'');
+  if(!resolvedKey||!resolvedProj){toast('⚠️ Ingresa el API Key y Project ID de Firebase');return;}
+  if(window._cloud) window._cloud.init({workspaceId:wsId,enabled:true,apiKey:resolvedKey,projectId:resolvedProj});
   if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display='block';
   toast('☁️ Conectando...');
   setTimeout(updateCloudStatusDot,2500);
