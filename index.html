@@ -2638,12 +2638,13 @@ function updateCloudStatusDot(){
 function loadCfgUI(){
   $('cfgName').value=S.config.name||'';$('cfgPhone').value=S.config.phone||'';$('cfgCity').value=S.config.city||'';
   updateAutoStatusBadge();
-  // Poblar campos de Firebase y acceso
-  const fb=window._cloud?window._cloud.getConfig():{};
-  if($('cfgWsId'))$('cfgWsId').value=fb.workspaceId||'';
-  if($('cfgFbKey'))$('cfgFbKey').value=fb.apiKey||'';
-  if($('cfgFbProject'))$('cfgFbProject').value=fb.projectId||'';
-  if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display=fb.enabled?'block':'none';
+  // Poblar campos de Firebase (con valores integrados como base)
+  const _FBD={apiKey:'AIzaSyDXCDMYukwtQk79ide6XVnwzxcLEpHSMl4',projectId:'jarvyllanoski',workspaceId:'jarvyllanoski'};
+  const fb=window._cloud?window._cloud.getConfig():_FBD;
+  if($('cfgWsId'))$('cfgWsId').value=fb.workspaceId||_FBD.workspaceId;
+  if($('cfgFbKey'))$('cfgFbKey').value=fb.apiKey||_FBD.apiKey;
+  if($('cfgFbProject'))$('cfgFbProject').value=fb.projectId||_FBD.projectId;
+  if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display=fb.enabled!==false?'block':'none';
   updateCloudStatusDot();
 
   // DISPATCH DAYS
