@@ -406,45 +406,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════════════════
-     PANTALLA DE ACCESO — se oculta tras login válido
-     ══════════════════════════════════════════════════════════════════ -->
-<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto">
-  <div style="width:100%;max-width:280px;text-align:center">
-    <div style="font-size:48px;margin-bottom:10px">📦</div>
-    <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">Panel de Empleados</div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:24px">Ingresa tu PIN para acceder</div>
-
-    <div style="display:flex;justify-content:center;gap:14px;margin-bottom:8px">
-      <div class="pin-dot" id="lpd0" style="width:20px;height:20px"></div>
-      <div class="pin-dot" id="lpd1" style="width:20px;height:20px"></div>
-      <div class="pin-dot" id="lpd2" style="width:20px;height:20px"></div>
-      <div class="pin-dot" id="lpd3" style="width:20px;height:20px"></div>
-    </div>
-    <div id="loginMsg" style="font-size:12px;color:var(--red);text-align:center;min-height:18px;margin-bottom:4px"></div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:18px">PIN por defecto: <b>1234</b></div>
-
-    <div class="pin-grid" style="max-width:252px;margin:0 auto">
-      <button class="pin-btn" onclick="window.loginTap('1')">1</button>
-      <button class="pin-btn" onclick="window.loginTap('2')">2</button>
-      <button class="pin-btn" onclick="window.loginTap('3')">3</button>
-      <button class="pin-btn" onclick="window.loginTap('4')">4</button>
-      <button class="pin-btn" onclick="window.loginTap('5')">5</button>
-      <button class="pin-btn" onclick="window.loginTap('6')">6</button>
-      <button class="pin-btn" onclick="window.loginTap('7')">7</button>
-      <button class="pin-btn" onclick="window.loginTap('8')">8</button>
-      <button class="pin-btn" onclick="window.loginTap('9')">9</button>
-      <button class="pin-btn pin-btn-del" onclick="window.loginDel()">⌫</button>
-      <button class="pin-btn" onclick="window.loginTap('0')">0</button>
-      <div></div>
-    </div>
-
-    <div style="margin-top:18px">
-      <button onclick="window.resetLoginPin()" style="background:none;border:none;color:var(--text2);font-size:11px;cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif">¿Olvidaste tu PIN? Restablecer a 1234</button>
-    </div>
-  </div>
-</div>
-
 <!-- HEADER -->
 <div class="hdr">
   <div class="hdr-logo" onclick="openOverlay('excelOverlay')" style="cursor:pointer" title="Importar / Exportar Excel">📦</div>
