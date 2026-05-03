@@ -1,7 +1,4 @@
-// ui.js — Helpers de UI: $(), toast, goPage, openOverlay/closeOverlay, loadCfgUI
-
-const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-const $ = id => document.getElementById(id);
+// ui.js — Helpers de UI: toast, goPage, openOverlay/closeOverlay, loadCfgUI
 
 /* TOAST */
 function toast(m) {
