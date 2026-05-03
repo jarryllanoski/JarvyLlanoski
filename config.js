@@ -1,4 +1,7 @@
-// config.js — Constantes globales de la aplicación
+// config.js — Constantes globales y helpers DOM
+
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const $ = id => document.getElementById(id);
 
 const FIXED_LABELS = ['Nuevo pedido','Faltante / pedir proveedor','Por alistar','Alistado','Enviado','Llegó a destino','Pendiente de pago','Finalizado'];
 
