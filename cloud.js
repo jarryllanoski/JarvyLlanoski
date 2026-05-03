@@ -242,18 +242,14 @@
       return;
     }
 
-    if (!_cfg.apiKey || !_cfg.projectId) {
-      updateBadge('error');
-      if (window.toast) window.toast('❌ Ingresa el API Key y Project ID en ⚙️ Configuración');
-      return;
-    }
+    const creds = resolveFirebaseConfig();
 
     try {
       if (!firebase.apps.length) {
         firebase.initializeApp({
-          apiKey:     _cfg.apiKey,
-          projectId:  _cfg.projectId,
-          authDomain: _cfg.projectId + '.firebaseapp.com',
+          apiKey:     creds.apiKey,
+          projectId:  creds.projectId,
+          authDomain: creds.projectId + '.firebaseapp.com',
         });
       }
       _db = firebase.firestore();
