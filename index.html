@@ -700,23 +700,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     <div class="tgl-row"><div><div class="tgl-n">Notificar por WhatsApp</div><div class="tgl-s">Al registrar nuevo envío</div></div><div class="tgl on" onclick="this.classList.toggle('on')"></div></div>
     <div class="tgl-row"><div><div class="tgl-n">Notificar al cliente</div><div class="tgl-s">Cuando cambia el estado</div></div><div class="tgl" onclick="this.classList.toggle('on')"></div></div>
     <div class="tgl-row" style="border:none">
-      <div><div class="tgl-n">🔐 Clave para cambiar estado</div><div class="tgl-s">Actualmente: ****</div></div>
+      <div><div class="tgl-n">🔐 PIN de acceso y estados</div><div class="tgl-s">El mismo PIN protege el ingreso al panel</div></div>
       <button class="cfl-btn cfl-btn-edit" onclick="changePIN()">✏️</button>
     </div>
-  </div>
-
-  <!-- ACCESO AL PANEL -->
-  <div class="cfg-sec">
-    <div class="cfg-ttl">🔒 Acceso al panel</div>
-    <div class="fg">
-      <label class="fl">Código de equipo (login)</label>
-      <div style="display:flex;gap:6px">
-        <input class="fi" id="cfgAccessCode" placeholder="ej. jarvyllanoski" style="flex:1" autocomplete="off">
-        <button onclick="saveAccessCode()" style="flex-shrink:0;padding:0 14px;height:40px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--text);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">Guardar</button>
-      </div>
-      <div style="font-size:11px;color:var(--text2);margin-top:5px">El PIN de empleado es el mismo que el PIN de estados: <b>****</b>. Cámbialo arriba con ✏️</div>
+    <div class="tgl-row" style="border:none;margin-top:4px">
+      <div><div class="tgl-n">🚪 Cerrar sesión</div><div class="tgl-s">Vuelve a pedir el PIN al reabrir</div></div>
+      <button class="cfl-btn" style="background:rgba(247,129,102,.1);border-color:rgba(247,129,102,.3);color:var(--red)" onclick="doLogout()">Salir</button>
     </div>
-    <button onclick="doLogout()" style="margin-top:8px;padding:10px 16px;background:rgba(247,129,102,.08);border:1px solid rgba(247,129,102,.3);border-radius:8px;color:var(--red);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;width:100%">🚪 Cerrar sesión</button>
   </div>
 </div>
 
