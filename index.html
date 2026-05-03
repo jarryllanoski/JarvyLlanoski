@@ -410,28 +410,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
      PANTALLA DE ACCESO — se oculta tras login válido
      ══════════════════════════════════════════════════════════════════ -->
 <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto">
-  <div style="width:100%;max-width:340px">
-    <div style="text-align:center;margin-bottom:32px">
-      <div style="font-size:52px;margin-bottom:10px">📦</div>
-      <div style="font-size:21px;font-weight:800;color:var(--text)">Panel de Empleados</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:6px">Ingresa tus credenciales para acceder</div>
-    </div>
+  <div style="width:100%;max-width:280px;text-align:center">
+    <div style="font-size:48px;margin-bottom:10px">📦</div>
+    <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">Panel de Empleados</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:28px">Ingresa tu PIN para acceder</div>
 
-    <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Código de equipo</label>
-        <input id="loginCode" class="fi" placeholder="ej. jarvyllanoski" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">PIN de empleado</label>
-        <input id="loginPin" class="fi" type="password" placeholder="••••" maxlength="20" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <div id="loginMsg" style="font-size:12px;color:var(--red);text-align:center;min-height:16px;margin:-4px 0"></div>
-      <button onclick="doLogin()" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a3a6b,var(--blue));border:none;border-radius:10px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px">Entrar →</button>
+    <div style="display:flex;justify-content:center;gap:14px;margin-bottom:8px">
+      <div class="pin-dot" id="lpd0" style="width:18px;height:18px"></div>
+      <div class="pin-dot" id="lpd1" style="width:18px;height:18px"></div>
+      <div class="pin-dot" id="lpd2" style="width:18px;height:18px"></div>
+      <div class="pin-dot" id="lpd3" style="width:18px;height:18px"></div>
     </div>
+    <div id="loginMsg" style="font-size:12px;color:var(--red);text-align:center;min-height:18px;margin-bottom:16px"></div>
 
-    <div style="text-align:center;margin-top:18px;font-size:11px;color:var(--text2)">
-      ¿Eres cliente? El formulario de pedido no requiere acceso.
+    <div class="pin-grid" style="max-width:240px;margin:0 auto">
+      <button class="pin-btn" onclick="loginTap('1')">1</button>
+      <button class="pin-btn" onclick="loginTap('2')">2</button>
+      <button class="pin-btn" onclick="loginTap('3')">3</button>
+      <button class="pin-btn" onclick="loginTap('4')">4</button>
+      <button class="pin-btn" onclick="loginTap('5')">5</button>
+      <button class="pin-btn" onclick="loginTap('6')">6</button>
+      <button class="pin-btn" onclick="loginTap('7')">7</button>
+      <button class="pin-btn" onclick="loginTap('8')">8</button>
+      <button class="pin-btn" onclick="loginTap('9')">9</button>
+      <button class="pin-btn pin-btn-del" onclick="loginDel()">⌫</button>
+      <button class="pin-btn" onclick="loginTap('0')">0</button>
+      <div></div>
     </div>
   </div>
 </div>
