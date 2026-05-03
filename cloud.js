@@ -5,7 +5,14 @@
 
   const FB_KEY = 'dpanel_fb';
 
-  // Credenciales SIEMPRE desde localStorage — nunca hardcodeadas
+  // ── Credenciales integradas — conexión automática en cualquier dispositivo ──
+  const _FB = {
+    apiKey:      'AIzaSyDXCDMYukwtQk79ide6XVnwzxcLEpHSMl4',
+    projectId:   'jarvyllanoski',
+    workspaceId: 'jarvyllanoski',
+  };
+
+  // localStorage puede sobreescribir cualquier valor (para futuras migraciones)
   let _cfg = {};
   try { _cfg = JSON.parse(localStorage.getItem(FB_KEY) || '{}'); } catch (e) { _cfg = {}; }
 
