@@ -2970,56 +2970,89 @@ const _SESSION_TTL = 30 * 24 * 60 * 60 * 1000; // 30 días
 
 function checkSession(){
   try{
-    const s=JSON.parse(localStorage.getItem(_SESSION_KEY)||'null');
-    if(s&&s.expires&&Date.now()<s.expires) return true;
-  }catch(e){}
-  return false;
+    const raw = localStorage.getItem(_SESSION_KEY);
+    if(!raw) return false;
+    const s = JSON.parse(raw);
+    return !!(s && s.expires && Date.now() < s.expires);
+  }catch(e){ return false; }
 }
 
 function showPanel(){
-  const ls=document.getElementById('loginScreen');
-  if(ls) ls.style.display='none';
-}
-
-function doLogin(){
-  const code=(document.getElementById('loginCode').value||'').trim();
-  const pin=(document.getElementById('loginPin').value||'').trim();
-  const expectedCode=(S.config.accessCode||'jarvyllanoski').trim();
-  const expectedPin=S.statusPin||'1234';
-  if(code===expectedCode&&pin===expectedPin){
-    localStorage.setItem(_SESSION_KEY,JSON.stringify({expires:Date.now()+_SESSION_TTL}));
-    showPanel();
-    document.getElementById('loginMsg').textContent='';
-  }else{
-    document.getElementById('loginMsg').textContent='⚠️ Código o PIN incorrecto';
-    document.getElementById('loginPin').value='';
-    setTimeout(()=>{ document.getElementById('loginMsg').textContent=''; },2500);
-  }
+  const ls = document.getElementById('loginScreen');
+  if(ls) ls.style.display = 'none';
 }
 
 function doLogout(){
-  localStorage.removeItem(_SESSION_KEY);
-  document.getElementById('loginCode').value='';
-  document.getElementById('loginPin').value='';
-  const ls=document.getElementById('loginScreen');
-  if(ls) ls.style.display='flex';
-  toast('🔒 Sesión cerrada');
+  try{ localStorage.removeItem(_SESSION_KEY); }catch(e){}
+  _loginEntry = '';
+  _updateLoginDots();
+  const msg = document.getElementById('loginMsg');
+  if(msg) msg.textContent = '';
+  const ls = document.getElementById('loginScreen');
+  if(ls) ls.style.display = 'flex';
 }
 
-function saveAccessCode(){
-  const v=($('cfgAccessCode')||{value:''}).value.trim();
-  if(!v){toast('⚠️ Escribe un código de equipo');return;}
-  S.config.accessCode=v;
-  save();
-  toast('✅ Código de equipo actualizado');
+/* ── PIN de login ──────────────────────────────────────────────── */
+let _loginEntry = '';
+
+function loginTap(d){
+  if(_loginEntry.length >= 4) return;
+  _loginEntry += d;
+  _updateLoginDots();
+  if(_loginEntry.length === 4) setTimeout(_checkLoginPin, 150);
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+function loginDel(){
+  _loginEntry = _loginEntry.slice(0, -1);
+  _updateLoginDots();
+}
+
+function _updateLoginDots(){
+  for(let i = 0; i < 4; i++){
+    const dot = document.getElementById('lpd' + i);
+    if(dot) dot.classList.toggle('filled', i < _loginEntry.length);
+  }
+}
+
+function _checkLoginPin(){
+  if(_loginEntry === (S.statusPin || '1234')){
+    try{ localStorage.setItem(_SESSION_KEY, JSON.stringify({expires: Date.now() + _SESSION_TTL})); }catch(e){}
+    showPanel();
+    _loginEntry = '';
+    _updateLoginDots();
+    const msg = document.getElementById('loginMsg');
+    if(msg) msg.textContent = '';
+  } else {
+    for(let i = 0; i < 4; i++){
+      const dot = document.getElementById('lpd' + i);
+      if(dot){ dot.classList.remove('filled'); dot.classList.add('error'); }
+    }
+    const msg = document.getElementById('loginMsg');
+    if(msg) msg.textContent = '⚠️ PIN incorrecto';
+    setTimeout(()=>{
+      _loginEntry = '';
+      _updateLoginDots();
+      for(let i = 0; i < 4; i++){
+        const dot = document.getElementById('lpd' + i);
+        if(dot) dot.classList.remove('error');
+      }
+      if(msg) msg.textContent = '';
+    }, 800);
+  }
+}
+
+/* ── Verificar sesión al cargar ────────────────────────────────── */
+function _initLoginCheck(){
   updateAutoStatusBadge();
   if(checkSession()) showPanel();
-  // else: loginScreen is visible by default
-},{ once:true });
-if(document.readyState!=='loading') updateAutoStatusBadge();
+  // else: loginScreen es visible por defecto
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', _initLoginCheck, { once: true });
+} else {
+  _initLoginCheck();
+}
 
 if(!S.shipments.length){
   S.shipments=[
