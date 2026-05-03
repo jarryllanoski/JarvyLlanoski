@@ -2643,7 +2643,6 @@ function loadCfgUI(){
   if($('cfgFbKey'))$('cfgFbKey').value=fb.apiKey||'';
   if($('cfgFbProject'))$('cfgFbProject').value=fb.projectId||'';
   if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display=fb.enabled?'block':'none';
-  if($('cfgAccessCode'))$('cfgAccessCode').value=S.config.accessCode||'';
   updateCloudStatusDot();
 
   // DISPATCH DAYS
