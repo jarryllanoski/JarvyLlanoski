@@ -2610,16 +2610,12 @@ function changePIN(){
 /* CONFIG */
 /* ── Cloud management ─────────────────────────────────────────── */
 function connectCloud(){
-  const wsId=$('cfgWsId').value.trim();
-  const apiKey=($('cfgFbKey')||{value:''}).value.trim();
-  const projectId=($('cfgFbProject')||{value:''}).value.trim();
-  if(!wsId){toast('⚠️ Escribe el código de equipo');return;}
-  // Use UI values if provided; otherwise fall back to window.FIREBASE_CONFIG
-  const wfc=window.FIREBASE_CONFIG||{};
-  const resolvedKey=apiKey||(wfc.apiKey&&!wfc.apiKey.includes('TU_')?wfc.apiKey:'');
-  const resolvedProj=projectId||(wfc.projectId&&!wfc.projectId.includes('TU_')?wfc.projectId:'');
-  if(!resolvedKey||!resolvedProj){toast('⚠️ Ingresa el API Key y Project ID de Firebase');return;}
-  if(window._cloud) window._cloud.init({workspaceId:wsId,enabled:true,apiKey:resolvedKey,projectId:resolvedProj});
+  const wsId=($('cfgWsId')||{value:''}).value.trim()||'jarvyllanoski';
+  // Credenciales: usa lo que escribió el usuario o los valores integrados
+  const _DEF={apiKey:'AIzaSyDXCDMYukwtQk79ide6XVnwzxcLEpHSMl4',projectId:'jarvyllanoski'};
+  const apiKey=(($('cfgFbKey')||{value:''}).value.trim())||_DEF.apiKey;
+  const projectId=(($('cfgFbProject')||{value:''}).value.trim())||_DEF.projectId;
+  if(window._cloud) window._cloud.init({workspaceId:wsId,enabled:true,apiKey,projectId});
   if($('btnDisconnectCloud'))$('btnDisconnectCloud').style.display='block';
   toast('☁️ Conectando...');
   setTimeout(updateCloudStatusDot,2500);
