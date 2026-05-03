@@ -21,7 +21,6 @@ function goPage(id) {
     if (n === id) document.querySelectorAll('.tab')[i].classList.add('active');
   });
   if (id === 'configurar') loadCfgUI();
-  if (id === 'compartir') renderTokenList();
 }
 
 /* OVERLAYS */
@@ -127,31 +126,6 @@ function loadCfgUI() {
         <button class="cfl-btn cfl-btn-edit" onclick="openExtraEdit(${i})" title="Editar">✏️</button>
         <button class="cfl-btn cfl-btn-del" onclick="confirmDelItem('extra',${i})" title="Eliminar">🗑️</button>
       </div>
-    </div>`;
-  }).join('');
-}
-
-/* TOKEN LIST (stub — tokens remain local-only) */
-function renderTokenList() {
-  const el = $('tokenList'); if (!el) return;
-  const tokens = S.formTokens || [];
-  if (!tokens.length) {
-    el.innerHTML = '<div style="font-size:12px;color:var(--text2);text-align:center;padding:16px 0">Sin tokens generados</div>';
-    return;
-  }
-  el.innerHTML = tokens.slice(0, 15).map((t, i) => {
-    const used = t.used;
-    const expired = t.expiresAt && new Date() > new Date(t.expiresAt);
-    const dot = used ? '🔴' : expired ? '🟡' : '🟢';
-    const status = used ? 'Usado' : expired ? 'Expirado' : 'Activo';
-    const sub = (t.singleUse ? 'Un uso' : 'Multi-uso') + (t.expiresAt ? ' · Vence ' + new Date(t.expiresAt).toLocaleDateString('es-PE') : '');
-    return `<div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:600;margin-bottom:1px">${t.label || 'Sin etiqueta'} <span style="font-size:10px;color:var(--text2)">${dot} ${status}</span></div>
-        <div style="font-size:10px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sub}</div>
-      </div>
-      <button onclick="copyTokenUrl(${i})" title="Copiar link" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--bd);background:var(--bg2);color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📋</button>
-      <button onclick="delToken(${i})" title="Eliminar" style="width:30px;height:30px;border-radius:6px;border:1px solid rgba(247,129,102,.3);background:rgba(247,129,102,.08);color:var(--red);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🗑️</button>
     </div>`;
   }).join('');
 }
