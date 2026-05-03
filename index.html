@@ -2970,87 +2970,99 @@ if(S.config.shareUrl) $('shareUrl').textContent=S.config.shareUrl;
 renderChips();
 // Inicializar badge de modo automático después del DOM
 /* ── Login / sesión ─────────────────────────────────────────────── */
-const _SESSION_KEY = 'dpanel_session';
-const _SESSION_TTL = 30 * 24 * 60 * 60 * 1000; // 30 días
+var _SK = 'dpanel_session';
+var _STTL = 30 * 24 * 60 * 60 * 1000;
 
 function checkSession(){
+  // Verificar sessionStorage (persiste en recarga) y localStorage
   try{
-    const raw = localStorage.getItem(_SESSION_KEY);
-    if(!raw) return false;
-    const s = JSON.parse(raw);
+    var src = sessionStorage.getItem(_SK) || localStorage.getItem(_SK);
+    if(!src) return false;
+    var s = JSON.parse(src);
     return !!(s && s.expires && Date.now() < s.expires);
   }catch(e){ return false; }
 }
 
 function showPanel(){
-  const ls = document.getElementById('loginScreen');
+  var ls = document.getElementById('loginScreen');
   if(ls) ls.style.display = 'none';
 }
 
 function doLogout(){
-  try{ localStorage.removeItem(_SESSION_KEY); }catch(e){}
-  _loginEntry = '';
-  _updateLoginDots();
-  const msg = document.getElementById('loginMsg');
+  try{ localStorage.removeItem(_SK); }catch(e){}
+  try{ sessionStorage.removeItem(_SK); }catch(e){}
+  window._LE = '';
+  window._updLD();
+  var msg = document.getElementById('loginMsg');
   if(msg) msg.textContent = '';
-  const ls = document.getElementById('loginScreen');
+  var ls = document.getElementById('loginScreen');
   if(ls) ls.style.display = 'flex';
 }
 
-/* ── PIN de login ──────────────────────────────────────────────── */
-let _loginEntry = '';
+/* ── PIN de login (todo en window para evitar problemas de scope) ── */
+window._LE = ''; // login entry buffer
 
-function loginTap(d){
-  if(_loginEntry.length >= 4) return;
-  _loginEntry += d;
-  _updateLoginDots();
-  if(_loginEntry.length === 4) setTimeout(_checkLoginPin, 150);
-}
+window.loginTap = function(d){
+  if(window._LE.length >= 4) return;
+  window._LE += d;
+  window._updLD();
+  if(window._LE.length === 4) setTimeout(window._chkLP, 200);
+};
 
-function loginDel(){
-  _loginEntry = _loginEntry.slice(0, -1);
-  _updateLoginDots();
-}
+window.loginDel = function(){
+  window._LE = window._LE.slice(0, -1);
+  window._updLD();
+};
 
-function _updateLoginDots(){
-  for(let i = 0; i < 4; i++){
-    const dot = document.getElementById('lpd' + i);
-    if(dot) dot.classList.toggle('filled', i < _loginEntry.length);
+window._updLD = function(){
+  for(var i = 0; i < 4; i++){
+    var dot = document.getElementById('lpd' + i);
+    if(dot) dot.classList.toggle('filled', i < window._LE.length);
   }
-}
+};
 
-function _checkLoginPin(){
-  if(_loginEntry === (S.statusPin || '1234')){
-    try{ localStorage.setItem(_SESSION_KEY, JSON.stringify({expires: Date.now() + _SESSION_TTL})); }catch(e){}
+window._chkLP = function(){
+  var correct = (window.S ? (window.S.statusPin || '1234') : '1234');
+  if(window._LE === correct){
+    var data = JSON.stringify({expires: Date.now() + _STTL});
+    try{ localStorage.setItem(_SK, data); }catch(e){}
+    try{ sessionStorage.setItem(_SK, data); }catch(e){}
     showPanel();
-    _loginEntry = '';
-    _updateLoginDots();
-    const msg = document.getElementById('loginMsg');
-    if(msg) msg.textContent = '';
+    window._LE = '';
+    window._updLD();
   } else {
-    for(let i = 0; i < 4; i++){
-      const dot = document.getElementById('lpd' + i);
+    for(var i = 0; i < 4; i++){
+      var dot = document.getElementById('lpd' + i);
       if(dot){ dot.classList.remove('filled'); dot.classList.add('error'); }
     }
-    const msg = document.getElementById('loginMsg');
+    var msg = document.getElementById('loginMsg');
     if(msg) msg.textContent = '⚠️ PIN incorrecto';
-    setTimeout(()=>{
-      _loginEntry = '';
-      _updateLoginDots();
-      for(let i = 0; i < 4; i++){
-        const dot = document.getElementById('lpd' + i);
+    setTimeout(function(){
+      window._LE = '';
+      window._updLD();
+      for(var i = 0; i < 4; i++){
+        var dot = document.getElementById('lpd' + i);
         if(dot) dot.classList.remove('error');
       }
       if(msg) msg.textContent = '';
     }, 800);
   }
-}
+};
+
+window.resetLoginPin = function(){
+  if(!confirm('¿Restablecer el PIN a 1234?')) return;
+  S.statusPin = '1234';
+  save();
+  window._LE = '';
+  window._updLD();
+  var msg = document.getElementById('loginMsg');
+  if(msg) msg.textContent = '✅ PIN restablecido. Ingresa 1234';
+};
 
 /* ── Verificar sesión al cargar ────────────────────────────────── */
 function _initLoginCheck(){
-  updateAutoStatusBadge();
+  try{ updateAutoStatusBadge(); }catch(e){}
   if(checkSession()) showPanel();
-  // else: loginScreen es visible por defecto
 }
 
 if(document.readyState === 'loading'){
