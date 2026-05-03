@@ -312,22 +312,30 @@
   }
 
   function getConfig() {
-    return Object.assign({}, _cfg);
+    const creds = resolveFirebaseConfig();
+    return Object.assign({}, _cfg, creds);
   }
 
   window._cloud = { init, disconnect, push: schedulePush, deleteShipment, getConfig, updateBadge };
 
-  // Auto-iniciar si ya estaba configurado con credenciales en localStorage
-  if (_cfg.enabled && _cfg.workspaceId && _cfg.apiKey && _cfg.projectId) {
-    const tryInit = (n) => {
-      if (typeof firebase !== 'undefined') {
-        init(_cfg);
-      } else if (n > 0) {
-        setTimeout(() => tryInit(n - 1), 500);
-      } else {
-        updateBadge('error');
+  // Auto-conectar siempre — credenciales integradas, no requiere configuración manual
+  const _tryAutoInit = (n) => {
+    if (typeof firebase !== 'undefined') {
+      const creds = resolveFirebaseConfig();
+      // Solo conectar si no está explícitamente desconectado por el usuario
+      if (_cfg.enabled !== false) {
+        init({
+          apiKey:      creds.apiKey,
+          projectId:   creds.projectId,
+          workspaceId: creds.workspaceId,
+          enabled:     true,
+        });
       }
-    };
-    document.addEventListener('DOMContentLoaded', () => tryInit(20));
-  }
+    } else if (n > 0) {
+      setTimeout(() => _tryAutoInit(n - 1), 500);
+    } else {
+      updateBadge('error');
+    }
+  };
+  document.addEventListener('DOMContentLoaded', () => _tryAutoInit(20));
 })();
