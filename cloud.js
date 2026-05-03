@@ -42,10 +42,13 @@
     if (typeof window.updateCloudStatusDot === 'function') window.updateCloudStatusDot();
   }
 
-  /* ── Credenciales solo desde localStorage ────────────────────── */
+  /* ── Resolver credenciales: localStorage > integradas ────────── */
   function resolveFirebaseConfig() {
-    if (_cfg.apiKey && _cfg.projectId) return { apiKey: _cfg.apiKey, projectId: _cfg.projectId };
-    return null;
+    return {
+      apiKey:      _cfg.apiKey      || _FB.apiKey,
+      projectId:   _cfg.projectId   || _FB.projectId,
+      workspaceId: _cfg.workspaceId || _FB.workspaceId,
+    };
   }
 
   /* ── Strips / restaura imágenes ──────────────────────────────── */
