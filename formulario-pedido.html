@@ -188,13 +188,19 @@
 (function () {
   'use strict';
 
-  // Leer credenciales desde localStorage (mismo dominio que el panel admin)
+  // Credenciales integradas — funciona en cualquier dispositivo sin configuración
+  const _FB_CREDS = {
+    apiKey:    'AIzaSyDXCDMYukwtQk79ide6XVnwzxcLEpHSMl4',
+    projectId: 'jarvyllanoski',
+  };
+
   function resolveFirebaseCreds() {
+    // localStorage (panel admin en mismo dominio) tiene prioridad
     try {
       const stored = JSON.parse(localStorage.getItem('dpanel_fb') || '{}');
       if (stored.apiKey && stored.projectId) return { apiKey: stored.apiKey, projectId: stored.projectId };
     } catch (e) {}
-    return null;
+    return _FB_CREDS;
   }
 
   const root = document.getElementById('root');
