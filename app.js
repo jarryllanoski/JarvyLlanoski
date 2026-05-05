@@ -576,3 +576,844 @@ function deletePvtNote() {
   s.privateNote = '';
   save(); render(); closeOverlay('pvtNoteOverlay'); toast('🗑️ Nota eliminada');
 }
+
+/* ── WA SHEET ────────────────────────────────────────────────────── */
+let _waId=null, _waMsgIdx=-1;
+function openWA(id) {
+  _waId=id; _waMsgIdx=-1;
+  const s=S.shipments.find(x=>x.id===id); if(!s)return;
+  const gChk=s.chkGuia||false, eChk=s.chkEmbalado||false, cChk=s.chkComprobante||false;
+  const msgs=S.msgTemplates[s.status]||['',''];
+  const hasMsg=(msgs[0]&&msgs[0].trim())||(msgs[1]&&msgs[1].trim());
+  if(!gChk&&!eChk&&!cChk&&!hasMsg){ window.open(`https://wa.me/51${s.phone}`,'_blank'); return; }
+  $('waInfo').innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:4px">${s.name}</div><div style="color:var(--blue)">📞 +51 ${s.phone}</div><div style="color:var(--text2);font-size:12px;margin-top:2px">🏠 ${s.address}</div>`;
+  let html='';
+  if(s.docComprobante||s.docEmbalado||s.docGuia){
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;margin-bottom:8px">Documentos a enviar:</div><div class="wa-doc-grid">`;
+    if(s.docComprobante) html+=waDT(s.docComprobante,cChk,'comprobante','var(--purple)');
+    if(s.docEmbalado)    html+=waDT(s.docEmbalado,eChk,'embalado','var(--blue)');
+    if(s.docGuia)        html+=waDT(s.docGuia,gChk,'guia','var(--green)');
+    html+='</div>';
+  }
+  if(hasMsg){
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;margin:12px 0 8px">Mensaje a enviar:</div>`;
+    html+=`<div id="waMN" class="wa-msg-none sel" onclick="selWAMsg(-1)">✉️ Sin mensaje</div>`;
+    if(msgs[0]&&msgs[0].trim()) html+=`<div id="waM0" class="wa-msg-opt" onclick="selWAMsg(0)"><div class="wa-msg-lbl">MENSAJE A</div><div class="wa-msg-txt">${fillVars(msgs[0],s)}</div></div>`;
+    if(msgs[1]&&msgs[1].trim()) html+=`<div id="waM1" class="wa-msg-opt" onclick="selWAMsg(1)"><div class="wa-msg-lbl">MENSAJE B</div><div class="wa-msg-txt">${fillVars(msgs[1],s)}</div></div>`;
+  }
+  $('waBody').innerHTML=html;
+  openOverlay('waOverlay');
+}
+function waDT(doc,chk,slot,color){
+  const lbl={guia:'GUÍA COURIER',embalado:'EMBALADO',comprobante:'COMPROBANTE'}[slot]||slot.toUpperCase();
+  const icon={guia:'📄',embalado:'📦',comprobante:'🧾'}[slot]||'📄';
+  return`<div onclick="event.stopPropagation();togWADoc('${slot}')" style="position:relative;cursor:pointer;border-radius:9px;overflow:hidden;border:2px solid ${chk?color:'var(--bd)'};${chk?'box-shadow:0 0 0 2px rgba(46,160,67,.25)':''}">
+    ${doc.t&&doc.t.startsWith('image/')?`<img src="${doc.d}" style="width:80px;height:100px;object-fit:cover;display:block">`:`<div class="wa-doc-pdf"><span style="font-size:28px">${icon}</span></div>`}
+    <div class="wa-doc-lbl">${lbl}</div>
+    <div id="waChk_${slot}" class="wa-doc-chk" style="background:${chk?color:'rgba(0,0,0,.3)'};">${chk?'✓':''}</div>
+  </div>`;
+}
+function togWADoc(slot){
+  const s=S.shipments.find(x=>x.id===_waId); if(!s)return;
+  if(slot==='guia')s.chkGuia=!s.chkGuia; else if(slot==='embalado')s.chkEmbalado=!s.chkEmbalado; else s.chkComprobante=!s.chkComprobante;
+  save(); render(); openWA(_waId);
+}
+function selWAMsg(idx){
+  _waMsgIdx=idx;
+  ['waMN','waM0','waM1'].forEach(id=>{const e=$(id);if(e)e.classList.remove('sel')});
+  const el=$(idx===-1?'waMN':'waM'+idx); if(el)el.classList.add('sel');
+}
+async function doWASend(){
+  const s=S.shipments.find(x=>x.id===_waId); if(!s)return;
+  const gChk=s.chkGuia||false, eChk=s.chkEmbalado||false, cChk=s.chkComprobante||false;
+  const phone='51'+s.phone;
+  let msg='';
+  if(_waMsgIdx>=0){const msgs=S.msgTemplates[s.status]||['',''];const t=msgs[_waMsgIdx];if(t&&t.trim())msg=fillVars(t,s);}
+  if(!gChk&&!eChk&&!cChk){window.open(msg?`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`:`https://wa.me/${phone}`,'_blank');closeOverlay('waOverlay');return;}
+  closeOverlay('waOverlay');
+  const docs=[];
+  if(cChk&&s.docComprobante)docs.push({doc:s.docComprobante,label:'Comprobante'});
+  if(eChk&&s.docEmbalado)   docs.push({doc:s.docEmbalado,label:'Embalado'});
+  if(gChk&&s.docGuia)       docs.push({doc:s.docGuia,label:'Guia'});
+  if(navigator.share){
+    try{
+      async function b2f(d,n){const r=await fetch(d);const b=await r.blob();return new File([b],n,{type:b.type});}
+      const files=await Promise.all(docs.map(({doc,label})=>b2f(doc.d,`${label}.${doc.t.includes('pdf')?'pdf':doc.t.includes('png')?'png':'jpg'}`)));
+      if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,title:s.name,text:msg||''});setTimeout(()=>window.open(`https://wa.me/${phone}${msg?'?text='+encodeURIComponent(msg):''}`,`_blank`),800);return;}
+    }catch(e){if(e.name==='AbortError')return;}
+  }
+  const div=document.createElement('div');
+  div.style.cssText='position:fixed;inset:0;background:#0d1117;z-index:600;overflow-y:auto;padding:16px';
+  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px">📤 Compartir documentos</div>
+    <button onclick="this.closest('div[style]').remove()" style="background:rgba(247,129,102,.15);border:1px solid rgba(247,129,102,.3);color:#f78166;border-radius:7px;width:32px;height:32px;font-size:16px;cursor:pointer">✕</button>
+  </div>
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:#8b949e;line-height:1.7">
+    1️⃣ Toca <b style="color:#388bfd">Descargar</b> cada documento<br>
+    2️⃣ Ve a tu galería y compártelo a WhatsApp<br>
+    3️⃣ Toca <b style="color:#25d366">Abrir WhatsApp</b> abajo
+  </div>
+  ${docs.map(({doc,label})=>`<div style="background:#1c2333;border:1px solid #30363d;border-radius:10px;overflow:hidden;margin-bottom:10px">
+    <div style="padding:10px 12px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;font-weight:700">${label}</span>
+      <a href="${doc.d}" download="${label}.${doc.t.includes('pdf')?'pdf':'jpg'}" style="background:#388bfd;color:#fff;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;text-decoration:none">⬇ Descargar</a>
+    </div>
+    ${doc.t&&doc.t.startsWith('image/')?`<img src="${doc.d}" style="width:100%;max-height:200px;object-fit:contain;background:#0d1117;display:block">`:`<div style="padding:20px;text-align:center;font-size:32px">📄</div>`}
+  </div>`).join('')}
+  <a href="https://wa.me/${phone}${msg?'?text='+encodeURIComponent(msg):''}" target="_blank" style="display:block;width:100%;padding:13px;background:#25d366;border-radius:10px;color:#fff;font-weight:700;font-size:14px;text-align:center;text-decoration:none;margin-top:4px">💬 Abrir WhatsApp</a>
+  <div style="height:30px"></div>`;
+  document.body.appendChild(div);
+}
+
+/* ── DOC SLOTS ───────────────────────────────────────────────────── */
+function trigInp(inputId,slot){closeDocMenu(slot);setTimeout(()=>$(inputId).click(),50);}
+function toggleDocMenu(slot){const m=$('menu'+cap(slot));const o=m.classList.contains('open');document.querySelectorAll('.doc-menu').forEach(x=>x.classList.remove('open'));if(!o)m.classList.add('open');}
+function closeDocMenu(slot){const e=$('menu'+cap(slot));if(e)e.classList.remove('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.doc-sw')&&!e.target.classList.contains('doc-add'))document.querySelectorAll('.doc-menu').forEach(m=>m.classList.remove('open'));});
+const DOC_META={
+  comprobante:{icon:'🧾',label:'Comprobante',cls:'ft',toast:'🧾 Comprobante subido ✓',inputs:['inComprobanteCam','inComprobanteGal','inComprobantePdf']},
+  embalado:   {icon:'📦',label:'Embalado',   cls:'fg',toast:'📦 Foto de embalado subida ✓',inputs:['inEmbalaodCam','inEmbalaodGal','inEmbalaodPdf']},
+  guia:       {icon:'🚚',label:'Guía courier',cls:'fg',toast:'🚚 Guía subida ✓',inputs:['inGuiaCam','inGuiaGal','inGuiaPdf']},
+};
+let _docs={comprobante:null,embalado:null,guia:null};
+function loadDoc(input,slot){
+  const file=input.files[0]; if(!file)return;
+  if(file.size>8*1024*1024){toast('⚠️ Máximo 8MB');return;}
+  const r=new FileReader();
+  r.onload=e=>{_docs[slot]={d:e.target.result,n:file.name,t:file.type};refreshSlot(slot);toast(DOC_META[slot]?.toast||'✓ Subido');onAutoFieldChange(slot==='embalado'||slot==='guia');};
+  r.readAsDataURL(file);
+}
+function refreshSlot(slot){
+  const doc=_docs[slot], Slot=cap(slot);
+  const meta=DOC_META[slot]||{icon:'📄',label:slot,cls:'fg'};
+  const prev=$('prev'+Slot),act=$('act'+Slot),btn=$('addBtn'+Slot),lbl=$('lbl'+Slot);
+  if(!prev)return;
+  if(!doc){prev.innerHTML=`<div class="doc-empty"><div style="font-size:22px">${meta.icon}</div><div style="font-size:10px;font-weight:700;text-align:center">${meta.label}</div></div>`;if(btn)btn.style.display='block';act.style.display='none';lbl.className='doc-tap';return;}
+  lbl.className='doc-tap '+meta.cls; if(btn)btn.style.display='none'; act.style.display='flex';
+  if(doc.t&&doc.t.startsWith('image/')){prev.innerHTML=`<div class="doc-full"><img src="${doc.d}" style="width:100%;height:100%;object-fit:cover;display:block"><div class="doc-ok">✓</div></div>`;}
+  else{const sn=doc.n.length>14?doc.n.substring(0,14)+'…':doc.n;prev.innerHTML=`<div class="doc-full"><div class="doc-full-pdf"><span style="font-size:28px">📄</span><span style="font-size:9px;color:var(--text2);text-align:center;padding:0 4px;word-break:break-all">${sn}</span></div><div class="doc-ok">✓ PDF</div></div>`;}
+}
+function clearSlot(slot){_docs[slot]=null;(DOC_META[slot]?.inputs||[]).forEach(id=>{const e=$(id);if(e)e.value='';});refreshSlot(slot);toast('Documento quitado');onAutoFieldChange(false);}
+function viewSlot(slot){const d=_docs[slot];if(!d)return;openViewer(d,DOC_META[slot]?.label||slot);}
+
+/* ── VIEWER ──────────────────────────────────────────────────────── */
+let _curDoc=null;
+function openViewer(doc,title){_curDoc=doc;if(doc.t&&doc.t.startsWith('image/')){$('viewerImg').src=doc.d;$('viewerTtl').textContent=title;$('viewer').classList.add('open');}else{const a=document.createElement('a');a.href=doc.d;a.target='_blank';a.click();}}
+function closeViewer(){$('viewer').classList.remove('open');$('viewerImg').src='';}
+function dlDoc(){if(!_curDoc)return;const a=document.createElement('a');a.href=_curDoc.d;a.download=_curDoc.n||'doc';a.click();}
+function qView(shipId,slot){const s=S.shipments.find(x=>x.id===shipId);if(!s)return;const d=slot==='guia'?s.docGuia:slot==='embalado'?s.docEmbalado:s.docComprobante;if(!d)return;openViewer(d,DOC_META[slot]?.label||slot);}
+$('viewer').addEventListener('click',e=>{if(e.target===$('viewer'))closeViewer();});
+
+/* ── LINKS ───────────────────────────────────────────────────────── */
+let _links=[];
+function addLink(){const v=$('fLink').value.trim();if(!v){toast('Ingresa un link');return;}if(!v.startsWith('http')){toast('⚠️ Link inválido');return;}const n=v.length>36?v.substring(0,36)+'…':v;_links.push({u:v,n});renderLinks();$('fLink').value='';toast('🔗 Agregado');}
+function removeLink(i){_links.splice(i,1);renderLinks();}
+function renderLinks(){$('linkListForm').innerHTML=_links.map((l,i)=>`<div class="link-item"><span>🔗</span><div class="link-name">${l.n}</div><a href="${l.u}" target="_blank" style="color:var(--blue);font-size:12px;text-decoration:none">↗</a><button class="link-del" type="button" onclick="removeLink(${i})">✕</button></div>`).join('');}
+
+/* ── AUTO-STATUS ─────────────────────────────────────────────────── */
+function calcAutoStatusMode(){
+  if(S.config.autoStatusEnabled) return 'general';
+  const r=S.config.autoRules||{};
+  if(Object.values(r).some(Boolean)) return 'partial';
+  return 'manual';
+}
+function _ruleOn(key){return !!S.config.autoStatusEnabled || !!(S.config.autoRules||{})[key];}
+function calcAutoStatus(s){
+  if(calcAutoStatusMode()==='manual') return null;
+  if(_ruleOn('finalizado')    && s.delivered && !(s.pendingBalance>0))        return 'Finalizado';
+  if(_ruleOn('pendingPayment')&& s.arrivedAtDest && s.pendingBalance>0)       return 'Pendiente de pago';
+  if(_ruleOn('arrivedAtDest') && s.arrivedAtDest)                             return 'Llegó a destino';
+  if(_ruleOn('guia')          && (s.docGuia||s.guideNumber))                  return 'Enviado';
+  if(_ruleOn('comprobante')   && s.docComprobante && s.status==='Pendiente de pago') return 'Finalizado';
+  if(_ruleOn('embalado')      && s.docEmbalado)                               return 'Alistado';
+  if(_ruleOn('embalado')      && s.alistado)                                  return 'Alistado';
+  if(S.config.autoStatusEnabled){if(s.stockOk)return 'Por alistar';if(s.faltante)return 'Faltante / pedir proveedor';}
+  return null;
+}
+let _autoFields={faltante:false,stockOk:false,alistado:false,arrivedAtDest:false,delivered:false};
+function refreshAutoFields(){
+  ['faltante','stockOk','alistado','arrivedAtDest','delivered'].forEach(f=>{
+    const id='chk'+f.charAt(0).toUpperCase()+f.slice(1);
+    const el=$(id); if(!el)return;
+    el.classList.toggle('on',!!_autoFields[f]); el.textContent=_autoFields[f]?'✓':'';
+  });
+  onAutoFieldChange();
+}
+function toggleAutoField(f){
+  if(f==='faltante'&&_autoFields.stockOk&&!_autoFields[f])_autoFields.stockOk=false;
+  if(f==='stockOk'&&_autoFields.faltante&&!_autoFields[f])_autoFields.faltante=false;
+  _autoFields[f]=!_autoFields[f]; refreshAutoFields();
+}
+function onAutoFieldChange(showToast=false){
+  const curSt=$('fStatus')?.value||'';
+  const preview={..._autoFields,docGuia:_docs&&_docs.guia?_docs.guia:null,docEmbalado:_docs&&_docs.embalado?_docs.embalado:null,docComprobante:_docs&&_docs.comprobante?_docs.comprobante:null,status:curSt,guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0};
+  const sug=calcAutoStatus(preview);
+  const box=$('autoStatusSuggestion'); if(!box)return;
+  if(sug&&statusPrio(sug)>statusPrio(curSt)){
+    box.style.display='block';
+    box.innerHTML=`🤖 Estado actualizado automáticamente: <b>${stIcon(sug)} ${sug}</b>`;
+    if(curSt!==sug){if($('fStatus'))$('fStatus').value=sug;if(showToast)setTimeout(()=>toast('🤖 Estado actualizado automáticamente: '+sug),600);}
+  }else{box.style.display='none';}
+}
+
+/* ── FORM ────────────────────────────────────────────────────────── */
+let _editId=null;
+function openForm(id){
+  _editId=id; $('formTitle').textContent=id?'Editar Envío':'Nuevo Envío';
+  const activeCouriers=S.couriers.filter(c=>S.courierActive[c]!==false);
+  $('fCourier').innerHTML=(activeCouriers.length?activeCouriers:S.couriers).map(c=>`<option>${c}</option>`).join('');
+  $('fStatus').innerHTML=allStatuses().map(s=>`<option>${s}</option>`).join('');
+  $('extraForm').innerHTML=S.extraFields.map(f=>{const nm=f.name||f;return`<div class="fg"><label class="fl">${nm}</label><input class="fi xf" data-f="${nm}" placeholder="${nm}..."></div>`;}).join('');
+  _docs={comprobante:null,embalado:null,guia:null}; _links=[];
+  ['comprobante','embalado','guia'].forEach(sl=>refreshSlot(sl)); renderLinks();
+  Object.values(DOC_META).flatMap(m=>m.inputs).forEach(i=>{const e=$(i);if(e)e.value='';});
+  if(id){
+    const s=S.shipments.find(x=>x.id===id);
+    $('fName').value=s.name; $('fPhone').value=s.phone; $('fAddr').value=s.address;
+    $('fCourier').value=s.courier; $('fDate').value=s.date; $('fStatus').value=s.status;
+    $('fCost').value=s.cost||''; $('fNotes').value=s.notes||'';
+    document.querySelectorAll('.xf').forEach(el=>{el.value=(s.extra&&s.extra[el.dataset.f])||'';});
+    if(s.docGuia){_docs.guia=s.docGuia;refreshSlot('guia');}
+    if(s.docEmbalado){_docs.embalado=s.docEmbalado;refreshSlot('embalado');}
+    if(s.docComprobante){_docs.comprobante=s.docComprobante;refreshSlot('comprobante');}
+    _links=s.links?JSON.parse(JSON.stringify(s.links)):[];renderLinks();
+    _autoFields={faltante:!!s.faltante,stockOk:!!s.stockOk,alistado:!!s.alistado,arrivedAtDest:!!s.arrivedAtDest,delivered:!!s.delivered};
+    if($('fGuideNumber'))$('fGuideNumber').value=s.guideNumber||'';
+    if($('fPendingBalance'))$('fPendingBalance').value=s.pendingBalance||'';
+  }else{
+    ['fName','fPhone','fAddr','fCost','fNotes'].forEach(i=>$(i).value='');
+    $('fDate').valueAsDate=new Date();
+    _autoFields={faltante:false,stockOk:false,alistado:false,arrivedAtDest:false,delivered:false};
+    if($('fGuideNumber'))$('fGuideNumber').value='';
+    if($('fPendingBalance'))$('fPendingBalance').value='';
+    if(S.config.autoStatusEnabled&&$('fStatus'))$('fStatus').value='Nuevo pedido';
+  }
+  const autoForm=$('autoStatusForm'); if(autoForm)autoForm.style.display=S.config.autoStatusEnabled?'block':'none';
+  syncFormModeBadge(); refreshAutoFields(); openOverlay('formOverlay');
+}
+function syncFormModeBadge(){
+  const el=$('formAutoModeBadge'); if(!el)return;
+  const on=!!S.config.autoStatusEnabled; el.style.display='inline-block'; el.textContent=on?'🤖 Auto':'⚙️ Manual';
+  Object.assign(el.style,{color:on?'var(--green)':'var(--text2)',background:on?'rgba(46,160,67,.1)':'rgba(139,148,158,.08)',borderColor:on?'rgba(46,160,67,.3)':'rgba(139,148,158,.2)'});
+}
+function saveShipment(){
+  const name=$('fName').value.trim(),phone=$('fPhone').value.trim(),addr=$('fAddr').value.trim();
+  if(!name||!phone||!addr){toast('⚠️ Nombre, teléfono y dirección requeridos');return;}
+  const extra={}; document.querySelectorAll('.xf').forEach(el=>extra[el.dataset.f]=el.value);
+  const autoData={faltante:_autoFields.faltante,stockOk:_autoFields.stockOk,alistado:_autoFields.alistado,arrivedAtDest:_autoFields.arrivedAtDest,delivered:_autoFields.delivered,guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0};
+  const data={name,phone,address:addr,courier:$('fCourier').value,date:$('fDate').value,status:$('fStatus').value,cost:$('fCost').value,notes:$('fNotes').value.trim(),extra,docGuia:_docs.guia,docEmbalado:_docs.embalado,docComprobante:_docs.comprobante,links:JSON.parse(JSON.stringify(_links)),sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,...autoData};
+  const autoSt=calcAutoStatus(data);
+  if(autoSt&&statusPrio(autoSt)>statusPrio(data.status))data.status=autoSt;
+  if(_editId){const idx=S.shipments.findIndex(x=>x.id===_editId);S.shipments[idx]={...S.shipments[idx],...data};toast(autoSt?'🤖 Actualizado (estado automático)':'✅ Actualizado');}
+  else{data.id='id_'+Date.now();data.createdAt=new Date().toISOString();S.shipments.push(data);toast(autoSt?'🤖 Envío registrado (estado automático)':'✅ Envío registrado');}
+  save(); closeOverlay('formOverlay'); render();
+}
+
+/* ── EXPORT / IMPORT ─────────────────────────────────────────────── */
+function exportExcel(){
+  if(!S.shipments.length){toast('Sin envíos para exportar');return;}
+  if(typeof XLSX==='undefined'){toast('⚠️ Cargando librería...');return;}
+  const rows=S.shipments.map(s=>({'Nombre':s.name||'','Teléfono':s.phone||'','Dirección':s.address||'','Courier':s.courier||'','Fecha':s.date||'','Estado':s.status||'','Costo':s.cost||'','Notas':s.notes||'','Nota privada':s.privateNote||''}));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:25},{wch:13},{wch:35},{wch:15},{wch:12},{wch:18},{wch:8},{wch:30},{wch:30}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Envíos');
+  XLSX.writeFile(wb,`Envios_${new Date().toLocaleDateString('es-PE').replace(/\//g,'-')}.xlsx`);
+  toast('📊 Excel descargado');
+}
+function importExcel(input){
+  const file=input.files[0]; if(!file)return;
+  const res=$('importResult'); res.style.display='block'; res.innerHTML='⏳ Procesando...'; res.style.color='var(--text2)';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws);
+      if(!rows.length){res.innerHTML='⚠️ El archivo está vacío';return;}
+      let added=0,skipped=0;
+      rows.forEach(row=>{
+        const name=(row['Nombre']||row['nombre']||'').toString().trim();
+        const phone=(row['Teléfono']||row['Telefono']||row['telefono']||'').toString().trim();
+        const address=(row['Dirección']||row['Direccion']||row['direccion']||'').toString().trim();
+        if(!name||!phone){skipped++;return;}
+        if(S.shipments.find(x=>x.name===name&&x.phone===phone)){skipped++;return;}
+        S.shipments.push({id:'xl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name,phone,address,courier:(row['Courier']||row['courier']||S.couriers[0]||'').toString().trim(),date:(row['Fecha']||row['fecha']||new Date().toISOString().split('T')[0]).toString().trim(),status:(row['Estado']||row['estado']||'Nuevo pedido').toString().trim(),cost:(row['Costo']||row['costo']||'').toString().trim(),notes:(row['Notas']||row['notas']||'').toString().trim(),privateNote:(row['Nota privada']||'').toString().trim(),extra:{},docGuia:null,docEmbalado:null,docComprobante:null,links:[],sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,createdAt:new Date().toISOString()});
+        added++;
+      });
+      save(); render();
+      res.style.color=added>0?'var(--green)':'var(--red)';
+      res.innerHTML=`✅ ${added} pedido${added!==1?'s':''} importado${added!==1?'s':''}${skipped>0?` · ${skipped} omitido${skipped!==1?'s':''}`:''}`;
+      if(added>0)toast(`✅ ${added} pedidos importados`);
+    }catch(err){res.style.color='var(--red)';res.innerHTML='❌ Error al leer el archivo.';}
+    input.value='';
+  };
+  reader.readAsBinaryString(file);
+}
+function doCSV(){
+  if(!S.shipments.length){toast('Sin envíos');return;}
+  const h=['Nombre','Teléfono','Dirección','Courier','Fecha','Estado','Costo','Notas'];
+  const rows=S.shipments.map(s=>[s.name,s.phone,`"${s.address}"`,s.courier,s.date,s.status,s.cost,`"${s.notes}"`]);
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`envios_${new Date().toLocaleDateString('es')}.csv`; a.click();
+  toast('📊 CSV exportado');
+}
+function doPrint(){
+  const list=S.shipments.filter(x=>x.sel).length?S.shipments.filter(x=>x.sel):S.shipments;
+  if(!list.length){toast('Sin envíos');return;}
+  const qr=phone=>`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(phone)}`;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Envíos</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.card{border:1px solid #ddd;border-radius:8px;padding:12px;display:flex;gap:10px;page-break-inside:avoid}.info{flex:1}.name{font-weight:700;font-size:13px}.phone{color:#1a56db}.addr{color:#555;font-size:11px}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700}.qr{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0}.qr img{width:72px;height:72px}.qr span{font-size:9px;color:#888}@media print{.grid{gap:8px}}</style></head><body>
+    <h2 style="margin-bottom:16px">📦 Envíos — ${S.config.name} · ${new Date().toLocaleDateString('es-PE')}</h2>
+    <div class="grid">${list.map(s=>`<div class="card"><div class="info"><div class="name">${s.name}</div><div class="phone">📞 ${s.phone}</div><div class="addr">🏠 ${s.address}</div><div style="font-size:10px;color:#777;margin:3px 0">🚚 ${s.courier} · 📅 ${s.date||'—'}${s.cost?` · S/ ${s.cost}`:''}</div><span class="badge">${s.status}</span>${s.notes?`<div style="font-size:10px;color:#777;margin-top:3px">📝 ${s.notes}</div>`:''}</div><div class="qr"><img src="${qr(s.phone)}" alt="QR"><span>${s.phone}</span></div></div>`).join('')}</div>
+    <script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+
+/* ── SHARE ── */
+function genFormUrl(){
+  return window.location.origin + window.location.pathname;
+}
+function updateShareUrl(){
+  const url = genFormUrl();
+  const el = $('shareUrl');
+  if (el) el.value = url;
+  const qrEl = $('qrPreview');
+  if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+}
+function copyLink(){
+  const url = genFormUrl();
+  navigator.clipboard.writeText(url).then(() => toast('🔗 Enlace copiado')).catch(() => {
+    const el = $('shareUrl');
+    if (el) { el.select(); document.execCommand('copy'); toast('🔗 Enlace copiado'); }
+  });
+}
+function shareWA(){
+  const url = genFormUrl();
+  const msg = encodeURIComponent(`📦 ${S.config.name || 'Mi tienda'}\nRealiza tu pedido aquí:\n${url}`);
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
+}
+function shareTG(){
+  const url = genFormUrl();
+  const msg = encodeURIComponent(`📦 ${S.config.name || 'Mi tienda'} — ${url}`);
+  window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${msg}`, '_blank');
+}
+
+/* ── TOKEN STUBS (sin Firebase) ── */
+function renderTokenList(){
+  const el = $('tokenList');
+  if (!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2);font-size:13px">
+    <div style="font-size:28px;margin-bottom:8px">☁️</div>
+    <div>La gestión de tokens requiere integración en la nube.</div>
+    <div style="font-size:11px;margin-top:4px;opacity:.6">Disponible en una futura versión.</div>
+  </div>`;
+}
+function generateToken(){
+  toast('☁️ Función disponible próximamente');
+}
+
+/* ── SUPPLIERS ── */
+function globalSuppSearch(){
+  const q = ($('globalSuppSearch')||{value:''}).value.trim().toLowerCase();
+  if (!q) { render(); return; }
+  const el = $('suppList');
+  if (!el) return;
+  const all = [];
+  S.suppliers.forEach(sup => {
+    (sup.items||[]).forEach(item => {
+      if (item.name.toLowerCase().includes(q)) all.push({sup, item});
+    });
+  });
+  el.innerHTML = all.length
+    ? all.map(({sup,item}) => `<div class="cfl-item"><span class="cfl-icon">🔍</span><span class="cfl-name">${item.name}</span><span style="font-size:11px;color:var(--text2)">${sup.name}</span></div>`).join('')
+    : `<div style="text-align:center;padding:24px;color:var(--text2)">Sin resultados</div>`;
+}
+function openSupplier(i){
+  if (!S.suppliers[i]) return;
+  S._suppIdx = i;
+  const sup = S.suppliers[i];
+  $('suppOverlayTitle').textContent = sup.name;
+  renderSuppItems();
+  openOverlay('suppOverlay');
+}
+function toggleAllSuppItems(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const all = S.suppliers[i].items || [];
+  const allChecked = all.every(x => x.checked);
+  all.forEach(x => x.checked = !allChecked);
+  save(); renderSuppItems();
+}
+function filterSuppItems(val){
+  S._suppFilter = val;
+  renderSuppItems();
+}
+function bulkVerifySupp(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  S.suppliers[i].items.forEach(x => { if (x.checked) x.verified = true; });
+  save(); renderSuppItems();
+}
+function renderSuppItems(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const sup = S.suppliers[i];
+  const filter = S._suppFilter || 'all';
+  let items = (sup.items || []).filter((x, idx) => {
+    if (filter === 'checked') return x.checked;
+    if (filter === 'verified') return x.verified;
+    if (filter === 'pending') return !x.verified;
+    return true;
+  });
+  const el = $('suppItemsList');
+  if (!el) return;
+  if (!items.length) { el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2)">Sin ítems</div>`; return; }
+  el.innerHTML = items.map((item, idx) => {
+    const realIdx = (sup.items||[]).indexOf(item);
+    return `<div class="cfl-item supp-item" draggable="true"
+      ontouchstart="suppTapStart(event,${realIdx})"
+      ontouchmove="suppTapMove(event)"
+      ontouchend="suppTapEnd(event,${realIdx})">
+      <input type="checkbox" ${item.checked?'checked':''} onchange="toggleSuppItem(${realIdx},this.checked)" style="flex-shrink:0">
+      <span class="cfl-name ${item.verified?'supp-verified':''}">${item.name}</span>
+      ${item.qty?`<span style="font-size:11px;color:var(--text2);flex-shrink:0">x${item.qty}</span>`:''}
+      ${item.verified?`<span style="font-size:10px;color:var(--green);flex-shrink:0">✓</span>`:''}
+      <div class="cfl-actions">
+        <button class="cfl-btn" onclick="editSuppItem(${realIdx})">✏️</button>
+        <button class="cfl-btn cfl-btn-del" onclick="delSuppItem(${realIdx})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+let _suppTapTimer = null;
+function suppTapStart(e, idx){ _suppTapTimer = setTimeout(() => editSuppItem(idx), 600); }
+function suppTapMove(){ clearTimeout(_suppTapTimer); }
+function suppTapEnd(e, idx){ clearTimeout(_suppTapTimer); }
+function editSuppItem(idx){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const item = S.suppliers[i].items[idx];
+  if (!item) return;
+  const name = prompt('Nombre del ítem:', item.name);
+  if (name === null) return;
+  const qty = prompt('Cantidad (opcional):', item.qty || '');
+  item.name = name.trim() || item.name;
+  item.qty = qty ? qty.trim() : '';
+  save(); renderSuppItems();
+}
+function addSuppItem(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const name = ($('newSuppItem')||{value:''}).value.trim();
+  if (!name) { toast('Escribe el nombre del ítem'); return; }
+  if (!S.suppliers[i].items) S.suppliers[i].items = [];
+  S.suppliers[i].items.push({name, qty:'', checked:false, verified:false});
+  $('newSuppItem').value = '';
+  save(); renderSuppItems();
+}
+function toggleSuppItem(idx, val){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  if (S.suppliers[i].items[idx]) S.suppliers[i].items[idx].checked = val;
+  save();
+}
+function delSuppItem(idx){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  S.suppliers[i].items.splice(idx, 1);
+  save(); renderSuppItems();
+}
+function moveAllToPorAlistar(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const checked = (S.suppliers[i].items||[]).filter(x=>x.checked);
+  if (!checked.length) { toast('No hay ítems seleccionados'); return; }
+  checked.forEach(item => {
+    S.shipments.push({
+      id:'supp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+      name: item.name, phone:'', address:'', courier: S.couriers[0]||'',
+      date: new Date().toISOString().split('T')[0],
+      status:'Por alistar', cost:'', notes:'', privateNote:'',
+      extra:{}, docGuia:null, docEmbalado:null, docComprobante:null,
+      links:[], sel:false, chkGuia:false, chkEmbalado:false, chkComprobante:false,
+      createdAt: new Date().toISOString()
+    });
+  });
+  save(); render();
+  toast(`✅ ${checked.length} ítem(s) movidos a "Por alistar"`);
+}
+function sendSuppList(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const sup = S.suppliers[i];
+  const items = (sup.items||[]).filter(x=>x.checked);
+  if (!items.length) { toast('No hay ítems seleccionados'); return; }
+  const text = `📦 *Lista para ${sup.name}*\n` + items.map(x=>`• ${x.name}${x.qty?` (x${x.qty})`:''}`).join('\n');
+  const phone = sup.phone ? sup.phone.replace(/\D/g,'') : '';
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
+function saveNewSupplier(){
+  const name = ($('newSuppName')||{value:''}).value.trim();
+  const phone = ($('newSuppPhone')||{value:''}).value.trim();
+  if (!name) { toast('Escribe el nombre del proveedor'); return; }
+  if (!S.suppliers) S.suppliers = [];
+  S.suppliers.push({name, phone, items:[]});
+  $('newSuppName').value = ''; if ($('newSuppPhone')) $('newSuppPhone').value = '';
+  save(); renderSuppList();
+  toast(`✅ Proveedor "${name}" agregado`);
+}
+function renderSuppList(){
+  const el = $('suppList');
+  if (!el) return;
+  if (!S.suppliers || !S.suppliers.length) {
+    el.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text2)">Sin proveedores</div>`;
+    return;
+  }
+  el.innerHTML = S.suppliers.map((sup, i) => `
+    <div class="cfl-item" onclick="openSupplier(${i})">
+      <span class="cfl-icon">🏭</span>
+      <span class="cfl-name">${sup.name}</span>
+      ${sup.phone ? `<span style="font-size:11px;color:var(--text2)">${sup.phone}</span>` : ''}
+      <span style="font-size:11px;color:var(--text2);margin-left:auto">${(sup.items||[]).length} ítems</span>
+      <div class="cfl-actions">
+        <button class="cfl-btn cfl-btn-edit" onclick="event.stopPropagation();openEditSupplier(${i})">✏️</button>
+        <button class="cfl-btn cfl-btn-del" onclick="event.stopPropagation();confirmDelItem('supplier',${i})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+function openSuppSwitch(){
+  const el = $('suppSwitchList');
+  if (!el) return;
+  el.innerHTML = (S.suppliers||[]).map((s,i) =>
+    `<button class="day-btn ${S._suppIdx===i?'active':''}" onclick="switchSupplier(${i})">${s.name}</button>`
+  ).join('');
+  openOverlay('suppSwitchOverlay');
+}
+function switchSupplier(i){
+  closeOverlay('suppSwitchOverlay');
+  openSupplier(i);
+}
+function renderCotizArea(i){
+  const el = $('cotizArea');
+  if (!el || i == null || !S.suppliers[i]) return;
+  const sup = S.suppliers[i];
+  const imgs = sup.cotizImgs || [];
+  el.innerHTML = imgs.length
+    ? imgs.map((src,idx) => `<div class="cotiz-thumb" onclick="openViewer(${idx},'cotiz')">
+        <img src="${src}" style="width:60px;height:60px;object-fit:cover;border-radius:6px">
+        <button onclick="event.stopPropagation();delCotiz(${idx})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+      </div>`).join('')
+    : `<div style="color:var(--text2);font-size:12px;padding:8px">Sin cotizaciones</div>`;
+}
+function toggleCotizImg(input){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i] || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (!S.suppliers[i].cotizImgs) S.suppliers[i].cotizImgs = [];
+    S.suppliers[i].cotizImgs.push(e.target.result);
+    save(); renderCotizArea(i);
+    toast('🖼️ Cotización agregada');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+function openCotizMenu(){ openOverlay('cotizMenuOverlay'); }
+function loadCotiz(input){
+  if (!input.files[0]) return;
+  toggleCotizImg(input);
+  closeOverlay('cotizMenuOverlay');
+}
+function delCotiz(idx){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  S.suppliers[i].cotizImgs.splice(idx, 1);
+  save(); renderCotizArea(i);
+}
+function openEditSupplier(i){
+  if (!S.suppliers[i]) return;
+  const sup = S.suppliers[i];
+  const name = prompt('Nombre del proveedor:', sup.name);
+  if (name === null) return;
+  const phone = prompt('Teléfono (opcional):', sup.phone||'');
+  sup.name = name.trim() || sup.name;
+  sup.phone = phone ? phone.trim() : '';
+  save(); renderSuppList();
+  toast('✅ Proveedor actualizado');
+}
+function saveEditSupplier(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const nameEl = $('editSuppName'); const phoneEl = $('editSuppPhone');
+  if (!nameEl) return;
+  const name = nameEl.value.trim();
+  if (!name) { toast('Escribe el nombre'); return; }
+  S.suppliers[i].name = name;
+  if (phoneEl) S.suppliers[i].phone = phoneEl.value.trim();
+  save(); renderSuppList();
+  closeOverlay('editSuppOverlay');
+  toast('✅ Proveedor actualizado');
+}
+
+/* ── CONFIG ── */
+function saveConfig(){
+  S.config.name = ($('cfgName')||{value:''}).value.trim();
+  S.config.phone = ($('cfgPhone')||{value:''}).value.trim();
+  S.config.city = ($('cfgCity')||{value:''}).value.trim();
+  S.dispatch.cutHour = ($('dispatchCutHour')||{value:''}).value;
+  S.dispatch.anticipation = parseInt(($('dispatchAnticip')||{value:'0'}).value) || 0;
+  save();
+  $('hdrName').textContent = S.config.name || '';
+  toast('✅ Configuración guardada');
+}
+function toggleCourierType(name, i){
+  if (!S.courierTypes) S.courierTypes = {};
+  S.courierTypes[name] = (S.courierTypes[name] === 'agencia') ? 'delivery' : 'agencia';
+  save(); loadCfgUI();
+}
+function toggleExtraFlag(i, flag){
+  if (!S.extraFields[i]) return;
+  if (typeof S.extraFields[i] === 'string') S.extraFields[i] = {name: S.extraFields[i]};
+  if (flag === 'required') S.extraFields[i].required = !S.extraFields[i].required;
+  if (flag === 'visible') S.extraFields[i].visible = S.extraFields[i].visible === false ? true : false;
+  save(); loadCfgUI();
+}
+let _editLabelIdx = null;
+function openLabelEdit(label, idx){
+  _editLabelIdx = idx;
+  $('labelEditTitle').textContent = label;
+  const msgs = S.msgTemplates[label] || ['',''];
+  $('labelMsg1').value = msgs[0] || '';
+  $('labelMsg2').value = msgs[1] || '';
+  if (idx !== null) {
+    $('labelEditNameWrap') && ($('labelEditNameWrap').style.display = '');
+    $('labelEditName') && ($('labelEditName').value = label);
+  } else {
+    $('labelEditNameWrap') && ($('labelEditNameWrap').style.display = 'none');
+  }
+  openOverlay('labelEditOverlay');
+}
+function saveLabelEdit(){
+  const title = $('labelEditTitle').textContent;
+  let label = title;
+  if (_editLabelIdx !== null && $('labelEditName')) {
+    const newName = $('labelEditName').value.trim();
+    if (newName && newName !== title) {
+      const old = S.labels[_editLabelIdx];
+      S.labels[_editLabelIdx] = newName;
+      if (S.msgTemplates[old]) { S.msgTemplates[newName] = S.msgTemplates[old]; delete S.msgTemplates[old]; }
+      S.shipments.forEach(x => { if (x.status === old) x.status = newName; });
+      label = newName;
+    }
+  }
+  const m1 = ($('labelMsg1')||{value:''}).value;
+  const m2 = ($('labelMsg2')||{value:''}).value;
+  if (m1.trim() || m2.trim()) S.msgTemplates[label] = [m1, m2];
+  else delete S.msgTemplates[label];
+  save(); loadCfgUI();
+  closeOverlay('labelEditOverlay');
+  toast('✅ Etiqueta guardada');
+}
+let _editCourierIdx = null;
+function openCourierEdit(i){
+  _editCourierIdx = i;
+  if ($('editCourierName')) $('editCourierName').value = S.couriers[i] || '';
+  openOverlay('courierEditOverlay');
+}
+function saveCourierEdit(){
+  const name = ($('editCourierName')||{value:''}).value.trim();
+  if (!name) { toast('Escribe el nombre'); return; }
+  if (_editCourierIdx == null) return;
+  const old = S.couriers[_editCourierIdx];
+  S.couriers[_editCourierIdx] = name;
+  if (S.courierTypes && S.courierTypes[old]) { S.courierTypes[name] = S.courierTypes[old]; delete S.courierTypes[old]; }
+  if (S.courierActive && S.courierActive[old] !== undefined) { S.courierActive[name] = S.courierActive[old]; delete S.courierActive[old]; }
+  S.shipments.forEach(x => { if (x.courier === old) x.courier = name; });
+  save(); loadCfgUI();
+  closeOverlay('courierEditOverlay');
+  toast('✅ Courier actualizado');
+}
+let _editExtraIdx = null;
+function openExtraEdit(i){
+  _editExtraIdx = i;
+  const f = S.extraFields[i];
+  const nm = typeof f === 'string' ? f : (f.name || '');
+  if ($('editExtraName')) $('editExtraName').value = nm;
+  openOverlay('extraEditOverlay');
+}
+function saveExtraEdit(){
+  const name = ($('editExtraName')||{value:''}).value.trim();
+  if (!name) { toast('Escribe el nombre'); return; }
+  if (_editExtraIdx == null) return;
+  const f = S.extraFields[_editExtraIdx];
+  if (typeof f === 'string') S.extraFields[_editExtraIdx] = name;
+  else S.extraFields[_editExtraIdx] = {...f, name};
+  save(); loadCfgUI();
+  closeOverlay('extraEditOverlay');
+  toast('✅ Campo actualizado');
+}
+function addLabelInline(){
+  const el = $('newLabelInput');
+  if (!el) return;
+  const name = el.value.trim();
+  if (!name) { toast('Escribe el nombre de la etiqueta'); return; }
+  if (S.labels.includes(name)) { toast('Ya existe esa etiqueta'); return; }
+  S.labels.push(name);
+  el.value = '';
+  save(); loadCfgUI(); renderChips();
+  toast(`✅ Etiqueta "${name}" agregada`);
+}
+function addCourierInline(){
+  const el = $('newCourierInput');
+  if (!el) return;
+  const name = el.value.trim();
+  if (!name) { toast('Escribe el nombre del courier'); return; }
+  if (S.couriers.includes(name)) { toast('Ya existe ese courier'); return; }
+  S.couriers.push(name);
+  el.value = '';
+  save(); loadCfgUI();
+  toast(`✅ Courier "${name}" agregado`);
+}
+function addExtraInline(){
+  const el = $('newExtraInput');
+  if (!el) return;
+  const name = el.value.trim();
+  if (!name) { toast('Escribe el nombre del campo'); return; }
+  if (S.extraFields.find(f => (typeof f==='string'?f:f.name) === name)) { toast('Ya existe ese campo'); return; }
+  S.extraFields.push({name, required:false, visible:true});
+  el.value = '';
+  save(); loadCfgUI();
+  toast(`✅ Campo "${name}" agregado`);
+}
+function confirmDelItem(type, i){
+  if (!confirm(`¿Eliminar este ${type === 'label' ? 'etiqueta' : type === 'courier' ? 'courier' : type === 'extra' ? 'campo' : 'ítem'}?`)) return;
+  if (type === 'label') { S.labels.splice(i,1); renderChips(); }
+  else if (type === 'courier') S.couriers.splice(i,1);
+  else if (type === 'extra') S.extraFields.splice(i,1);
+  else if (type === 'supplier') { S.suppliers.splice(i,1); renderSuppList(); }
+  save(); loadCfgUI();
+  toast('🗑️ Eliminado');
+}
+function toggleDispatchDay(v){
+  if (!S.dispatch.days) S.dispatch.days = [];
+  const idx = S.dispatch.days.indexOf(v);
+  if (idx === -1) S.dispatch.days.push(v);
+  else S.dispatch.days.splice(idx,1);
+  save(); loadCfgUI();
+}
+function toggleCourierActive(name){
+  if (!S.courierActive) S.courierActive = {};
+  S.courierActive[name] = S.courierActive[name] === false ? true : false;
+  save(); loadCfgUI();
+}
+
+/* ── DRAG & DROP (labels) ── */
+let _dragIdx = null;
+function dragStart(e, i){ _dragIdx = i; e.dataTransfer.effectAllowed='move'; }
+function dragOver(e, i){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+function dropLabel(e, i){
+  e.preventDefault();
+  if (_dragIdx === null || _dragIdx === i) return;
+  const labels = [...S.labels];
+  const moved = labels.splice(_dragIdx, 1)[0];
+  labels.splice(i, 0, moved);
+  S.labels = labels;
+  _dragIdx = null;
+  save(); loadCfgUI(); renderChips();
+}
+function dragEnd(){ _dragIdx = null; }
+
+/* ── QR SCANNER ── */
+let _qrStream = null, _qrLoop = null;
+function openQR(){
+  openOverlay('qrOverlay');
+  startQR();
+}
+function startQR(){
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    toast('Cámara no disponible'); closeQR(); return;
+  }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    _qrStream = stream;
+    const vid = $('qrVideo');
+    if (vid) { vid.srcObject = stream; vid.play(); }
+    scanLoop();
+  }).catch(()=>{ toast('No se pudo acceder a la cámara'); closeQR(); });
+}
+function scanLoop(){
+  const vid = $('qrVideo');
+  const canvas = $('qrCanvas');
+  if (!vid || !canvas) return;
+  const ctx = canvas.getContext('2d');
+  _qrLoop = requestAnimationFrame(() => {
+    if (vid.readyState === vid.HAVE_ENOUGH_DATA) {
+      canvas.height = vid.videoHeight;
+      canvas.width = vid.videoWidth;
+      ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+      try {
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        if (window.jsQR) {
+          const code = jsQR(img.data, img.width, img.height);
+          if (code) { handleQR(code.data); return; }
+        }
+      } catch(e){}
+    }
+    _qrLoop = requestAnimationFrame(scanLoop);
+  });
+}
+function handleQR(data){
+  closeQR();
+  const el = $('searchInput');
+  if (el) { el.value = data; render(); }
+  toast(`🔍 QR: ${data}`);
+}
+function closeQR(){
+  if (_qrLoop) { cancelAnimationFrame(_qrLoop); _qrLoop = null; }
+  if (_qrStream) { _qrStream.getTracks().forEach(t=>t.stop()); _qrStream = null; }
+  closeOverlay('qrOverlay');
+}
+
+/* ── AUTO-STATUS ── */
+function updateAutoStatusBadge(){
+  const badge = $('autoStatusBadge');
+  if (!badge) return;
+  const on = S.dispatch && S.dispatch.autoStatus;
+  badge.textContent = on ? '🟢 Activo' : '⚪ Inactivo';
+  badge.style.color = on ? 'var(--green)' : 'var(--text2)';
+}
+function toggleAutoStatus(){
+  if (!S.dispatch) S.dispatch = {};
+  S.dispatch.autoStatus = !S.dispatch.autoStatus;
+  save(); updateAutoStatusBadge();
+  toast(S.dispatch.autoStatus ? '🟢 Auto-estado activado' : '⚪ Auto-estado desactivado');
+}
+
+/* ════════════════════════════════════════
+   INIT — arranque de la aplicación
+════════════════════════════════════════ */
+(function init(){
+  // Mostrar nombre en header
+  if ($('hdrName')) $('hdrName').textContent = S.config.name || '';
+
+  // Render chips (filtros de etiqueta)
+  renderChips();
+
+  // Badge de auto-estado
+  updateAutoStatusBadge();
+
+  // Render lista de proveedores si existe el elemento
+  if ($('suppList')) renderSuppList();
+
+  // Share URL si la pantalla de compartir está presente
+  if ($('shareUrl')) updateShareUrl();
+
+  // Render principal
+  render();
+
+  // Activar primera página
+  goPage('envios');
+})();
