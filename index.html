@@ -1135,12 +1135,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 
 <div class="toast" id="toastEl"></div>
 
-<!-- Firebase SDK (solo se usa si el usuario configura la nube) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="cloud.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="ui.js"></script>
+<script src="cloud.js"></script>
+<script>/* legacy inline removed — all logic in app.js */
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 const $=id=>document.getElementById(id);
 
