@@ -305,3 +305,274 @@ function toggleAutoStatusCfg() {
   updateAutoStatusBadge(); save();
   toast(S.config.autoStatusEnabled ? '⚡ Modo automático general ON' : '🔀 Usando reglas individuales');
 }
+
+/* ── RENDER ──────────────────────────────────────────────────────── */
+function render() {
+  updateStats(); updateAdvBar();
+  const srch = $('fSearch').value.toLowerCase();
+  let data = S.shipments;
+  if (_filt) data = data.filter(x => x.status === _filt);
+  if (srch)  data = data.filter(x =>
+    x.name.toLowerCase().includes(srch) || x.phone.includes(srch) ||
+    x.address.toLowerCase().includes(srch) || x.courier.toLowerCase().includes(srch)
+  );
+  if (_advActive) {
+    if (_adv.dateFrom)        data = data.filter(x => x.date && x.date >= _adv.dateFrom);
+    if (_adv.dateTo)          data = data.filter(x => x.date && x.date <= _adv.dateTo);
+    if (_adv.couriers.length) data = data.filter(x => _adv.couriers.includes(x.courier));
+    if (_adv.costMin)         data = data.filter(x => parseFloat(x.cost||0) >= parseFloat(_adv.costMin));
+    if (_adv.costMax)         data = data.filter(x => parseFloat(x.cost||0) <= parseFloat(_adv.costMax));
+    if (_adv.doc==='guia')        data = data.filter(x => x.docGuia);
+    if (_adv.doc==='comprobante') data = data.filter(x => x.docComprobante);
+    if (_adv.doc==='embalado')    data = data.filter(x => x.docEmbalado);
+    if (_adv.doc==='none')        data = data.filter(x => !x.docGuia && !x.docEmbalado && !x.docComprobante);
+    if (_adv.sort==='oldest') data = [...data].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+    else if (_adv.sort==='newest') data = [...data].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    else if (_adv.sort==='name')   data = [...data].sort((a,b) => a.name.localeCompare(b.name));
+    else if (_adv.sort==='cost')   data = [...data].sort((a,b) => parseFloat(b.cost||0) - parseFloat(a.cost||0));
+  } else {
+    const sort = _filt ? (_chipSort[_filt] || 'courier_date') : 'courier_date';
+    if (sort==='courier_date') data = [...data].sort((a,b) => a.courier.localeCompare(b.courier) || b.date.localeCompare(a.date));
+    else if (sort==='date')      data = [...data].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    else if (sort==='name')      data = [...data].sort((a,b) => a.name.localeCompare(b.name));
+    else if (sort==='cost')      data = [...data].sort((a,b) => parseFloat(a.cost||0) - parseFloat(b.cost||0));
+    else if (sort==='cost_desc') data = [...data].sort((a,b) => parseFloat(b.cost||0) - parseFloat(a.cost||0));
+  }
+  const groups = {};
+  data.forEach(x => { if (!groups[x.courier]) groups[x.courier] = []; groups[x.courier].push(x); });
+  const area = $('cardsArea');
+  if (!data.length) {
+    area.innerHTML = '<div class="empty-st"><div style="font-size:36px">📭</div><p style="margin-top:10px">Sin envíos. Presiona ➕</p></div>';
+    return;
+  }
+  area.innerHTML = Object.entries(groups).map(([courier, items]) => `
+    <div class="cgroup">
+      <div class="cgroup-hdr"><div class="cgroup-bar"></div><span>🚚</span><div class="cgroup-name">${courier}</div><div class="cgroup-cnt">${items.length}</div></div>
+      ${items.map(s => cardHTML(s)).join('')}
+    </div>`).join('');
+}
+
+function cardHTML(s) {
+  const gChk = s.chkGuia||false, eChk = s.chkEmbalado||false, cChk = s.chkComprobante||false;
+  const msgs = S.msgTemplates[s.status] || ['',''];
+  const m1 = msgs[0]&&msgs[0].trim(), m2 = msgs[1]&&msgs[1].trim();
+  const pvtNote = s.privateNote || '';
+  return `<div class="card">
+    <div class="card-top">
+      <div class="chk ${s.sel?'on':''}" onclick="toggleSel('${s.id}')">${s.sel?'✓':''}</div>
+      <div class="cname"
+        onclick="togglePvtNote('${s.id}')"
+        ondblclick="event.stopPropagation();openPrivateNote('${s.id}')"
+        style="cursor:pointer;flex:1;user-select:none">
+        ${s.name}${pvtNote?` <span style="font-size:11px;color:var(--purple);opacity:.7">🔒</span>`:''}
+      </div>
+      <button class="wa-btn" onclick="openWA('${s.id}')">💬</button>
+    </div>
+    ${pvtNote?`<div class="pvt-note" id="pvt_${s.id}" style="display:none" ondblclick="openPrivateNote('${s.id}')">🔒 ${pvtNote}</div>`:''}
+    <div class="card-meta">
+      <span class="meta">📞 ${s.phone}</span>
+      <span class="meta">📅 ${s.date||'—'}</span>
+      ${s.cost?`<span class="meta">💰 S/ ${s.cost}</span>`:''}
+    </div>
+    <div class="card-addr">🏠 ${s.address}</div>
+    ${s.notes?`<div class="card-note">📝 ${s.notes}</div>`:''}
+    ${cardDocs(s, gChk, eChk, cChk)}
+    ${(m1||m2)?`<div class="card-msgs">
+      ${m1?`<button class="card-msg card-msg-a" onclick="quickMsg('${s.id}',0)"><span class="card-msg-ltr">A</span><span class="card-msg-txt">${fillVars(m1,s).substring(0,70)}${fillVars(m1,s).length>70?'…':''}</span></button>`:''}
+      ${m2?`<button class="card-msg card-msg-b" onclick="quickMsg('${s.id}',1)"><span class="card-msg-ltr">B</span><span class="card-msg-txt">${fillVars(m2,s).substring(0,70)}${fillVars(m2,s).length>70?'…':''}</span></button>`:''}
+    </div>`:''}
+    <div class="card-actions">
+      <button class="btn-st ${stClass(s.status)}" onclick="openStatus('${s.id}')" style="${!_filt?'opacity:.5;cursor:default':''}">
+        ${stIcon(s.status)} ${s.status}${!_filt?' 🔒':''}
+      </button>
+      <button class="btn-edit" onclick="openForm('${s.id}')">✏️</button>
+      <button class="btn-del"  onclick="openDel('${s.id}')">🗑️</button>
+    </div>
+  </div>`;
+}
+
+function cardDocs(s, gChk, eChk, cChk) {
+  const has = s.docGuia || s.docEmbalado || s.docComprobante || (s.links && s.links.length);
+  if (!has) return '';
+  return `<div class="card-docs">
+    ${s.docComprobante?`<div class="doc-thumb" style="border:2px solid ${cChk?'var(--purple)':'var(--bd)'}">
+      <div onclick="qView('${s.id}','comprobante')">${s.docComprobante.t&&s.docComprobante.t.startsWith('image/')?`<img src="${s.docComprobante.d}" style="width:52px;height:66px;object-fit:cover;display:block">`:`<div class="doc-thumb-pdf"><span style="font-size:20px">🧾</span></div>`}</div>
+      <div class="doc-lbl">COMPROBANTE</div>
+      <div class="doc-chk ${cChk?'on-t':''}" onclick="event.stopPropagation();togDoc('${s.id}','comprobante')">${cChk?'✓':''}</div>
+    </div>`:''}
+    ${s.docEmbalado?`<div class="doc-thumb" style="border:2px solid ${eChk?'var(--blue)':'var(--bd)'}">
+      <div onclick="qView('${s.id}','embalado')">${s.docEmbalado.t&&s.docEmbalado.t.startsWith('image/')?`<img src="${s.docEmbalado.d}" style="width:52px;height:66px;object-fit:cover;display:block">`:`<div class="doc-thumb-pdf"><span style="font-size:20px">📦</span></div>`}</div>
+      <div class="doc-lbl">EMBALADO</div>
+      <div class="doc-chk ${eChk?'on-b':''}" onclick="event.stopPropagation();togDoc('${s.id}','embalado')">${eChk?'✓':''}</div>
+    </div>`:''}
+    ${s.docGuia?`<div class="doc-thumb" style="border:2px solid ${gChk?'var(--green)':'var(--bd)'}">
+      <div onclick="qView('${s.id}','guia')">${s.docGuia.t&&s.docGuia.t.startsWith('image/')?`<img src="${s.docGuia.d}" style="width:52px;height:66px;object-fit:cover;display:block">`:`<div class="doc-thumb-pdf"><span style="font-size:20px">📄</span></div>`}</div>
+      <div class="doc-lbl">GUÍA COURIER</div>
+      <div class="doc-chk ${gChk?'on-g':''}" onclick="event.stopPropagation();togDoc('${s.id}','guia')">${gChk?'✓':''}</div>
+    </div>`:''}
+    ${(s.links||[]).map(l=>`<div class="link-chip">🔗 ${l.n}</div>`).join('')}
+  </div>`;
+}
+
+/* ── SELECT ──────────────────────────────────────────────────────── */
+function toggleSel(id) { const s=S.shipments.find(x=>x.id===id); if(!s)return; s.sel=!s.sel; save(); render(); }
+function selAll() { const all=S.shipments.every(x=>x.sel); S.shipments.forEach(x=>x.sel=!all); save(); render(); }
+
+/* ── DOC TOGGLE ──────────────────────────────────────────────────── */
+function togDoc(id, slot) {
+  const s = S.shipments.find(x => x.id===id); if (!s) return;
+  if (slot==='guia') s.chkGuia=!s.chkGuia;
+  else if (slot==='embalado') s.chkEmbalado=!s.chkEmbalado;
+  else s.chkComprobante=!s.chkComprobante;
+  save(); render();
+}
+
+/* ── QUICK MSG ───────────────────────────────────────────────────── */
+function quickMsg(id, idx) {
+  const s = S.shipments.find(x => x.id===id); if (!s) return;
+  const msgs = S.msgTemplates[s.status] || ['',''];
+  const tpl = msgs[idx]; if (!tpl||!tpl.trim()) return;
+  window.open(`https://wa.me/51${s.phone}?text=${encodeURIComponent(fillVars(tpl,s))}`, '_blank');
+}
+
+/* ── STATUS (sin PIN) ────────────────────────────────────────────── */
+let _stId = null;
+function openStatus(id) {
+  if (!_filt) { toast('⚠️ Filtra por una etiqueta primero'); return; }
+  _doOpenStatus(id);
+}
+function _doOpenStatus(id) {
+  _stId = id;
+  const s = S.shipments.find(x => x.id===id); if (!s) return;
+  const sel = S.shipments.filter(x => x.sel);
+  const all = allStatuses();
+  const curIdx = all.indexOf(s.status);
+  $('stClientName').textContent = sel.length>1 ? `📦 ${sel.length} clientes seleccionados` : `📦 ${s.name}`;
+  $('stCurrentLbl').textContent = sel.length>1 ? `Estado actual de "${s.name}": ${stIcon(s.status)} ${s.status}` : '';
+  $('statusOpts').innerHTML = all.map((st, i) => {
+    const isCur=i===curIdx, canFwd=i===curIdx+1, canBck=i===curIdx-1;
+    const ok = canFwd || canBck;
+    return `<button class="sopt ${stSoptClass(st)}"
+      style="${isCur?'border-width:3px;opacity:1;filter:brightness(1.3);box-shadow:0 0 0 3px rgba(255,255,255,.1)':''}
+             ${!isCur&&!ok?'opacity:.2;cursor:not-allowed':''}
+             ${!isCur&&ok?'opacity:.65':''}"
+      onclick="${ok?`applyStatus('${st}')`:''}"
+      ${isCur||!ok?'disabled':''}>
+      <span>${stIcon(st)} ${st}</span>
+      <span style="font-size:11px;font-weight:600;opacity:.8">
+        ${isCur?'● ACTUAL':canFwd?'▶ avanzar':canBck?'◀ retroceder':''}
+      </span>
+    </button>`;
+  }).join('');
+  openOverlay('statusOverlay');
+}
+function applyStatus(st) {
+  const s = S.shipments.find(x => x.id===_stId); if (!s) return;
+  const sel = S.shipments.filter(x => x.sel);
+  if (sel.length > 1) {
+    sel.forEach(x => { x.status=st; x.sel=false; });
+    save(); render(); closeOverlay('statusOverlay');
+    toast(`${stIcon(st)} ${st} → ${sel.length} clientes`);
+  } else {
+    s.status=st; s.sel=false;
+    save(); render(); closeOverlay('statusOverlay');
+    toast(`${stIcon(st)} ${st}`);
+  }
+}
+
+/* ── DELETE → TRASH (sin _cloud) ────────────────────────────────── */
+function openDel(id) {
+  const s = S.shipments.find(x => x.id===id); if (!s) return;
+  $('delMsg').textContent = `¿Mover "${s.name}" a la papelera?`;
+  $('delYes').style.background = 'var(--red)';
+  $('delYes').textContent = 'Mover a papelera';
+  $('delYes').onclick = () => {
+    S.trash.push({ shipment:s, deletedAt:Date.now() });
+    S.shipments = S.shipments.filter(x => x.id!==id);
+    save(); render(); closeOverlay('delOverlay'); toast('🗑️ Movido a papelera');
+  };
+  openOverlay('delOverlay');
+}
+function delSelected() {
+  const sel = S.shipments.filter(x => x.sel);
+  if (!sel.length) { toast('Selecciona envíos'); return; }
+  $('delMsg').textContent = `¿Mover ${sel.length} envío(s) a la papelera?`;
+  $('delYes').style.background = 'var(--red)';
+  $('delYes').textContent = 'Mover a papelera';
+  $('delYes').onclick = () => {
+    sel.forEach(s => S.trash.push({ shipment:s, deletedAt:Date.now() }));
+    S.shipments = S.shipments.filter(x => !x.sel);
+    save(); render(); closeOverlay('delOverlay'); toast(`🗑️ ${sel.length} movidos a papelera`);
+  };
+  openOverlay('delOverlay');
+}
+
+/* ── TRASH ───────────────────────────────────────────────────────── */
+let _trashTapTimer=null, _trashTaps=0;
+function onTrashBtnTap() {
+  _trashTaps++;
+  clearTimeout(_trashTapTimer);
+  if (_trashTaps >= 2) { _trashTaps=0; openTrash(); return; }
+  _trashTapTimer = setTimeout(() => { _trashTaps=0; delSelected(); }, 350);
+}
+function openTrash() {
+  const now = Date.now();
+  const before = S.trash.length;
+  S.trash = S.trash.filter(x => (now - x.deletedAt) < 30*24*60*60*1000);
+  if (S.trash.length !== before) save();
+  if (!S.trash.length) {
+    $('trashList').innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2)">🗑️<br><br>La papelera está vacía</div>';
+  } else {
+    $('trashList').innerHTML = S.trash.map((item, i) => {
+      const days = Math.floor((Date.now()-item.deletedAt)/(24*60*60*1000));
+      const remaining = 30-days;
+      return `<div class="trash-item">
+        <div class="trash-item-info">
+          <div class="trash-item-name">${item.shipment.name}</div>
+          <div class="trash-item-meta">📞 ${item.shipment.phone} · 🚚 ${item.shipment.courier}</div>
+          <div class="trash-item-meta">📅 Eliminado hace ${days===0?'hoy':days+' día'+(days>1?'s':'')}</div>
+        </div>
+        <span class="trash-item-days ${remaining<=5?'trash-days-warn':'trash-days-ok'}">${remaining}d</span>
+        <button class="trash-restore" onclick="restoreTrash(${i})">↩ Recuperar</button>
+      </div>`;
+    }).join('');
+  }
+  openOverlay('trashOverlay');
+}
+function restoreTrash(i) {
+  const item = S.trash[i]; if (!item) return;
+  item.shipment.sel = false;
+  S.shipments.push(item.shipment);
+  S.trash.splice(i, 1);
+  save(); render(); openTrash(); toast(`✅ ${item.shipment.name} recuperado`);
+}
+function emptyTrash() {
+  if (!S.trash.length) { toast('La papelera ya está vacía'); return; }
+  $('delMsg').textContent = `¿Eliminar definitivamente ${S.trash.length} envío(s)? Esto no se puede deshacer.`;
+  $('delYes').style.background = 'var(--red)';
+  $('delYes').textContent = 'Eliminar definitivamente';
+  $('delYes').onclick = () => { S.trash=[]; save(); closeOverlay('delOverlay'); openTrash(); toast('🗑️ Papelera vaciada'); };
+  openOverlay('delOverlay');
+}
+
+/* ── PRIVATE NOTE ────────────────────────────────────────────────── */
+let _pvtNoteId = null;
+function togglePvtNote(id) { const el=$('pvt_'+id); if(!el)return; el.style.display=el.style.display==='none'?'block':'none'; }
+function openPrivateNote(id) {
+  _pvtNoteId = id;
+  const s = S.shipments.find(x => x.id===id); if (!s) return;
+  $('pvtNoteName').textContent = '📦 '+s.name;
+  $('pvtNoteInput').value = s.privateNote || '';
+  $('pvtNoteDelBtn').style.display = s.privateNote ? 'block' : 'none';
+  openOverlay('pvtNoteOverlay');
+}
+function savePvtNote() {
+  const s = S.shipments.find(x => x.id===_pvtNoteId); if (!s) return;
+  s.privateNote = $('pvtNoteInput').value.trim();
+  save(); render(); closeOverlay('pvtNoteOverlay'); toast('🔒 Nota privada guardada');
+}
+function deletePvtNote() {
+  const s = S.shipments.find(x => x.id===_pvtNoteId); if (!s) return;
+  s.privateNote = '';
+  save(); render(); closeOverlay('pvtNoteOverlay'); toast('🗑️ Nota eliminada');
+}
