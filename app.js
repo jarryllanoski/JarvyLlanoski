@@ -1395,25 +1395,12 @@ function toggleAutoStatus(){
 /* ════════════════════════════════════════
    INIT — arranque de la aplicación
 ════════════════════════════════════════ */
-(function init(){
-  // Mostrar nombre en header
+window.addEventListener('load', function init(){
   if ($('hdrName')) $('hdrName').textContent = S.config.name || '';
-
-  // Render chips (filtros de etiqueta)
   renderChips();
-
-  // Badge de auto-estado
   updateAutoStatusBadge();
-
-  // Render lista de proveedores si existe el elemento
   if ($('suppList')) renderSuppList();
-
-  // Share URL si la pantalla de compartir está presente
   if ($('shareUrl')) updateShareUrl();
-
-  // Render principal
   render();
-
-  // Activar primera página
   goPage('envios');
-})();
+});
