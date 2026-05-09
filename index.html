@@ -1160,6 +1160,62 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 
 <div class="toast" id="toastEl"></div>
 
+<!-- OVERLAY: TAREA FORM -->
+<div class="overlay" id="taskFormOverlay">
+  <div class="sheet">
+    <div class="sheet-title" id="taskFormTitle">Nueva Tarea</div>
+    <div class="fg"><label class="fl">Título *</label><input class="fi" id="tTitle" placeholder="Ej: Alistar pedidos de hoy"></div>
+    <div class="fg"><label class="fl">Descripción</label><input class="fi" id="tDesc" placeholder="Detalle opcional..."></div>
+    <div class="fg"><label class="fl">Empleado asignado</label>
+      <select class="fs" id="tEmp">
+        <option value="">Sin asignar</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fg"><label class="fl">Fecha límite</label><input class="fi" id="tDue" type="date"></div>
+      <div class="fg"><label class="fl">Prioridad</label>
+        <select class="fs" id="tPriority">
+          <option value="normal">Normal</option>
+          <option value="alta">🔴 Alta</option>
+          <option value="baja">🔵 Baja</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-sec" onclick="closeOverlay('taskFormOverlay')" style="flex:1">Cancelar</button>
+      <button class="btn-pri" onclick="saveTask()" style="flex:2">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: EMPLEADO FORM -->
+<div class="overlay" id="empFormOverlay">
+  <div class="sheet">
+    <div class="sheet-title">👤 Empleados</div>
+    <div id="empList" style="margin-bottom:12px"></div>
+    <div style="display:flex;gap:8px">
+      <input class="fi" id="newEmpName" placeholder="Nombre del empleado..." style="flex:1">
+      <button class="btn-pri" onclick="addEmployee()" style="flex-shrink:0">＋ Agregar</button>
+    </div>
+    <button class="btn-sec" onclick="closeOverlay('empFormOverlay')" style="width:100%;margin-top:8px">Cerrar</button>
+  </div>
+</div>
+
+<!-- OVERLAY: BLOQUEO TAREA -->
+<div class="overlay" id="blockTaskOverlay">
+  <div class="sheet">
+    <div class="sheet-title">✕ Empleado no puede</div>
+    <div class="fg"><label class="fl">¿Por qué no puede?</label><input class="fi" id="blockReason" placeholder="Motivo..."></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);margin-bottom:12px">
+      <input type="checkbox" id="blockVolunteer" style="width:16px;height:16px"> Disponible para voluntarios
+    </label>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sec" onclick="closeOverlay('blockTaskOverlay')" style="flex:1">Cancelar</button>
+      <button class="btn-pri" onclick="saveBlockTask()" style="flex:2">✕ Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
