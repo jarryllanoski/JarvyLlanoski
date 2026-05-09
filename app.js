@@ -1270,7 +1270,7 @@ function addLabelInline(){
   toast(`✅ Etiqueta "${name}" agregada`);
 }
 function addCourierInline(){
-  const el = $('newCourierInput');
+  const el = $('newCourierInp');
   if (!el) return;
   const name = el.value.trim();
   if (!name) { toast('Escribe el nombre del courier'); return; }
@@ -1281,7 +1281,7 @@ function addCourierInline(){
   toast(`✅ Courier "${name}" agregado`);
 }
 function addExtraInline(){
-  const el = $('newExtraInput');
+  const el = $('newExtraInp');
   if (!el) return;
   const name = el.value.trim();
   if (!name) { toast('Escribe el nombre del campo'); return; }
@@ -1377,21 +1377,6 @@ function closeQR(){
   if (_qrLoop) { cancelAnimationFrame(_qrLoop); _qrLoop = null; }
   if (_qrStream) { _qrStream.getTracks().forEach(t=>t.stop()); _qrStream = null; }
   closeOverlay('qrOverlay');
-}
-
-/* ── AUTO-STATUS ── */
-function updateAutoStatusBadge(){
-  const badge = $('autoStatusBadge');
-  if (!badge) return;
-  const on = S.dispatch && S.dispatch.autoStatus;
-  badge.textContent = on ? '🟢 Activo' : '⚪ Inactivo';
-  badge.style.color = on ? 'var(--green)' : 'var(--text2)';
-}
-function toggleAutoStatus(){
-  if (!S.dispatch) S.dispatch = {};
-  S.dispatch.autoStatus = !S.dispatch.autoStatus;
-  save(); updateAutoStatusBadge();
-  toast(S.dispatch.autoStatus ? '🟢 Auto-estado activado' : '⚪ Auto-estado desactivado');
 }
 
 /* ════════════════════════════════════════

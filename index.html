@@ -6,7 +6,8 @@
 <title>Mi Panel de Envíos</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
-:root{--bg:#0d1117;--bg2:#161b22;--bg3:#1c2333;--bd:#30363d;--green:#2ea043;--blue:#388bfd;--red:#f78166;--purple:#a371f7;--text:#e6edf3;--text2:#8b949e}
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#1c2333;--bd:#30363d;--green:#2ea043;--blue:#388bfd;--red:#f78166;--purple:#a371f7;--orange:#e3b341;--text:#e6edf3;--text2:#8b949e}
+.c-orange{color:var(--orange)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{overflow-x:hidden;overflow-y:auto}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
@@ -457,7 +458,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     <div class="stat"><div class="stat-n c-red" id="tBlocked">0</div><div class="stat-l">✕ No pueden</div></div>
     <div class="stat"><div class="stat-n c-purple" id="tDone">0</div><div class="stat-l">✅ Completadas</div></div>
   </div>
-  <div class="search-bar" style="margin-bottom:8px">
+  <div class="tb-search" style="margin-bottom:8px">
     <span style="font-size:15px">🔍</span>
     <input id="taskSearch" placeholder="Buscar tarea..." oninput="renderTasks()" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px">
     <button onclick="openTaskForm(null)" style="background:var(--blue);border:none;border-radius:8px;color:#fff;width:32px;height:32px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">＋</button>
@@ -605,7 +606,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   <div class="cfg-sec">
     <div class="cfg-ttl">🏷️ Etiquetas de estado</div>
     <div id="labelsList"></div>
-    <button class="cfl-add-btn" onclick="addLabelInline()">＋ Agregar etiqueta</button>
+    <div class="cfl-add-row">
+      <input class="fi" id="newLabelInput" placeholder="Nueva etiqueta..." maxlength="40" onkeydown="if(event.key==='Enter')addLabelInline()">
+      <button class="cfl-plus" onclick="addLabelInline()">＋</button>
+    </div>
   </div>
 
   <!-- COURIERS -->
