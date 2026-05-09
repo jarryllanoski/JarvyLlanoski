@@ -400,6 +400,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 .trash-days-warn{background:rgba(247,129,102,.12);color:var(--red);border:1px solid rgba(247,129,102,.3)}
 .trash-restore{background:rgba(56,139,253,.12);border:1px solid rgba(56,139,253,.3);color:var(--blue);border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
 .powered{text-align:center;padding:18px;font-size:10px;color:var(--bd);letter-spacing:1px}
+/* TAREAS */
+.task-card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:8px;transition:border-color .2s}
+.task-card.t-alta{border-left:3px solid var(--red)}
+.task-card.t-baja{border-left:3px solid var(--blue)}
+.task-card.t-done{opacity:.55}
+.task-card.t-blocked{border-left:3px solid #e3b341;background:rgba(227,179,65,.04)}
+.task-top{display:flex;align-items:flex-start;gap:8px}
+.task-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px;transition:all .2s}
+.task-chk.done{background:var(--green);border-color:var(--green);color:#fff}
+.task-chk.blocked{background:#e3b341;border-color:#e3b341;color:#fff}
+.task-title{font-weight:700;font-size:14px;flex:1;line-height:1.3}
+.task-title.done{text-decoration:line-through;opacity:.6}
+.task-desc{font-size:12px;color:var(--text2);margin:4px 0 0 30px;line-height:1.4}
+.task-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px;margin-left:30px}
+.task-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+.task-block-info{background:rgba(227,179,65,.1);border:1px solid rgba(227,179,65,.3);border-radius:8px;padding:6px 10px;margin-top:6px;margin-left:30px;font-size:11px}
+.task-actions{display:flex;gap:6px;margin-top:8px;margin-left:30px}
+.emp-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0;border:2px solid transparent;flex-direction:column;gap:1px}
+.emp-avatar.active{border-color:var(--blue)}
+.emp-avatar span{font-size:9px;color:var(--text2);max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.task-group-hdr{font-size:11px;font-weight:700;color:var(--text2);padding:6px 0 4px;display:flex;align-items:center;gap:6px}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 </style>
@@ -422,9 +443,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 
 <!-- TABS -->
 <div class="tabs">
+  <div class="tab" onclick="goPage('tareas')">📋 Tareas</div>
   <div class="tab active" onclick="goPage('envios')">🚚 Envíos</div>
   <div class="tab" onclick="goPage('compartir')">🔗 Compartir</div>
   <div class="tab" onclick="goPage('configurar')">⚙️ Config</div>
+</div>
+
+<!-- TAREAS -->
+<div class="page" id="page-tareas">
+  <div class="stats" id="taskStatsArea">
+    <div class="stat"><div class="stat-n c-green" id="tTotal">0</div><div class="stat-l">Total tareas</div></div>
+    <div class="stat"><div class="stat-n c-orange" id="tPend">0</div><div class="stat-l">⏳ Pendientes</div></div>
+    <div class="stat"><div class="stat-n c-red" id="tBlocked">0</div><div class="stat-l">✕ No pueden</div></div>
+    <div class="stat"><div class="stat-n c-purple" id="tDone">0</div><div class="stat-l">✅ Completadas</div></div>
+  </div>
+  <div class="search-bar" style="margin-bottom:8px">
+    <span style="font-size:15px">🔍</span>
+    <input id="taskSearch" placeholder="Buscar tarea..." oninput="renderTasks()" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px">
+    <button onclick="openTaskForm(null)" style="background:var(--blue);border:none;border-radius:8px;color:#fff;width:32px;height:32px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">＋</button>
+  </div>
+  <div id="empAvatars" style="display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none"></div>
+  <div style="display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none">
+    <div class="chip active" id="tFilterAll" onclick="setTaskFilter('all')">↕ Todo</div>
+    <div class="chip" id="tFilterAlta" onclick="setTaskFilter('alta')">🔴 Alta</div>
+    <div class="chip" id="tFilterPend" onclick="setTaskFilter('pending')">📋 Pendiente</div>
+    <div class="chip" id="tFilterProg" onclick="setTaskFilter('inprogress')">⏳ En curso</div>
+    <div class="chip" id="tFilterDone" onclick="setTaskFilter('done')">✅ Listas</div>
+    <div class="chip" id="tFilterBlock" onclick="setTaskFilter('blocked')">✕ Bloqueadas</div>
+  </div>
+  <div id="taskArea"></div>
 </div>
 
 <!-- ENVÍOS -->
@@ -1133,6 +1180,62 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 </div>
 
 <div class="toast" id="toastEl"></div>
+
+<!-- OVERLAY: TAREA FORM -->
+<div class="overlay" id="taskFormOverlay">
+  <div class="sheet">
+    <div class="sheet-title" id="taskFormTitle">Nueva Tarea</div>
+    <div class="fg"><label class="fl">Título *</label><input class="fi" id="tTitle" placeholder="Ej: Alistar pedidos de hoy"></div>
+    <div class="fg"><label class="fl">Descripción</label><input class="fi" id="tDesc" placeholder="Detalle opcional..."></div>
+    <div class="fg"><label class="fl">Empleado asignado</label>
+      <select class="fs" id="tEmp">
+        <option value="">Sin asignar</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fg"><label class="fl">Fecha límite</label><input class="fi" id="tDue" type="date"></div>
+      <div class="fg"><label class="fl">Prioridad</label>
+        <select class="fs" id="tPriority">
+          <option value="normal">Normal</option>
+          <option value="alta">🔴 Alta</option>
+          <option value="baja">🔵 Baja</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-sec" onclick="closeOverlay('taskFormOverlay')" style="flex:1">Cancelar</button>
+      <button class="btn-pri" onclick="saveTask()" style="flex:2">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: EMPLEADO FORM -->
+<div class="overlay" id="empFormOverlay">
+  <div class="sheet">
+    <div class="sheet-title">👤 Empleados</div>
+    <div id="empList" style="margin-bottom:12px"></div>
+    <div style="display:flex;gap:8px">
+      <input class="fi" id="newEmpName" placeholder="Nombre del empleado..." style="flex:1">
+      <button class="btn-pri" onclick="addEmployee()" style="flex-shrink:0">＋ Agregar</button>
+    </div>
+    <button class="btn-sec" onclick="closeOverlay('empFormOverlay')" style="width:100%;margin-top:8px">Cerrar</button>
+  </div>
+</div>
+
+<!-- OVERLAY: BLOQUEO TAREA -->
+<div class="overlay" id="blockTaskOverlay">
+  <div class="sheet">
+    <div class="sheet-title">✕ Empleado no puede</div>
+    <div class="fg"><label class="fl">¿Por qué no puede?</label><input class="fi" id="blockReason" placeholder="Motivo..."></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);margin-bottom:12px">
+      <input type="checkbox" id="blockVolunteer" style="width:16px;height:16px"> Disponible para voluntarios
+    </label>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sec" onclick="closeOverlay('blockTaskOverlay')" style="flex:1">Cancelar</button>
+      <button class="btn-pri" onclick="saveBlockTask()" style="flex:2">✕ Confirmar</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js"></script>

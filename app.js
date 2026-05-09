@@ -17,6 +17,8 @@ if (!S.suppliers)     S.suppliers    = [];
 if (!S.trash)         S.trash        = [];
 if (!S.courierTypes)  S.courierTypes = {};
 if (!S.dispatch)      S.dispatch     = { days:[1,2,3,4,5], cutHour:'11:30', anticipation:0 };
+if (!S.tasks)         S.tasks        = [];
+if (!S.employees)     S.employees    = [];
 if (!S.config)        S.config       = { name:'Mi Negocio', phone:'999000000', city:'Lima, Perú' };
 if (S.config.autoStatusEnabled === undefined || S.config.autoStatusEnabled === null)
   S.config.autoStatusEnabled = true;
@@ -1390,6 +1392,267 @@ function toggleAutoStatus(){
   S.dispatch.autoStatus = !S.dispatch.autoStatus;
   save(); updateAutoStatusBadge();
   toast(S.dispatch.autoStatus ? '🟢 Auto-estado activado' : '⚪ Auto-estado desactivado');
+}
+
+/* ════════════════════════════════════════
+   TAREAS
+════════════════════════════════════════ */
+let _taskEmpFilter = '';
+let _taskStatusFilter = 'all';
+let _blockingTaskId = null;
+
+function setTaskFilter(f) {
+  _taskStatusFilter = f;
+  ['All','Alta','Pend','Prog','Done','Block'].forEach(x => {
+    const el = $('tFilter' + x);
+    if (el) el.classList.remove('active');
+  });
+  const map = {all:'All', alta:'Alta', pending:'Pend', inprogress:'Prog', done:'Done', blocked:'Block'};
+  const el = $('tFilter' + (map[f] || 'All'));
+  if (el) el.classList.add('active');
+  renderTasks();
+}
+
+function setEmpFilter(name) {
+  _taskEmpFilter = name;
+  renderEmpAvatars();
+  renderTasks();
+}
+
+function updateTaskStats() {
+  const t = S.tasks;
+  if ($('tTotal'))   $('tTotal').textContent   = t.length;
+  if ($('tPend'))    $('tPend').textContent     = t.filter(x => x.status === 'pending' || x.status === 'inprogress').length;
+  if ($('tBlocked')) $('tBlocked').textContent  = t.filter(x => x.status === 'blocked').length;
+  if ($('tDone'))    $('tDone').textContent      = t.filter(x => x.status === 'done').length;
+}
+
+function renderEmpAvatars() {
+  const el = $('empAvatars');
+  if (!el) return;
+  const colors = ['#388bfd','#a371f7','#3fb950','#f78166','#e3b341','#58a6ff','#d2a8ff'];
+  const allAvatar = `<div class="emp-avatar ${_taskEmpFilter===''?'active':''}" onclick="setEmpFilter('')"
+    style="background:${_taskEmpFilter===''?'var(--blue)':'var(--bg3)'}">
+    <span style="font-size:18px">👤</span><span>Todos</span>
+  </div>`;
+  const empAv = S.employees.map((name, i) => {
+    const col = colors[i % colors.length];
+    const ini = name.slice(0,1).toUpperCase();
+    const cnt = S.tasks.filter(t => t.assignedTo === name && t.status !== 'done').length;
+    return `<div class="emp-avatar ${_taskEmpFilter===name?'active':''}" onclick="setEmpFilter('${name.replace(/'/g,"\\'")}')"
+      style="background:${col};position:relative">
+      ${ini}
+      ${cnt > 0 ? `<div style="position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700">${cnt}</div>` : ''}
+      <span style="color:rgba(255,255,255,.8)">${name.length>7?name.slice(0,6)+'…':name}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = allAvatar + empAv +
+    `<div class="emp-avatar" onclick="openOverlay('empFormOverlay');renderEmpList()" style="background:var(--bg3);border:1px dashed var(--bd)">
+      <span style="font-size:16px">⚙️</span><span>Editar</span>
+    </div>`;
+}
+
+function renderTasks() {
+  updateTaskStats();
+  renderEmpAvatars();
+  const el = $('taskArea');
+  if (!el) return;
+  const q = ($('taskSearch')||{value:''}).value.toLowerCase();
+  let tasks = [...S.tasks];
+  if (_taskEmpFilter) tasks = tasks.filter(t => t.assignedTo === _taskEmpFilter);
+  if (_taskStatusFilter === 'alta')       tasks = tasks.filter(t => t.priority === 'alta');
+  else if (_taskStatusFilter === 'pending')    tasks = tasks.filter(t => t.status === 'pending');
+  else if (_taskStatusFilter === 'inprogress') tasks = tasks.filter(t => t.status === 'inprogress');
+  else if (_taskStatusFilter === 'done')       tasks = tasks.filter(t => t.status === 'done');
+  else if (_taskStatusFilter === 'blocked')    tasks = tasks.filter(t => t.status === 'blocked');
+  if (q) tasks = tasks.filter(t => t.title.toLowerCase().includes(q) || (t.description||'').toLowerCase().includes(q));
+
+  if (!tasks.length) {
+    el.innerHTML = `<div class="empty-st"><div style="font-size:36px">📋</div><p style="margin-top:10px">Sin tareas. Presiona ＋</p></div>`;
+    return;
+  }
+
+  // Group by employee
+  const groups = {};
+  tasks.forEach(t => {
+    const key = t.assignedTo || 'Sin asignar';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  const colors = ['#388bfd','#a371f7','#3fb950','#f78166','#e3b341','#58a6ff'];
+  el.innerHTML = Object.entries(groups).map(([emp, items]) => {
+    const empIdx = S.employees.indexOf(emp);
+    const col = empIdx >= 0 ? colors[empIdx % colors.length] : 'var(--text2)';
+    const ini = emp.slice(0,1).toUpperCase();
+    const pending = items.filter(t => t.status !== 'done').length;
+    return `<div style="margin-bottom:14px">
+      <div class="task-group-hdr">
+        <div style="width:26px;height:26px;border-radius:50%;background:${col};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${ini}</div>
+        <span style="color:var(--text)">${emp}</span>
+        ${pending > 0 ? `<span style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;font-size:10px;padding:1px 7px;color:var(--text2)">${pending} pendiente${pending>1?'s':''}</span>` : ''}
+      </div>
+      ${items.map(t => taskCardHTML(t)).join('')}
+    </div>`;
+  }).join('');
+}
+
+function taskCardHTML(t) {
+  const isDone    = t.status === 'done';
+  const isBlocked = t.status === 'blocked';
+  const chkCls    = isDone ? 'done' : isBlocked ? 'blocked' : '';
+  const chkIcon   = isDone ? '✓' : isBlocked ? '✕' : '';
+  const cardCls   = isDone ? 't-done' : isBlocked ? 't-blocked' : t.priority === 'alta' ? 't-alta' : t.priority === 'baja' ? 't-baja' : '';
+  const dueStr    = t.dueDate ? `📅 ${t.dueDate}` : '';
+  const priLabel  = t.priority === 'alta' ? `<span class="task-badge" style="background:rgba(247,129,102,.15);color:var(--red)">🔴 Alta</span>` :
+                    t.priority === 'baja' ? `<span class="task-badge" style="background:rgba(56,139,253,.12);color:var(--blue)">🔵 Baja</span>` : '';
+  return `<div class="task-card ${cardCls}" id="tc_${t.id}">
+    <div class="task-top">
+      <div class="task-chk ${chkCls}" onclick="cycleTaskStatus('${t.id}')">${chkIcon}</div>
+      <div style="flex:1">
+        <div class="task-title ${isDone?'done':''}">${t.title}</div>
+      </div>
+      <button onclick="openTaskForm('${t.id}')" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 2px">✏️</button>
+    </div>
+    ${t.description ? `<div class="task-desc">${t.description}</div>` : ''}
+    <div class="task-meta">
+      ${priLabel}
+      ${dueStr ? `<span style="font-size:11px;color:var(--text2)">${dueStr}</span>` : ''}
+    </div>
+    ${isBlocked ? `<div class="task-block-info">
+      <div style="font-weight:700;color:#e3b341">✕ Empleado no puede${t.blockReason ? ': ' + t.blockReason : ''}</div>
+      ${t.availableForVolunteers ? `<div style="color:var(--orange);margin-top:2px">🙋 Disponible para voluntarios</div>` : ''}
+    </div>` : ''}
+    <div class="task-actions">
+      ${!isDone && !isBlocked ? `<button onclick="openBlockTask('${t.id}')" style="font-size:11px;background:rgba(227,179,65,.1);border:1px solid rgba(227,179,65,.3);color:#e3b341;border-radius:6px;padding:3px 8px;cursor:pointer">✕ No puede</button>` : ''}
+      ${isBlocked ? `<button onclick="reassignTask('${t.id}')" style="font-size:11px;background:rgba(56,139,253,.1);border:1px solid rgba(56,139,253,.3);color:var(--blue);border-radius:6px;padding:3px 8px;cursor:pointer">👤 Reasignar</button>` : ''}
+      <button onclick="deleteTask('${t.id}')" style="font-size:11px;background:rgba(247,129,102,.08);border:1px solid rgba(247,129,102,.2);color:var(--red);border-radius:6px;padding:3px 8px;cursor:pointer">🗑️</button>
+    </div>
+  </div>`;
+}
+
+function cycleTaskStatus(id) {
+  const t = S.tasks.find(x => x.id === id);
+  if (!t) return;
+  if (t.status === 'pending')    { t.status = 'done'; }
+  else if (t.status === 'done')  { t.status = 'pending'; t.blockReason = ''; t.availableForVolunteers = false; }
+  else if (t.status === 'blocked') { t.status = 'done'; }
+  else { t.status = 'done'; }
+  save(); renderTasks();
+}
+
+let _editTaskId = null;
+function openTaskForm(id) {
+  _editTaskId = id;
+  $('taskFormTitle').textContent = id ? 'Editar Tarea' : 'Nueva Tarea';
+  const empSel = $('tEmp');
+  empSel.innerHTML = `<option value="">Sin asignar</option>` +
+    S.employees.map(e => `<option value="${e}">${e}</option>`).join('');
+  if (id) {
+    const t = S.tasks.find(x => x.id === id);
+    if (!t) return;
+    $('tTitle').value    = t.title;
+    $('tDesc').value     = t.description || '';
+    $('tEmp').value      = t.assignedTo || '';
+    $('tDue').value      = t.dueDate || '';
+    $('tPriority').value = t.priority || 'normal';
+  } else {
+    $('tTitle').value = ''; $('tDesc').value = ''; $('tDue').value = '';
+    $('tEmp').value = _taskEmpFilter || '';
+    $('tPriority').value = 'normal';
+  }
+  openOverlay('taskFormOverlay');
+}
+
+function saveTask() {
+  const title = $('tTitle').value.trim();
+  if (!title) { toast('⚠️ Escribe el título de la tarea'); return; }
+  if (_editTaskId) {
+    const t = S.tasks.find(x => x.id === _editTaskId);
+    if (t) {
+      t.title = title; t.description = $('tDesc').value.trim();
+      t.assignedTo = $('tEmp').value; t.dueDate = $('tDue').value;
+      t.priority = $('tPriority').value;
+    }
+    toast('✅ Tarea actualizada');
+  } else {
+    S.tasks.push({
+      id: 'task_' + Date.now(),
+      title, description: $('tDesc').value.trim(),
+      assignedTo: $('tEmp').value, dueDate: $('tDue').value,
+      priority: $('tPriority').value, status: 'pending',
+      blockReason: '', availableForVolunteers: false,
+      createdAt: new Date().toISOString()
+    });
+    toast('✅ Tarea creada');
+  }
+  save(); closeOverlay('taskFormOverlay'); renderTasks();
+}
+
+function deleteTask(id) {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  S.tasks = S.tasks.filter(x => x.id !== id);
+  save(); renderTasks();
+}
+
+function openBlockTask(id) {
+  _blockingTaskId = id;
+  $('blockReason').value = '';
+  $('blockVolunteer').checked = false;
+  openOverlay('blockTaskOverlay');
+}
+
+function saveBlockTask() {
+  const t = S.tasks.find(x => x.id === _blockingTaskId);
+  if (!t) return;
+  t.status = 'blocked';
+  t.blockReason = $('blockReason').value.trim();
+  t.availableForVolunteers = $('blockVolunteer').checked;
+  save(); closeOverlay('blockTaskOverlay'); renderTasks();
+  toast('✕ Tarea marcada como bloqueada');
+}
+
+function reassignTask(id) {
+  const t = S.tasks.find(x => x.id === id);
+  if (!t) return;
+  t.status = 'pending'; t.blockReason = ''; t.availableForVolunteers = false;
+  openTaskForm(id);
+}
+
+function addEmployee() {
+  const name = ($('newEmpName')||{value:''}).value.trim();
+  if (!name) { toast('Escribe el nombre del empleado'); return; }
+  if (S.employees.includes(name)) { toast('Ya existe ese empleado'); return; }
+  S.employees.push(name);
+  $('newEmpName').value = '';
+  save(); renderEmpList(); renderEmpAvatars();
+  toast(`✅ Empleado "${name}" agregado`);
+}
+
+function renderEmpList() {
+  const el = $('empList');
+  if (!el) return;
+  if (!S.employees.length) {
+    el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Sin empleados aún</div>`;
+    return;
+  }
+  el.innerHTML = S.employees.map((name, i) =>
+    `<div class="cfl-item">
+      <span class="cfl-icon">👤</span>
+      <span class="cfl-name">${name}</span>
+      <span style="font-size:11px;color:var(--text2)">${S.tasks.filter(t=>t.assignedTo===name).length} tareas</span>
+      <button class="cfl-btn cfl-btn-del" onclick="deleteEmployee(${i})">🗑️</button>
+    </div>`
+  ).join('');
+}
+
+function deleteEmployee(i) {
+  const name = S.employees[i];
+  if (!confirm(`¿Eliminar a "${name}"? Sus tareas quedarán sin asignar.`)) return;
+  S.tasks.forEach(t => { if (t.assignedTo === name) t.assignedTo = ''; });
+  S.employees.splice(i, 1);
+  if (_taskEmpFilter === name) _taskEmpFilter = '';
+  save(); renderEmpList(); renderEmpAvatars(); renderTasks();
 }
 
 /* ════════════════════════════════════════
