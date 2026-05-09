@@ -17,6 +17,8 @@ if (!S.suppliers)     S.suppliers    = [];
 if (!S.trash)         S.trash        = [];
 if (!S.courierTypes)  S.courierTypes = {};
 if (!S.dispatch)      S.dispatch     = { days:[1,2,3,4,5], cutHour:'11:30', anticipation:0 };
+if (!S.tasks)         S.tasks        = [];
+if (!S.employees)     S.employees    = [];
 if (!S.config)        S.config       = { name:'Mi Negocio', phone:'999000000', city:'Lima, Perú' };
 if (S.config.autoStatusEnabled === undefined || S.config.autoStatusEnabled === null)
   S.config.autoStatusEnabled = true;
