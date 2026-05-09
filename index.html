@@ -605,7 +605,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   <div class="cfg-sec">
     <div class="cfg-ttl">🏷️ Etiquetas de estado</div>
     <div id="labelsList"></div>
-    <button class="cfl-add-btn" onclick="addLabelInline()">＋ Agregar etiqueta</button>
+    <div class="cfl-add-row">
+      <input class="fi" id="newLabelInput" placeholder="Nueva etiqueta..." maxlength="40" onkeydown="if(event.key==='Enter')addLabelInline()">
+      <button class="cfl-plus" onclick="addLabelInline()">＋</button>
+    </div>
   </div>
 
   <!-- COURIERS -->
