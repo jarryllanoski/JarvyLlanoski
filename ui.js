@@ -14,10 +14,11 @@ function goPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   $('page-' + id).classList.add('active');
-  ['envios', 'compartir', 'configurar'].forEach((n, i) => {
+  ['tareas', 'envios', 'compartir', 'configurar'].forEach((n, i) => {
     if (n === id) document.querySelectorAll('.tab')[i].classList.add('active');
   });
   if (id === 'configurar') loadCfgUI();
+  if (id === 'tareas') renderTasks();
 }
 
 /* OVERLAYS */
