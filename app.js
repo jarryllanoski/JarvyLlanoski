@@ -1640,15 +1640,3 @@ function deleteEmployee(i) {
   save(); renderEmpList(); renderEmpAvatars(); renderTasks();
 }
 
-/* ════════════════════════════════════════
-   INIT — arranque de la aplicación
-════════════════════════════════════════ */
-window.addEventListener('load', function init(){
-  if ($('hdrName')) $('hdrName').textContent = S.config.name || '';
-  renderChips();
-  updateAutoStatusBadge();
-  if ($('suppList')) renderSuppList();
-  if ($('shareUrl')) updateShareUrl();
-  render();
-  goPage('envios');
-});
