@@ -428,6 +428,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   <div class="tab" onclick="goPage('configurar')">⚙️ Config</div>
 </div>
 
+<!-- TAREAS -->
+<div class="page" id="page-tareas">
+  <div class="stats" id="taskStatsArea">
+    <div class="stat"><div class="stat-n c-green" id="tTotal">0</div><div class="stat-l">Total tareas</div></div>
+    <div class="stat"><div class="stat-n c-orange" id="tPend">0</div><div class="stat-l">⏳ Pendientes</div></div>
+    <div class="stat"><div class="stat-n c-red" id="tBlocked">0</div><div class="stat-l">✕ No pueden</div></div>
+    <div class="stat"><div class="stat-n c-purple" id="tDone">0</div><div class="stat-l">✅ Completadas</div></div>
+  </div>
+  <div class="search-bar" style="margin-bottom:8px">
+    <span style="font-size:15px">🔍</span>
+    <input id="taskSearch" placeholder="Buscar tarea..." oninput="renderTasks()" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px">
+    <button onclick="openTaskForm(null)" style="background:var(--blue);border:none;border-radius:8px;color:#fff;width:32px;height:32px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">＋</button>
+  </div>
+  <div id="empAvatars" style="display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none"></div>
+  <div style="display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none">
+    <div class="chip active" id="tFilterAll" onclick="setTaskFilter('all')">↕ Todo</div>
+    <div class="chip" id="tFilterAlta" onclick="setTaskFilter('alta')">🔴 Alta</div>
+    <div class="chip" id="tFilterPend" onclick="setTaskFilter('pending')">📋 Pendiente</div>
+    <div class="chip" id="tFilterProg" onclick="setTaskFilter('inprogress')">⏳ En curso</div>
+    <div class="chip" id="tFilterDone" onclick="setTaskFilter('done')">✅ Listas</div>
+    <div class="chip" id="tFilterBlock" onclick="setTaskFilter('blocked')">✕ Bloqueadas</div>
+  </div>
+  <div id="taskArea"></div>
+</div>
+
 <!-- ENVÍOS -->
 <div class="page active" id="page-envios">
   <div class="stats" id="statsArea">
