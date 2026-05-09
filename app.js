@@ -1270,7 +1270,7 @@ function addLabelInline(){
   toast(`✅ Etiqueta "${name}" agregada`);
 }
 function addCourierInline(){
-  const el = $('newCourierInput');
+  const el = $('newCourierInp');
   if (!el) return;
   const name = el.value.trim();
   if (!name) { toast('Escribe el nombre del courier'); return; }
