@@ -1281,7 +1281,7 @@ function addCourierInline(){
   toast(`✅ Courier "${name}" agregado`);
 }
 function addExtraInline(){
-  const el = $('newExtraInput');
+  const el = $('newExtraInp');
   if (!el) return;
   const name = el.value.trim();
   if (!name) { toast('Escribe el nombre del campo'); return; }
