@@ -1379,21 +1379,6 @@ function closeQR(){
   closeOverlay('qrOverlay');
 }
 
-/* ── AUTO-STATUS ── */
-function updateAutoStatusBadge(){
-  const badge = $('autoStatusBadge');
-  if (!badge) return;
-  const on = S.dispatch && S.dispatch.autoStatus;
-  badge.textContent = on ? '🟢 Activo' : '⚪ Inactivo';
-  badge.style.color = on ? 'var(--green)' : 'var(--text2)';
-}
-function toggleAutoStatus(){
-  if (!S.dispatch) S.dispatch = {};
-  S.dispatch.autoStatus = !S.dispatch.autoStatus;
-  save(); updateAutoStatusBadge();
-  toast(S.dispatch.autoStatus ? '🟢 Auto-estado activado' : '⚪ Auto-estado desactivado');
-}
-
 /* ════════════════════════════════════════
    TAREAS
 ════════════════════════════════════════ */
