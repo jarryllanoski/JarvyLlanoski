@@ -127,3 +127,14 @@ function loadCfgUI() {
     </div>`;
   }).join('');
 }
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+if ($('hdrName')) $('hdrName').textContent = S.config.name || '';
+renderChips();
+updateAutoStatusBadge();
+if ($('suppList')) renderSuppList();
+if ($('shareUrl')) updateShareUrl();
+render();
+goPage('envios');
