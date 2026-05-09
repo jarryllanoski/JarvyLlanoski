@@ -1640,3 +1640,67 @@ function deleteEmployee(i) {
   save(); renderEmpList(); renderEmpAvatars(); renderTasks();
 }
 
+/* ════════════════════════════════════════
+   PIN
+════════════════════════════════════════ */
+let _pinEntry = '', _pinCallback = null;
+function openPin(cb) {
+  _pinEntry = ''; _pinCallback = cb;
+  updatePinDots();
+  $('pinMsg').textContent = 'Ingresa la clave para cambiar el estado';
+  $('pinMsg').style.color = 'var(--text2)';
+  openOverlay('pinOverlay');
+}
+function pinTap(d) {
+  if (_pinEntry.length >= 4) return;
+  _pinEntry += d;
+  updatePinDots();
+  if (_pinEntry.length === 4) setTimeout(checkPin, 150);
+}
+function pinDel() {
+  _pinEntry = _pinEntry.slice(0, -1);
+  updatePinDots();
+}
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = $('pd' + i); if (!dot) continue;
+    dot.classList.toggle('filled', i < _pinEntry.length);
+    dot.classList.remove('error');
+  }
+}
+function checkPin() {
+  if (_pinEntry === (S.statusPin || '')) {
+    closeOverlay('pinOverlay');
+    if (_pinCallback) { _pinCallback(); _pinCallback = null; }
+  } else {
+    $('pinMsg').textContent = '❌ Clave incorrecta';
+    $('pinMsg').style.color = 'var(--red)';
+    for (let i = 0; i < 4; i++) { const d = $('pd' + i); if (d) d.classList.add('error'); }
+    setTimeout(() => {
+      _pinEntry = ''; updatePinDots();
+      $('pinMsg').textContent = 'Ingresa la clave'; $('pinMsg').style.color = 'var(--text2)';
+    }, 700);
+  }
+}
+function changePIN() {
+  openPin(() => {
+    _pinEntry = ''; updatePinDots();
+    $('pinMsg').textContent = 'Ingresa la NUEVA clave (4 dígitos)';
+    $('pinMsg').style.color = 'var(--blue)';
+    openOverlay('pinOverlay');
+    _pinCallback = () => { S.statusPin = _pinEntry; save(); toast('🔐 Clave actualizada: ' + _pinEntry); };
+  });
+}
+
+/* ════════════════════════════════════════
+   CLOUD (stub)
+════════════════════════════════════════ */
+function connectCloud() {
+  const wsId = $('cfgWsId') ? $('cfgWsId').value.trim() : '';
+  if (!wsId) { toast('⚠️ Ingresa un código de equipo'); return; }
+  toast('☁️ Sincronización en nube no disponible aún');
+}
+function disconnectCloud() {
+  toast('☁️ Función no disponible aún');
+}
+
