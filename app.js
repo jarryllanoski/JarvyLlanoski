@@ -1692,15 +1692,4 @@ function changePIN() {
   });
 }
 
-/* ════════════════════════════════════════
-   CLOUD (stub)
-════════════════════════════════════════ */
-function connectCloud() {
-  const wsId = $('cfgWsId') ? $('cfgWsId').value.trim() : '';
-  if (!wsId) { toast('⚠️ Ingresa un código de equipo'); return; }
-  toast('☁️ Sincronización en nube no disponible aún');
-}
-function disconnectCloud() {
-  toast('☁️ Función no disponible aún');
-}
 
