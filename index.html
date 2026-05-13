@@ -635,35 +635,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 
   <!-- NUBE -->
   <div class="cfg-sec">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="cfg-ttl" style="margin:0">☁️ Sincronización en la nube</div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="cfg-ttl" style="margin:0">☁️ Estado de nube</div>
       <div id="cloudStatusDot" style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--text2);white-space:nowrap">⬜ Sin nube</div>
     </div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px">Ingresa tus credenciales Firebase y un <b style="color:var(--text)">código de equipo</b> para sincronizar datos en tiempo real.</div>
-
-    <div class="fg">
-      <label class="fl">API Key de Firebase</label>
-      <div style="display:flex;gap:6px">
-        <input class="fi" id="cfgFbKey" type="password" placeholder="AIzaSy..." style="flex:1" autocomplete="off">
-        <button onclick="var i=$('cfgFbKey');i.type=i.type==='password'?'text':'password'" style="flex-shrink:0;padding:0 10px;height:40px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;color:var(--text2);cursor:pointer;font-size:14px">👁</button>
-      </div>
-    </div>
-
-    <div class="fg">
-      <label class="fl">Project ID de Firebase</label>
-      <input class="fi" id="cfgFbProject" placeholder="mi-proyecto-12345" autocomplete="off">
-    </div>
-
-    <div class="fg">
-      <label class="fl">Código de equipo</label>
-      <div style="display:flex;gap:6px">
-        <input class="fi" id="cfgWsId" placeholder="ej. mi-negocio" maxlength="60" style="flex:1" onkeydown="if(event.key==='Enter')connectCloud()">
-        <button onclick="connectCloud()" style="white-space:nowrap;flex-shrink:0;padding:0 14px;height:40px;background:linear-gradient(135deg,#1a3a6b,var(--blue));border:none;border-radius:8px;color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">☁️ Conectar</button>
-      </div>
-      <div style="font-size:11px;color:var(--text2);margin-top:5px">Todos los usuarios con el mismo código comparten los mismos datos.</div>
-    </div>
-
-    <button id="btnDisconnectCloud" onclick="disconnectCloud()" class="btn-sec" style="display:none;color:var(--red);border-color:rgba(247,129,102,.3);margin-top:4px">⛔ Desconectar nube</button>
   </div>
 
   <!-- ESTADOS AUTOMÁTICOS -->
