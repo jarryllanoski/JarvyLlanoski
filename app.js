@@ -42,7 +42,10 @@ S.labels = [...FIXED_LABELS, ..._initCustom];
 FIXED_COURIERS.forEach(c => { if (!S.couriers.includes(c)) S.couriers.unshift(c); });
 
 /* ── SAVE ────────────────────────────────────────────────────────── */
-function save() { lsSet('dpanel', JSON.stringify(S)); }
+function save() {
+  lsSet('dpanel', JSON.stringify(S));
+  if (typeof cloudSync === 'function') cloudSync();
+}
 
 /* ── HELPERS ─────────────────────────────────────────────────────── */
 function statusPrio(st)  { return FIXED_LABELS.indexOf(st); }

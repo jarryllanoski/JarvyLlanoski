@@ -436,7 +436,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     <div class="hdr-phone" id="hdrPhone">999000000</div>
     <div style="display:flex;gap:4px;align-items:center">
       <div id="autoModeBadgeHdr" onclick="goPage('configurar')" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid;cursor:pointer;white-space:nowrap;transition:.2s"></div>
-      <div id="cloudBadge" onclick="goPage('configurar')" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--text2);cursor:pointer;white-space:nowrap">⬜ Sin nube</div>
+      <div id="cloudBadge" onclick="openOverlay('cloudConnectOverlay')" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--text2);cursor:pointer;white-space:nowrap">⬜ Sin nube</div>
     </div>
   </div>
   <button class="hdr-out">↪</button>
@@ -1032,6 +1032,41 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   </div>
 </div>
 
+<!-- CLOUD CONNECT OVERLAY -->
+<div class="overlay" id="cloudConnectOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">☁️ Sincronización en nube</div>
+
+    <!-- Disconnected view -->
+    <div id="cloudDisconnectedView">
+      <p style="font-size:13px;color:var(--text2);margin:0 0 16px;line-height:1.6">Ingresa un <b style="color:var(--text)">código de equipo</b> para sincronizar datos en tiempo real entre todos tus dispositivos, como WhatsApp.</p>
+      <div class="fg">
+        <label class="fl">Código de equipo</label>
+        <input class="fi" id="cloudWsInput" placeholder="ej. mi-tienda-2024" maxlength="60"
+          onkeydown="if(event.key==='Enter') connectCloud($('cloudWsInput').value)">
+        <div style="font-size:11px;color:var(--text2);margin-top:5px">Todos los que usen el mismo código comparten los mismos datos en tiempo real.</div>
+      </div>
+      <button onclick="connectCloud($('cloudWsInput').value)"
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#1a3a6b,var(--blue));border:none;border-radius:10px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-top:4px">
+        ☁️ Conectar
+      </button>
+    </div>
+
+    <!-- Connected view -->
+    <div id="cloudConnectedView" style="display:none">
+      <div id="cloudConnectedInfo" style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:16px;padding:12px;background:rgba(46,160,67,.08);border:1px solid rgba(46,160,67,.3);border-radius:10px">🟢 Conectado</div>
+      <p style="font-size:12px;color:var(--text2);margin:0 0 16px;line-height:1.6">Todos los cambios se sincronizan automáticamente con los demás dispositivos que usen el mismo código de equipo.</p>
+      <button onclick="disconnectCloud()"
+        style="width:100%;padding:12px;background:rgba(247,129,102,.1);border:1px solid rgba(247,129,102,.3);border-radius:10px;color:var(--red);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">
+        ⛔ Desconectar
+      </button>
+    </div>
+
+    <button class="btn-sec" style="margin-top:10px;width:100%" onclick="closeOverlay('cloudConnectOverlay')">Cerrar</button>
+  </div>
+</div>
+
 <!-- PIN OVERLAY -->
 <div class="overlay" id="pinOverlay">
   <div class="sheet">
@@ -1217,9 +1252,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="config.js?v=20260513"></script>
-<script src="app.js?v=20260513"></script>
-<script src="ui.js?v=20260513"></script>
-<script src="cloud.js?v=20260513"></script>
+<script src="config.js?v=20260514"></script>
+<script src="app.js?v=20260514"></script>
+<script src="ui.js?v=20260514"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="cloud.js?v=20260514"></script>
 </body>
 </html>
