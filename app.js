@@ -878,7 +878,9 @@ function doPrint(){
 
 /* ── SHARE ── */
 function genFormUrl(){
-  return window.location.origin + window.location.pathname;
+  const base = window.location.href.replace(/\/[^/]*$/, '/');
+  if (!S.wsId) return base + 'form.html';
+  return base + 'form.html?ws=' + encodeURIComponent(S.wsId);
 }
 function updateShareUrl(){
   const url = genFormUrl();
