@@ -17,10 +17,22 @@ let _timer  = null;
 /* ── Init ─────────────────────────────────────────────── */
 function _initDb() {
   if (_db) return;
-  if (typeof firebase === 'undefined') { toast('⚠️ Firebase no cargó. Revisa conexión.'); return; }
-  if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
-  _db = firebase.firestore();
-  _db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+  if (typeof firebase === 'undefined') {
+    toast('⚠️ Firebase SDK no cargó — verificá tu internet y recargá');
+    return;
+  }
+  if (typeof firebase.firestore === 'undefined') {
+    toast('⚠️ Firestore no disponible — recargá la página');
+    return;
+  }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    _db = firebase.firestore();
+    _db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+  } catch(e) {
+    toast('⚠️ Firebase error: ' + e.message);
+    _db = null;
+  }
 }
 
 /* ── Strip base64 images (too large for Firestore) ────── */
@@ -145,11 +157,13 @@ function cloudSync() {
 function connectCloud(wsId) {
   wsId = (wsId || '').trim().toLowerCase().replace(/\s+/g, '-');
   if (!wsId) { toast('⚠️ Ingresa un código de equipo'); return; }
-  _initDb(); if (!_db) return;
+  toast('⏳ Conectando...');
+  try { _initDb(); } catch(e) { toast('⚠️ Error: ' + e.message); return; }
+  if (!_db) return;
   _wsId = wsId;
   S.wsId = wsId;
   lsSet('dpanel', JSON.stringify(S));
-  _listen();
+  try { _listen(); } catch(e) { toast('⚠️ Listener error: ' + e.message); return; }
   _badge(true);
   toast('☁️ Conectado: ' + wsId);
   if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
