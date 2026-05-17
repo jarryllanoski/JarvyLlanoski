@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Formulario de Pedido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080810;--card:#0f0f1a;--card2:#13131f;--bd:#1e1e30;--blue:#4f8ef7;--green:#22c55e;--red:#f87171;--purple:#a78bfa;--text:#f0f0f8;--text2:#6b7280}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,-apple-system,sans-serif;min-height:100vh;padding:16px;display:flex;flex-direction:column;align-items:center}
+.container{width:100%;max-width:460px}
+
+/* HEADER */
+.biz-header{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center}
+.biz-name{font-size:22px;font-weight:700;margin-bottom:4px}
+.biz-city{font-size:13px;color:var(--text2);margin-bottom:10px}
+.biz-meta{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.biz-badge{background:var(--card2);border:1px solid var(--bd);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--text2)}
+
+/* CARDS */
+.form-card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:16px}
+.form-title{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.6px;margin-bottom:16px;text-transform:uppercase}
+
+/* FIELDS */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+.fl .req{color:var(--red);margin-left:2px}
+.fi{width:100%;background:var(--card2);border:1px solid var(--bd);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:9px 12px;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none}
+.fi:focus{border-color:var(--blue)}
+.fi::placeholder{color:var(--text2)}
+textarea.fi{resize:vertical}
+.fi.err{border-color:var(--red)}
+.fi.sel{background:var(--card2);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
+.field-err{font-size:11px;color:var(--red);margin-top:4px;display:none}
+.field-err.show{display:block}
+
+/* COURIER GRID */
+.courier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.c-opt{background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+.c-opt:hover{border-color:var(--blue)}
+.c-opt.active{border-color:var(--blue);background:#1a2540}
+.c-opt .c-icon{font-size:22px;margin-bottom:4px}
+.c-opt .c-name{font-size:11px;font-weight:600;color:var(--text2)}
+.c-opt.active .c-name{color:var(--text)}
+
+/* DATES */
+.dates{display:flex;gap:8px;flex-wrap:wrap}
+.date-opt{background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none;min-width:64px}
+.date-opt:hover{border-color:var(--blue)}
+.date-opt.active{border-color:var(--blue);background:#1a2540}
+.date-opt .d-day{font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:600}
+.date-opt .d-num{font-size:18px;font-weight:700;line-height:1.2}
+.date-opt .d-mon{font-size:10px;color:var(--text2)}
+.date-opt.active .d-day,.date-opt.active .d-mon{color:var(--blue)}
+
+/* AGENCY / CASCADE */
+.agc-box{margin-top:10px}
+.agc-label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px;display:block}
+.cascade{display:flex;flex-direction:column;gap:8px}
+.agc-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:200px;overflow-y:auto}
+.agc-item{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;transition:border-color .15s,background .15s}
+.agc-item:hover{border-color:var(--blue)}
+.agc-item.active{border-color:var(--blue);background:#1a2540}
+.sel-badge{display:inline-flex;align-items:center;gap:6px;background:#1a2540;border:1px solid var(--blue);border-radius:8px;padding:6px 10px;font-size:13px;margin-top:6px}
+.sel-badge .clr-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;padding:0;line-height:1}
+
+/* BTN SUBMIT */
+.btn-submit{width:100%;background:linear-gradient(135deg,#1d4ed8,var(--blue));color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;padding:13px;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px}
+.btn-submit:hover{opacity:.9}
+.btn-submit:active{transform:scale(.98)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.btn-sec{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;padding:11px;cursor:pointer;margin-top:10px}
+.btn-wa{width:100%;background:linear-gradient(135deg,#128c7e,#25d366);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;padding:13px;cursor:pointer;margin-top:10px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-track{width:100%;background:linear-gradient(135deg,#3730a3,var(--purple));color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;padding:13px;cursor:pointer;margin-top:10px}
+
+/* SUCCESS */
+.success{text-align:center;padding:10px 0}
+.success-icon{font-size:56px;margin-bottom:12px}
+.success-ttl{font-size:22px;font-weight:700;margin-bottom:8px}
+.success-sub{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
+.track-code{display:inline-block;background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:8px 20px;font-size:24px;font-weight:700;letter-spacing:3px;margin-bottom:16px;color:var(--purple)}
+.summary-rows{background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px;text-align:left;margin-bottom:12px}
+.sum-row{display:flex;gap:8px;margin-bottom:6px;font-size:13px}
+.sum-row:last-child{margin-bottom:0}
+.sum-lbl{color:var(--text2);min-width:74px;font-size:11px;font-weight:600;text-transform:uppercase;padding-top:1px}
+.sum-val{color:var(--text);flex:1}
+
+/* TRACKING */
+.track-wrap{padding:4px 0}
+.track-card{background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:12px}
+.track-section{margin-bottom:16px}
+.track-section:last-child{margin-bottom:0}
+.track-ttl{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+.status-badge{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600}
+.prog-bar{display:flex;gap:0;margin-top:4px}
+.prog-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.prog-step:not(:last-child)::after{content:'';position:absolute;top:10px;left:50%;width:100%;height:2px;background:var(--bd);z-index:0}
+.prog-step.done:not(:last-child)::after{background:var(--blue)}
+.prog-dot{width:20px;height:20px;border-radius:50%;background:var(--bd);border:2px solid var(--bd);position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-size:10px}
+.prog-step.done .prog-dot{background:var(--blue);border-color:var(--blue)}
+.prog-step.current .prog-dot{background:var(--purple);border-color:var(--purple);box-shadow:0 0 0 3px rgba(167,139,250,.3)}
+.prog-lbl{font-size:9px;color:var(--text2);text-align:center;line-height:1.2}
+.prog-step.done .prog-lbl,.prog-step.current .prog-lbl{color:var(--text)}
+
+/* LOADING OVERLAY */
+.loading-overlay{position:fixed;inset:0;background:rgba(8,8,16,.8);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
+.loading-overlay.hidden{display:none}
+.spin{width:44px;height:44px;border:3px solid var(--bd);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SEARCH TRACK */
+.search-track{display:flex;gap:8px}
+.search-track .fi{flex:1}
+.btn-icon{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-family:inherit;font-weight:600}
+
+/* ERROR BOX */
+.error-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--red);margin-bottom:12px}
+
+/* MISC */
+.footer{text-align:center;font-size:11px;color:var(--text2);padding:20px 0 10px;opacity:.4}
+.unconfigured{text-align:center;padding:40px 20px}
+.unconfigured-icon{font-size:48px;margin-bottom:12px}
+.unconfigured-ttl{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text2)}
+
+.spinner-wrap{text-align:center;padding:60px 20px}
+.spinner-wrap .spin{margin:0 auto 16px}
+.spinner-txt{color:var(--text2);font-size:14px}
+
+.track-info-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:13px}
+.track-info-lbl{color:var(--text2);font-size:11px;font-weight:600;text-transform:uppercase;min-width:72px;padding-top:1px}
+.track-info-val{color:var(--text);flex:1}
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="root">
+    <div class="spinner-wrap"><div class="spin"></div><div class="spinner-txt">Cargando formulario...</div></div>
+  </div>
+  <div class="footer">Panel de Entregas · Formulario público</div>
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spin"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ─── CONSTANTS ─────────────────────────────────────────────── */
+const FB_KEY  = 'AIzaSyDXCDMYukwtQk79ide6XVnwzxcLEpHSMl4';
+const FB_PRJ  = 'jarvyllanoski';
+const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB_PRJ}/databases/(default)/documents`;
+
+const wsId = new URLSearchParams(location.search).get('ws') || '';
+
+/* ─── STATUS CONFIG ─────────────────────────────────────────── */
+const STATUS_META = {
+  'Nuevo pedido':                {color:'#f59e0b',emoji:'🆕',step:0},
+  'Faltante / pedir proveedor':  {color:'#f97316',emoji:'⚠️',step:1},
+  'Por alistar':                 {color:'#3b82f6',emoji:'📦',step:2},
+  'Alistado':                    {color:'#14b8a6',emoji:'✅',step:3},
+  'Enviado':                     {color:'#8b5cf6',emoji:'🚚',step:4},
+  'Llegó a destino':             {color:'#06b6d4',emoji:'📍',step:5},
+  'Pendiente de pago':           {color:'#eab308',emoji:'💰',step:6},
+  'Finalizado':                  {color:'#22c55e',emoji:'🏁',step:7},
+};
+
+/* Progress stages: step ranges → stage index */
+function statusToStage(status){
+  const s = (STATUS_META[status]||{}).step ?? -1;
+  if(s<=0) return 0;
+  if(s<=3) return 1;
+  if(s<=5) return 2;
+  return 3;
+}
+
+/* ─── COURIER EMOJI ─────────────────────────────────────────── */
+function courierEmoji(name, type){
+  if(type==='agencia') return '🏢';
+  const u = (name||'').toUpperCase();
+  if(u.includes('SHALOM'))    return '🚌';
+  if(u.includes('OLVA'))      return '📬';
+  if(u.includes('MARVISUR'))  return '🚐';
+  if(u.includes('DINSIDES'))  return '📦';
+  if(u.includes('DELIVERY')||u.includes('MOTORIZADO')) return '🛵';
+  if(u.includes('RETIRO'))    return '🏪';
+  if(u.includes('ENCOMIENDA'))return '📦';
+  return '🏢';
+}
+
+/* ─── AGENCY DATA ───────────────────────────────────────────── */
+const AD = {
+  SHALOM:{
+    Lima:{
+      Lima:['Independencia – Av. Túpac Amaru 2543','San Martín de Porres – Av. Perú 3215','Los Olivos – Av. Universitaria Norte 4520','Comas – Av. Belaúnde Oeste 124','Carabayllo – Av. Túpac Amaru km 22','Puente Piedra – Av. San Roque 120','Santa Rosa – Av. La Marina s/n'],
+      'El Agustino':['El Agustino – Av. Riva Agüero 1200'],
+      'San Juan de Lurigancho':['SJL – Av. Gran Chimú 530','SJL – Av. Próceres de la Independencia 1244','SJL – Av. Los Jardines 204'],
+      'La Victoria':['La Victoria – Av. México 1238','La Victoria – Jr. Huánuco 1480'],
+      Chorrillos:['Chorrillos – Av. Defensores del Morro 1540'],
+      Surquillo:['Surquillo – Av. Angamos Oeste 530'],
+      Miraflores:['Miraflores – Av. José Larco 1150'],
+      'San Borja':['San Borja – Av. Javier Prado Este 2760'],
+      'San Isidro':['San Isidro – Av. República de Panamá 3620'],
+      Lince:['Lince – Av. Arequipa 2450'],
+      Breña:['Breña – Av. Arica 320'],
+      'Jesús María':['Jesús María – Av. Salaverry 1640'],
+      Magdalena:['Magdalena – Av. Brasil 2870'],
+      'Pueblo Libre':['Pueblo Libre – Av. Sucre 1580'],
+      'San Miguel':['San Miguel – Av. La Marina 2050'],
+      Miraflores:['Miraflores – Av. Ricardo Palma 280'],
+      Surco:['Surco – Av. Caminos del Inca 1200','Surco – Av. Primavera 780'],
+      'La Molina':['La Molina – Av. La Molina 1490'],
+      'Villa El Salvador':['VES – Av. Separadora Industrial 1400'],
+      'Villa María del Triunfo':['VMT – Av. José Carlos Mariátegui 1310'],
+      'San Juan de Miraflores':['SJM – Av. San Juan 1090'],
+      Lurín:['Lurín – Av. Antigua Panamericana Sur km 38'],
+      Pachacámac:['Pachacámac – Carretera Antigua Panamericana Sur km 28'],
+      Cieneguilla:['Cieneguilla – Carretera a Cieneguilla 1204'],
+      Ate:['Ate – Av. Nicolás Ayllón 1520','Ate – Av. Separadora Industrial 400'],
+      'Santa Anita':['Santa Anita – Av. Los Frutales 650'],
+      'El Agustino':['El Agustino – Av. César Vallejo 1120'],
+      Lurigancho:['Lurigancho – Av. Nicolás Ayllón 3500'],
+    },
+    Callao:{
+      Callao:['Callao – Av. Sáenz Peña 840','Callao – Av. Colonial 2120'],
+      Bellavista:['Bellavista – Av. Oscar R. Benavides 3240'],
+      'La Perla':['La Perla – Av. Guardia Chalaca 1580'],
+      'Mi Perú':['Mi Perú – Av. Los Dominicos s/n'],
+      Ventanilla:['Ventanilla – Av. Néstor Gambetta km 14'],
+    },
+  },
+  Arequipa:{
+    Arequipa:{
+      'Arequipa':['Cercado – Calle San Juan de Dios 216','Cayma – Av. Ejército 112',''+'Cerro Colorado – Av. Aviación 100','Mariano Melgar – Av. Mariscal Castilla 400','Miraflores – Av. Los Arces 210','Paucarpata – Av. Víctor Andrés Belaúnde 310'],
+      'Camana':['Camana – Jr. Lima 420'],
+      'Mollendo':['Mollendo – Av. Comercio 250'],
+    },
+  },
+  Cusco:{
+    Cusco:{
+      'Cusco':['Wanchaq – Av. Pardo 1080','San Sebastián – Av. La Cultura 2300'],
+    },
+  },
+  'La Libertad':{
+    Trujillo:{
+      'Trujillo':['Trujillo Centro – Av. España 1680','El Porvenir – Av. Sánchez Carrión 2780','Florencia de Mora – Av. Manuel Cisneros 1460','La Esperanza – Av. Andrés Razuri 940','Víctor Larco Herrera – Av. América Sur 3205'],
+    },
+  },
+  Lambayeque:{
+    Chiclayo:{
+      'Chiclayo':['Chiclayo – Av. Salaverry 750','José Leonardo Ortiz – Av. Sesquicentenario 1180','La Victoria – Av. Progreso 550'],
+    },
+  },
+  Piura:{
+    Piura:{
+      'Piura':['Piura – Av. Loreto 450','Castilla – Av. Guardia Civil 310'],
+    },
+    Sullana:{
+      'Sullana':['Sullana – Av. José de Lama 602'],
+    },
+  },
+  Tumbes:{
+    Tumbes:{
+      'Tumbes':['Tumbes – Av. Tumbes Norte 450'],
+    },
+  },
+  Loreto:{
+    Maynas:{
+      'Iquitos':['Iquitos – Av. Abelardo Quiñones 2380','Iquitos – Jr. Próspero 740'],
+    },
+  },
+  Ucayali:{
+    Coronel_Portillo:{
+      'Pucallpa':['Pucallpa – Jr. Raymondi 510'],
+    },
+  },
+  'San Martin':{
+    San_Martin:{
+      'Tarapoto':['Tarapoto – Jr. Alfonso Ugarte 850'],
+    },
+    Moyobamba:{
+      'Moyobamba':['Moyobamba – Jr. San Martín 620'],
+    },
+  },
+  Cajamarca:{
+    Cajamarca:{
+      'Cajamarca':['Cajamarca – Jr. Del Comercio 1040'],
+    },
+  },
+  Ancash:{
+    Santa:{
+      'Chimbote':['Chimbote – Av. Víctor Raúl Haya de la Torre 542'],
+    },
+    Huaraz:{
+      'Huaraz':['Huaraz – Jr. Sucre 850'],
+    },
+  },
+  Junin:{
+    Huancayo:{
+      'Huancayo':['Huancayo – Av. Giráldez 582','El Tambo – Av. San Carlos 1120'],
+    },
+  },
+  Ica:{
+    Ica:{
+      'Ica':['Ica – Av. Municipalidad 320'],
+    },
+  },
+  Ayacucho:{
+    Huamanga:{
+      'Ayacucho':['Ayacucho – Jr. 9 de Diciembre 160'],
+    },
+  },
+  Apurimac:{
+    Abancay:{
+      'Abancay':['Abancay – Av. Arenas 210'],
+    },
+  },
+  Puno:{
+    Puno:{
+      'Puno':['Puno – Jr. Ilave 350'],
+    },
+    San_Roman:{
+      'Juliaca':['Juliaca – Jr. Dos de Mayo 520'],
+    },
+  },
+  Tacna:{
+    Tacna:{
+      'Tacna':['Tacna – Av. Bolognesi 1240'],
+    },
+  },
+  Huanuco:{
+    Huanuco:{
+      'Huanuco':['Huánuco – Jr. Dos de Mayo 410'],
+    },
+  },
+};
+
+const AD_OLVA = {
+  Lima:{
+    Lima:{
+      'Lima Centro':['Lima Centro – Jr. Andahuaylazo 174','Lima Centro – Jr. Puno 580'],
+      Miraflores:['Miraflores – Av. Benavides 1200'],
+      Surco:['Surco – Av. Caminos del Inca 1540'],
+      'San Isidro':['San Isidro – Av. Javier Prado Oeste 1540'],
+      'San Juan de Lurigancho':['SJL – Av. Próceres 560'],
+      'Los Olivos':['Los Olivos – Av. Carlos Izaguirre 890'],
+      Ate:['Ate – Av. Nicolás Ayllón 2100'],
+    },
+    Callao:{
+      Callao:['Callao – Av. Buenos Aires 1080'],
+    },
+  },
+  Arequipa:{
+    Arequipa:{
+      'Arequipa':['Arequipa – Av. Ejercito 510','Arequipa – Calle Palacio Viejo 210'],
+    },
+  },
+  Cajamarca:{
+    Cajamarca:{
+      'Cajamarca':['Cajamarca – Jr. Amalia Puga 740'],
+    },
+  },
+  'La Libertad':{
+    Trujillo:{
+      'Trujillo':['Trujillo – Jr. Grau 455'],
+    },
+  },
+  Lambayeque:{
+    Chiclayo:{
+      'Chiclayo':['Chiclayo – Av. Bolognesi 620'],
+    },
+  },
+  Cusco:{
+    Cusco:{
+      'Cusco':['Cusco – Av. El Sol 620'],
+    },
+  },
+};
+
+/* Build combined keyed by courier name */
+const AGENCY_DATA = { SHALOM: AD, OLVA: AD_OLVA };
+
+/* ─── FIRESTORE REST HELPERS ────────────────────────────────── */
+function toFs(v){
+  if(v===null||v===undefined) return {nullValue:null};
+  if(typeof v==='boolean')    return {booleanValue:v};
+  if(typeof v==='number')     return {doubleValue:v};
+  if(typeof v==='string')     return {stringValue:v};
+  if(Array.isArray(v))        return {arrayValue:{values:v.map(toFs)}};
+  if(typeof v==='object'){
+    const fields={};
+    for(const k in v) fields[k]=toFs(v[k]);
+    return {mapValue:{fields}};
+  }
+  return {stringValue:String(v)};
+}
+
+function fromFs(v){
+  if(!v) return null;
+  if('nullValue'    in v) return null;
+  if('booleanValue' in v) return v.booleanValue;
+  if('integerValue' in v) return Number(v.integerValue);
+  if('doubleValue'  in v) return Number(v.doubleValue);
+  if('stringValue'  in v) return v.stringValue;
+  if('arrayValue'   in v) return (v.arrayValue.values||[]).map(fromFs);
+  if('mapValue'     in v){
+    const o={};
+    for(const k in (v.mapValue.fields||{})) o[k]=fromFs(v.mapValue.fields[k]);
+    return o;
+  }
+  return null;
+}
+
+function fsDocToObj(doc){
+  const o={};
+  for(const k in (doc.fields||{})) o[k]=fromFs(doc.fields[k]);
+  return o;
+}
+
+async function fsGet(path){
+  const r=await fetch(`${FB_BASE}/${path}?key=${FB_KEY}`);
+  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function fsPatch(path, obj){
+  const fields={};
+  for(const k in obj) fields[k]=toFs(obj[k]);
+  const url=`${FB_BASE}/${path}?key=${FB_KEY}`;
+  const r=await fetch(url,{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fields})
+  });
+  if(!r.ok){
+    const t=await r.text();
+    throw new Error(`HTTP ${r.status}: ${t}`);
+  }
+  return r.json();
+}
+
+async function fsListDocs(collectionPath){
+  const r=await fetch(`${FB_BASE}/${collectionPath}?key=${FB_KEY}`);
+  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  const d=await r.json();
+  return (d.documents||[]);
+}
+
+/* ─── STATE ─────────────────────────────────────────────────── */
+let CFG    = null;
+let selCourierName = '';
+let selCourierType = '';
+let selDateIso  = '';
+let selDateLbl  = '';
+let agState = { dept:'', prov:'', dist:'', addr:'' };
+let pendingOrder = null; /* set after submit, used for success screen */
+
+/* ─── DOM HELPERS ───────────────────────────────────────────── */
+const root = document.getElementById('root');
+function $  (id){ return document.getElementById(id); }
+function setRoot(html){ root.innerHTML = html; }
+function showLoading(v){ $('loadingOverlay').classList.toggle('hidden',!v); }
+function esc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ─── INIT ──────────────────────────────────────────────────── */
+(function init(){
+  if(!wsId){
+    setRoot(`<div class="form-card"><div class="unconfigured"><div class="unconfigured-icon">⚙️</div><div class="unconfigured-ttl">Formulario no configurado</div><p style="font-size:13px;color:var(--text2)">No se especificó un espacio de trabajo. Usa el enlace correcto con el parámetro <code>?ws=...</code>.</p></div></div>`);
+    return;
+  }
+  /* Check if tracking code in URL */
+  const tCode = new URLSearchParams(location.search).get('tracking');
+  if(tCode){
+    loadConfigAndTrack(tCode);
+    return;
+  }
+  loadConfig();
+})();
+
+/* ─── LOAD CONFIG ───────────────────────────────────────────── */
+async function loadConfig(){
+  try{
+    const doc  = await fsGet(`ws/${wsId}`);
+    CFG        = fsDocToObj(doc);
+    renderForm();
+  }catch(e){
+    setRoot(`<div class="form-card"><div class="unconfigured"><div class="unconfigured-icon">❌</div><div class="unconfigured-ttl">Error al cargar</div><p style="font-size:13px;color:var(--text2)">${esc(e.message)}</p><button class="btn-sec" onclick="loadConfig()" style="margin-top:12px">🔄 Reintentar</button></div></div>`);
+  }
+}
+
+async function loadConfigAndTrack(code){
+  try{
+    const doc = await fsGet(`ws/${wsId}`);
+    CFG       = fsDocToObj(doc);
+    renderTrackingPage(code);
+  }catch(e){
+    setRoot(`<div class="form-card"><div class="unconfigured"><div class="unconfigured-icon">❌</div><div class="unconfigured-ttl">Error al cargar</div><p style="font-size:13px;color:var(--text2)">${esc(e.message)}</p></div></div>`);
+  }
+}
+
+/* ─── RENDER FORM ───────────────────────────────────────────── */
+function renderForm(){
+  const config    = CFG.config        || {};
+  const couriers  = (CFG.couriers     || []);
+  const cAct      = CFG.courierActive || {};
+  const cTypes    = CFG.courierTypes  || {};
+  const dispatch  = CFG.dispatch      || {};
+  const extraF    = (CFG.extraFields  || []).filter(f => f && f.visible !== false);
+
+  const bizName  = config.name  || 'Formulario de Pedido';
+  const bizCity  = config.city  || '';
+
+  const activeCouriers = couriers.filter(c => cAct[c] !== false);
+
+  const html = `
+    <div class="biz-header">
+      <div class="biz-name">${esc(bizName)}</div>
+      ${bizCity ? `<div class="biz-city">📍 ${esc(bizCity)}</div>` : ''}
+      <div class="biz-meta">
+        <span class="biz-badge">📦 Formulario de pedido</span>
+      </div>
+    </div>
+
+    <div class="form-card" id="formCard">
+      <div class="form-title">📋 Tus datos</div>
+      <div class="fg">
+        <label class="fl" for="f_name">Nombre completo <span class="req">*</span></label>
+        <input class="fi" id="f_name" type="text" placeholder="Ej. Juan Pérez">
+        <div class="field-err" id="err_name">Ingresa tu nombre completo</div>
+      </div>
+      <div class="fg">
+        <label class="fl" for="f_phone">Teléfono <span class="req">*</span></label>
+        <input class="fi" id="f_phone" type="tel" placeholder="987654321" maxlength="9">
+        <div class="field-err" id="err_phone">Ingresa un número de 9 dígitos</div>
+      </div>
+      <div class="fg">
+        <label class="fl" for="f_address">Dirección de destino <span class="req">*</span></label>
+        <textarea class="fi" id="f_address" rows="2" placeholder="Av. Lima 123, Miraflores..."></textarea>
+        <div class="field-err" id="err_address">Ingresa la dirección</div>
+      </div>
+    </div>
+
+    <div class="form-card" id="courierCard">
+      <div class="form-title">🚚 Courier</div>
+      <div id="courierGrid" class="courier-grid"></div>
+      <div class="field-err" id="err_courier" style="margin-top:6px">Selecciona un courier</div>
+      <div id="agencyBox" style="display:none" class="agc-box">
+        <span class="agc-label">🏢 Selecciona la agencia</span>
+        <div class="cascade" id="cascadeBox"></div>
+        <div id="agcSelected" style="display:none"></div>
+        <div class="field-err" id="err_agency" style="margin-top:6px">Selecciona una agencia</div>
+      </div>
+    </div>
+
+    <div class="form-card" id="dateCard">
+      <div class="form-title">📅 Fecha de envío</div>
+      <div class="dates" id="datesGrid"></div>
+      <div class="field-err" id="err_date" style="margin-top:6px">Selecciona una fecha</div>
+    </div>
+
+    <div class="form-card" id="notesCard">
+      <div class="form-title">📝 Pedido / Notas</div>
+      <div class="fg">
+        <label class="fl" for="f_notes">Descripción del pedido</label>
+        <textarea class="fi" id="f_notes" rows="3" placeholder="Describe tu pedido o añade notas..."></textarea>
+      </div>
+      <div id="extraFieldsBox"></div>
+    </div>
+
+    <div id="submitErrBox" class="error-box" style="display:none"></div>
+    <button class="btn-submit" id="submitBtn" onclick="submitOrder()">Registrar pedido 📦</button>
+
+    <div class="form-card" style="margin-top:20px">
+      <div class="form-title">🔍 Rastrear pedido</div>
+      <div class="search-track">
+        <input class="fi" id="trackInput" type="text" placeholder="Últimos 4 dígitos de tu código" maxlength="10">
+        <button class="btn-icon" onclick="buscarPedido()">Buscar</button>
+      </div>
+      <div id="trackResult" style="margin-top:12px"></div>
+    </div>
+  `;
+  setRoot(html);
+
+  renderCouriers(activeCouriers, cTypes);
+  renderDates(dispatch);
+  renderExtraFields(extraF);
+}
+
+/* ─── RENDER COURIERS ───────────────────────────────────────── */
+function renderCouriers(couriers, cTypes){
+  const box = $('courierGrid');
+  if(!box) return;
+  if(!couriers.length){
+    box.innerHTML='<div style="color:var(--text2);font-size:13px">No hay couriers configurados</div>';
+    return;
+  }
+  box.innerHTML = couriers.map(c=>{
+    const t = cTypes[c] || 'delivery';
+    const em = courierEmoji(c, t);
+    return `<div class="c-opt" id="copt_${esc(c)}" onclick="selCourier('${c.replace(/'/g,"\\'")}','${t}')">
+      <div class="c-icon">${em}</div>
+      <div class="c-name">${esc(c)}</div>
+    </div>`;
+  }).join('');
+}
+
+function selCourier(name, type){
+  selCourierName = name;
+  selCourierType = type;
+  document.querySelectorAll('.c-opt').forEach(el=>el.classList.remove('active'));
+  const el = document.getElementById('copt_'+name);
+  if(el) el.classList.add('active');
+  $('err_courier').classList.remove('show');
+
+  /* Show/hide agency box */
+  const agBox = $('agencyBox');
+  if(!agBox) return;
+  if(type==='agencia'){
+    agBox.style.display='block';
+    initCascade(name);
+  } else {
+    agBox.style.display='none';
+    resetAgency();
+  }
+}
+
+/* ─── RENDER DATES ──────────────────────────────────────────── */
+function renderDates(dispatch){
+  const box = $('datesGrid');
+  if(!box) return;
+  const days        = Array.isArray(dispatch.days)  ? dispatch.days  : [1,2,3,4,5];
+  const cutHour     = dispatch.cutHour || '23:59';
+  const anticipation= parseInt(dispatch.anticipation)||0;
+
+  const DAY_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MON_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  /* Compute min start date considering cutHour and anticipation */
+  const now      = new Date();
+  const [ch, cm] = cutHour.split(':').map(Number);
+  let   start    = new Date(now);
+  start.setHours(0,0,0,0);
+  start.setDate(start.getDate() + anticipation);
+  /* If past cut hour today, add 1 more day */
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const cutMins = (ch||0)*60 + (cm||0);
+  if(nowMins >= cutMins) start.setDate(start.getDate()+1);
+
+  const dates = [];
+  let probe = new Date(start);
+  for(let i=0; i<30 && dates.length<7; i++){
+    if(!days.length || days.includes(probe.getDay())){
+      dates.push(new Date(probe));
+    }
+    probe.setDate(probe.getDate()+1);
+  }
+
+  if(!dates.length){
+    box.innerHTML='<div style="color:var(--text2);font-size:13px">No hay fechas disponibles</div>';
+    return;
+  }
+
+  box.innerHTML = dates.map(d=>{
+    const iso = isoDate(d);
+    const dayN= DAY_SHORT[d.getDay()];
+    const num = d.getDate();
+    const mon = MON_SHORT[d.getMonth()];
+    return `<div class="date-opt" id="dopt_${iso}" onclick="selDate('${iso}','${dayN} ${num} ${mon}')">
+      <div class="d-day">${dayN}</div>
+      <div class="d-num">${num}</div>
+      <div class="d-mon">${mon}</div>
+    </div>`;
+  }).join('');
+
+  /* Auto-select first date */
+  const first = dates[0];
+  const fiso  = isoDate(first);
+  const fd    = first;
+  selDate(fiso, `${DAY_SHORT[fd.getDay()]} ${fd.getDate()} ${MON_SHORT[fd.getMonth()]}`);
+}
+
+function selDate(iso, lbl){
+  selDateIso = iso;
+  selDateLbl = lbl;
+  document.querySelectorAll('.date-opt').forEach(el=>el.classList.remove('active'));
+  const el = document.getElementById('dopt_'+iso);
+  if(el) el.classList.add('active');
+  $('err_date') && $('err_date').classList.remove('show');
+}
+
+function isoDate(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ─── RENDER EXTRA FIELDS ───────────────────────────────────── */
+function renderExtraFields(fields){
+  const box = $('extraFieldsBox');
+  if(!box||!fields.length) return;
+  box.innerHTML = fields.map(f=>{
+    const fname = typeof f==='string' ? f : (f.name||'');
+    const isReq = typeof f==='object' && !!f.required;
+    const eid   = 'ex_'+fname.replace(/\s/g,'_');
+    return `<div class="fg">
+      <label class="fl" for="${esc(eid)}">${esc(fname)}${isReq?'<span class="req">*</span>':''}</label>
+      <input class="fi" id="${esc(eid)}" data-extra="${esc(fname)}" data-req="${isReq?'1':'0'}" placeholder="${esc(fname)}">
+      ${isReq?`<div class="field-err" id="exerr_${esc(fname.replace(/\s/g,'_'))}">Este campo es obligatorio</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ─── CASCADE AGENCY ────────────────────────────────────────── */
+function getAgencyData(courierName){
+  const u = (courierName||'').toUpperCase();
+  if(u.includes('SHALOM')) return AD;
+  if(u.includes('OLVA'))   return AD_OLVA;
+  return null;
+}
+
+function initCascade(courierName){
+  resetAgency();
+  const data = getAgencyData(courierName);
+  const box  = $('cascadeBox');
+  if(!box) return;
+  if(!data){
+    box.innerHTML='<div style="font-size:13px;color:var(--text2)">No hay datos de agencia para este courier.</div>';
+    return;
+  }
+  const depts = Object.keys(data).sort();
+  box.innerHTML=`
+    <div class="fg" style="margin:0">
+      <label class="fl">Departamento</label>
+      <select class="fi sel" id="agc_dept" onchange="onDept('${courierName.replace(/'/g,"\\'")}')">
+        <option value="">— Selecciona —</option>
+        ${depts.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+      </select>
+    </div>
+    <div id="agc_prov_wrap" style="display:none" class="fg" style="margin:0">
+      <label class="fl">Provincia</label>
+      <select class="fi sel" id="agc_prov" onchange="onProv('${courierName.replace(/'/g,"\\'")}')">
+        <option value="">— Selecciona —</option>
+      </select>
+    </div>
+    <div id="agc_dist_wrap" style="display:none" class="fg" style="margin:0">
+      <label class="fl">Distrito</label>
+      <select class="fi sel" id="agc_dist" onchange="onDist('${courierName.replace(/'/g,"\\'")}')">
+        <option value="">— Selecciona —</option>
+      </select>
+    </div>
+    <div id="agc_addr_wrap" style="display:none">
+      <label class="fl">Agencia</label>
+      <div class="agc-list" id="agc_addr_list"></div>
+    </div>
+  `;
+}
+
+function onDept(courier){
+  const data  = getAgencyData(courier);
+  const dept  = $('agc_dept') && $('agc_dept').value;
+  agState.dept = dept; agState.prov=''; agState.dist=''; agState.addr='';
+  $('agcSelected') && ($('agcSelected').style.display='none');
+  if(!dept||!data||!data[dept]){ hideAgcFrom('prov'); return; }
+  const provs = Object.keys(data[dept]).sort();
+  const ps = $('agc_prov'); if(!ps) return;
+  ps.innerHTML='<option value="">— Selecciona —</option>'+provs.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  $('agc_prov_wrap').style.display='block';
+  hideAgcFrom('dist');
+}
+
+function onProv(courier){
+  const data  = getAgencyData(courier);
+  const dept  = agState.dept;
+  const prov  = $('agc_prov') && $('agc_prov').value;
+  agState.prov = prov; agState.dist=''; agState.addr='';
+  $('agcSelected') && ($('agcSelected').style.display='none');
+  if(!prov||!data||!data[dept]||!data[dept][prov]){ hideAgcFrom('dist'); return; }
+  const dists = Object.keys(data[dept][prov]).sort();
+  const ds = $('agc_dist'); if(!ds) return;
+  ds.innerHTML='<option value="">— Selecciona —</option>'+dists.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('');
+  $('agc_dist_wrap').style.display='block';
+  hideAgcFrom('addr');
+}
+
+function onDist(courier){
+  const data  = getAgencyData(courier);
+  const dept  = agState.dept;
+  const prov  = agState.prov;
+  const dist  = $('agc_dist') && $('agc_dist').value;
+  agState.dist=dist; agState.addr='';
+  $('agcSelected') && ($('agcSelected').style.display='none');
+  if(!dist||!data||!data[dept]||!data[dept][prov]||!data[dept][prov][dist]){ $('agc_addr_wrap').style.display='none'; return; }
+  const addrs = data[dept][prov][dist];
+  const al = $('agc_addr_list'); if(!al) return;
+  al.innerHTML = addrs.map(a=>`<div class="agc-item" onclick="selAgency(this,'${a.replace(/'/g,"\\'")}')"> ${esc(a)}</div>`).join('');
+  $('agc_addr_wrap').style.display='block';
+}
+
+function selAgency(el, addr){
+  agState.addr = addr;
+  document.querySelectorAll('.agc-item').forEach(x=>x.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const sel = $('agcSelected');
+  if(sel){
+    sel.style.display='block';
+    sel.innerHTML=`<div class="sel-badge">🏢 <span>${esc(addr)}</span> <button class="clr-btn" onclick="resetAgencySelection()">✕</button></div>`;
+  }
+  $('err_agency') && $('err_agency').classList.remove('show');
+}
+
+function resetAgencySelection(){
+  agState.addr='';
+  const sel=$('agcSelected'); if(sel) sel.style.display='none';
+  document.querySelectorAll('.agc-item').forEach(x=>x.classList.remove('active'));
+}
+
+function hideAgcFrom(from){
+  const order=['prov','dist','addr'];
+  const idx = order.indexOf(from);
+  for(let i=idx;i<order.length;i++){
+    const w = $('agc_'+order[i]+'_wrap'); if(w) w.style.display='none';
+  }
+}
+
+function resetAgency(){
+  agState = {dept:'',prov:'',dist:'',addr:''};
+  const sel=$('agcSelected'); if(sel) sel.style.display='none';
+}
+
+/* ─── SUBMIT ────────────────────────────────────────────────── */
+async function submitOrder(){
+  const name    = ($('f_name')    ||{value:''}).value.trim();
+  const phone   = ($('f_phone')   ||{value:''}).value.trim();
+  const address = ($('f_address') ||{value:''}).value.trim();
+  const notes   = ($('f_notes')   ||{value:''}).value.trim();
+
+  let valid = true;
+  function setErr(fid, eid, cond){
+    const fe=$( fid), ee=$(eid);
+    if(cond){ fe&&fe.classList.add('err'); ee&&ee.classList.add('show'); valid=false; }
+    else     { fe&&fe.classList.remove('err'); ee&&ee.classList.remove('show'); }
+  }
+
+  setErr('f_name',   'err_name',   !name);
+  setErr('f_phone',  'err_phone',  !/^\d{9}$/.test(phone));
+  setErr('f_address','err_address',!address);
+
+  /* Courier */
+  if(!selCourierName){
+    $('err_courier')&&$('err_courier').classList.add('show'); valid=false;
+  } else {
+    $('err_courier')&&$('err_courier').classList.remove('show');
+  }
+
+  /* Agency */
+  if(selCourierType==='agencia' && !agState.addr){
+    $('err_agency')&&$('err_agency').classList.add('show'); valid=false;
+  } else {
+    $('err_agency')&&$('err_agency').classList.remove('show');
+  }
+
+  /* Date */
+  if(!selDateIso){
+    $('err_date')&&$('err_date').classList.add('show'); valid=false;
+  } else {
+    $('err_date')&&$('err_date').classList.remove('show');
+  }
+
+  /* Extra required fields */
+  document.querySelectorAll('[data-extra][data-req="1"]').forEach(el=>{
+    const eid='exerr_'+el.dataset.extra.replace(/\s/g,'_');
+    if(!el.value.trim()){ el.classList.add('err'); $(eid)&&$(eid).classList.add('show'); valid=false; }
+    else { el.classList.remove('err'); $(eid)&&$(eid).classList.remove('show'); }
+  });
+
+  if(!valid) return;
+
+  /* Build extra obj */
+  const extra={};
+  document.querySelectorAll('[data-extra]').forEach(el=>{ extra[el.dataset.extra]=el.value.trim(); });
+
+  /* Build notes with agency info */
+  let fullNotes = notes;
+  if(selCourierType==='agencia' && agState.addr){
+    const agLine = `Agencia: ${agState.dist}, ${agState.dept} - ${agState.addr}`;
+    fullNotes = notes ? `${notes} | ${agLine}` : agLine;
+  }
+
+  /* Generate id */
+  const now    = Date.now();
+  const rand   = Math.random().toString(36).slice(2,6).toUpperCase();
+  const orderId= `id_${now}`;
+  const trackCode = orderId.slice(-4).toUpperCase();
+
+  const order = {
+    id:             orderId,
+    name,
+    phone,
+    address,
+    courier:        selCourierName,
+    date:           selDateIso,
+    status:         'Nuevo pedido',
+    cost:           '',
+    notes:          fullNotes,
+    extra,
+    docGuia:        null,
+    docEmbalado:    null,
+    docComprobante: null,
+    links:          [],
+    sel:            false,
+    chkGuia:        false,
+    chkEmbalado:    false,
+    chkComprobante: false,
+    createdAt:      new Date().toISOString(),
+    fromForm:       true,
+  };
+
+  const btn = $('submitBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Registrando...'; }
+  $('submitErrBox')&&($('submitErrBox').style.display='none');
+  showLoading(true);
+
+  try{
+    await fsPatch(`ws/${wsId}/pedidos/${orderId}`, order);
+    pendingOrder = order;
+    showLoading(false);
+    showSuccess(order, trackCode);
+  }catch(e){
+    showLoading(false);
+    if(btn){ btn.disabled=false; btn.textContent='Registrar pedido 📦'; }
+    const eb=$('submitErrBox');
+    if(eb){ eb.style.display='block'; eb.textContent=`Error al guardar: ${e.message}`; }
+  }
+}
+
+/* ─── SUCCESS PAGE ──────────────────────────────────────────── */
+function showSuccess(order, trackCode){
+  const config   = (CFG&&CFG.config)||{};
+  const bizName  = config.name  || '';
+  const bizPhone = config.phone || '';
+
+  const dateLabel = order.date
+    ? new Date(order.date+'T12:00:00').toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
+    : selDateLbl || order.date;
+
+  const trackUrl = `${location.origin}${location.pathname}?ws=${wsId}&tracking=${trackCode}`;
+
+  const agLine = (selCourierType==='agencia' && agState.addr)
+    ? `\n🏢 Agencia: ${agState.addr}` : '';
+  const notesLine = order.notes ? `\n📝 Notas: ${order.notes}` : '';
+
+  const waMsg = `📦 NUEVO PEDIDO — ${bizName}\n\n👤 Cliente: ${order.name}\n📞 WhatsApp: +51${order.phone}\n🏠 Dirección: ${order.address}\n🚚 Courier: ${order.courier}\n📅 Fecha: ${dateLabel}${agLine}${notesLine}\n\n🔑 Código de seguimiento: #${trackCode}\n🔗 Ver estado: ${trackUrl}`;
+
+  const waHref = bizPhone
+    ? `https://wa.me/51${bizPhone}?text=${encodeURIComponent(waMsg)}`
+    : null;
+
+  const extraRows = Object.entries(order.extra||{})
+    .filter(([,v])=>v)
+    .map(([k,v])=>`<div class="sum-row"><span class="sum-lbl">${esc(k)}</span><span class="sum-val">${esc(v)}</span></div>`)
+    .join('');
+
+  setRoot(`
+    <div class="form-card">
+      <div class="success">
+        <div class="success-icon">✅</div>
+        <div class="success-ttl">¡Pedido registrado!</div>
+        <div class="success-sub">Tu pedido fue recibido. Guarda tu código de seguimiento:</div>
+        <div class="track-code">#${esc(trackCode)}</div>
+        <div class="summary-rows">
+          <div class="sum-row"><span class="sum-lbl">Cliente</span><span class="sum-val">${esc(order.name)}</span></div>
+          <div class="sum-row"><span class="sum-lbl">Teléfono</span><span class="sum-val">${esc(order.phone)}</span></div>
+          <div class="sum-row"><span class="sum-lbl">Dirección</span><span class="sum-val">${esc(order.address)}</span></div>
+          <div class="sum-row"><span class="sum-lbl">Courier</span><span class="sum-val">${esc(order.courier)}</span></div>
+          <div class="sum-row"><span class="sum-lbl">Fecha</span><span class="sum-val">${esc(dateLabel)}</span></div>
+          ${order.notes?`<div class="sum-row"><span class="sum-lbl">Notas</span><span class="sum-val">${esc(order.notes)}</span></div>`:''}
+          ${extraRows}
+        </div>
+        ${waHref?`<a class="btn-wa" href="${esc(waHref)}" target="_blank" rel="noopener">💬 Confirmar por WhatsApp</a>`:''}
+        <button class="btn-track" onclick="goToTracking('${esc(trackCode)}')">📍 Ver seguimiento</button>
+        <button class="btn-sec" onclick="resetForm()">🔄 Registrar otro pedido</button>
+      </div>
+    </div>
+  `);
+}
+
+function openWA(){
+  /* Called from success screen via waHref anchor — handled inline */
+}
+
+function goToTracking(code){
+  location.href = `${location.pathname}?ws=${wsId}&tracking=${code}`;
+}
+
+function resetForm(){
+  selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
+  agState={dept:'',prov:'',dist:'',addr:''};
+  renderForm();
+  window.scrollTo(0,0);
+}
+
+/* ─── TRACKING PAGE ─────────────────────────────────────────── */
+function renderTrackingPage(code){
+  setRoot(`
+    <div class="form-card">
+      <div class="form-title">📍 Seguimiento de pedido</div>
+      <div class="search-track">
+        <input class="fi" id="trackInput" type="text" value="${esc(code)}" placeholder="Código (últimos 4 dígitos)" maxlength="10">
+        <button class="btn-icon" onclick="buscarPedido()">Buscar</button>
+      </div>
+      <div id="trackResult" style="margin-top:12px">
+        <div class="spinner-wrap"><div class="spin" style="margin:0 auto 12px"></div><div class="spinner-txt">Buscando pedido...</div></div>
+      </div>
+    </div>
+    <button class="btn-sec" onclick="backToForm()">← Volver al formulario</button>
+  `);
+  buscarPedido(code);
+}
+
+function backToForm(){
+  history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
+  loadConfig();
+}
+
+/* ─── SEARCH SHIPMENT ───────────────────────────────────────── */
+async function buscarPedido(codeOverride){
+  const input = $('trackInput');
+  const code  = (codeOverride || (input&&input.value)||'').trim().toUpperCase();
+  if(!code){ setTrackResult('<div style="color:var(--text2);font-size:13px">Ingresa un código de seguimiento</div>'); return; }
+
+  setTrackResult('<div class="spinner-wrap"><div class="spin" style="margin:0 auto 12px"></div><div class="spinner-txt">Buscando...</div></div>');
+  showLoading(false);
+
+  try{
+    /* 1) Search s array in ws doc */
+    if(CFG){
+      const s = CFG.s || [];
+      const match = s.find(x => x.id && x.id.slice(-4).toUpperCase()===code.slice(-4).toUpperCase());
+      if(match){ renderTracking(match); return; }
+    }
+
+    /* 2) Reload ws doc and check s array */
+    const doc = await fsGet(`ws/${wsId}`);
+    CFG = fsDocToObj(doc);
+    const s2 = CFG.s || [];
+    const m2 = s2.find(x => x.id && x.id.slice(-4).toUpperCase()===code.slice(-4).toUpperCase());
+    if(m2){ renderTracking(m2); return; }
+
+    /* 3) Search pedidos subcollection */
+    const docs = await fsListDocs(`ws/${wsId}/pedidos`);
+    const m3   = docs.find(d=>{
+      const id = (d.name||'').split('/').pop();
+      return id.slice(-4).toUpperCase()===code.slice(-4).toUpperCase();
+    });
+    if(m3){ renderTracking(fsDocToObj(m3)); return; }
+
+    setTrackResult(`<div class="error-box">No se encontró ningún pedido con el código <strong>#${esc(code)}</strong>.</div>`);
+  }catch(e){
+    setTrackResult(`<div class="error-box">Error al buscar: ${esc(e.message)}</div>`);
+  }
+}
+
+function setTrackResult(html){
+  const el = $('trackResult'); if(el) el.innerHTML=html;
+}
+
+function renderTracking(ship){
+  const meta    = STATUS_META[ship.status] || {color:'#6b7280',emoji:'🏷️',step:0};
+  const stage   = statusToStage(ship.status);
+  const stages  = ['Recibido','Preparando','En camino','Entregado'];
+  const trackCode = (ship.id||'').slice(-4).toUpperCase();
+
+  const dateLabel = ship.date
+    ? new Date(ship.date+'T12:00:00').toLocaleDateString('es-PE',{weekday:'short',year:'numeric',month:'short',day:'numeric'})
+    : '—';
+
+  const progHtml = stages.map((s,i)=>{
+    const cls = i<stage ? 'done' : i===stage ? 'current' : '';
+    return `<div class="prog-step ${cls}">
+      <div class="prog-dot">${i<stage?'✓':''}</div>
+      <div class="prog-lbl">${s}</div>
+    </div>`;
+  }).join('');
+
+  setTrackResult(`
+    <div class="track-wrap">
+      <div class="track-card">
+        <div class="track-section">
+          <div class="track-ttl">Código</div>
+          <div style="font-size:20px;font-weight:700;color:var(--purple);letter-spacing:2px">#${esc(trackCode)}</div>
+        </div>
+        <div class="track-section">
+          <div class="track-ttl">Estado actual</div>
+          <div class="status-badge" style="background:${meta.color}22;border:1px solid ${meta.color}55;color:${meta.color}">
+            ${meta.emoji} ${esc(ship.status||'Desconocido')}
+          </div>
+        </div>
+        <div class="track-section">
+          <div class="track-ttl">Progreso</div>
+          <div class="prog-bar">${progHtml}</div>
+        </div>
+        <div class="track-section">
+          <div class="track-ttl">Detalle</div>
+          <div class="track-info-row"><span class="track-info-lbl">Cliente</span><span class="track-info-val">${esc(ship.name||'—')}</span></div>
+          <div class="track-info-row"><span class="track-info-lbl">Courier</span><span class="track-info-val">${esc(ship.courier||'—')}</span></div>
+          <div class="track-info-row"><span class="track-info-lbl">Fecha</span><span class="track-info-val">${dateLabel}</span></div>
+          <div class="track-info-row"><span class="track-info-lbl">Dirección</span><span class="track-info-val">${esc(ship.address||'—')}</span></div>
+          ${ship.notes?`<div class="track-info-row"><span class="track-info-lbl">Notas</span><span class="track-info-val">${esc(ship.notes)}</span></div>`:''}
+        </div>
+      </div>
+    </div>
+  `);
+}
+
+function resetTracking(){
+  setTrackResult('');
+  const inp=$('trackInput'); if(inp) inp.value='';
+}
+
+/* ─── EXPOSE GLOBALS ────────────────────────────────────────── */
+window.loadConfig       = loadConfig;
+window.selCourier       = selCourier;
+window.selDate          = selDate;
+window.onDept           = onDept;
+window.onProv           = onProv;
+window.onDist           = onDist;
+window.selAgency        = selAgency;
+window.resetAgencySelection = resetAgencySelection;
+window.submitOrder      = submitOrder;
+window.buscarPedido     = buscarPedido;
+window.resetTracking    = resetTracking;
+window.resetForm        = resetForm;
+window.backToForm       = backToForm;
+window.goToTracking     = goToTracking;
+window.openWA           = openWA;
+
+})();
+</script>
+</body>
+</html>
