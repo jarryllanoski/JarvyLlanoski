@@ -113,6 +113,7 @@ function cloudSync() {
       tasks:         S.tasks      || [],
       config:        S.config,
       suppliers:     S.suppliers  || [],
+      dispatch:      S.dispatch   || {},
       t: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(e => toast('⚠️ Error sync: ' + e.message));
   }, 800);
