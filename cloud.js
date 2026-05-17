@@ -95,6 +95,27 @@ function _listen() {
     console.warn('Cloud sync error:', err);
     toast('⚠️ Nube: ' + err.message);
   });
+
+  // Listen for new form submissions
+  _unsubs.push(
+    _db.collection('ws').doc(_wsId).collection('pedidos').onSnapshot(snap => {
+      let added = 0;
+      snap.docChanges().forEach(ch => {
+        if (ch.type !== 'added') return;
+        const d = ch.doc.data();
+        if (!d || !d.id) return;
+        if (S.shipments.find(x => x.id === d.id)) return;
+        S.shipments.push(d);
+        added++;
+      });
+      if (added > 0) {
+        lsSet('dpanel', JSON.stringify(S));
+        if (typeof render === 'function') render();
+        if (typeof renderChips === 'function') renderChips();
+        toast('📥 ' + added + ' nuevo' + (added > 1 ? 's' : '') + ' pedido' + (added > 1 ? 's' : '') + ' del formulario');
+      }
+    })
+  );
 }
 
 /* ── Push (debounced 800ms) ───────────────────────────── */
