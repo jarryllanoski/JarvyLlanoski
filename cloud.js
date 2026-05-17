@@ -85,6 +85,7 @@ function _listen() {
     if (d.tasks)         S.tasks         = d.tasks;
     if (d.config)        S.config        = d.config;
     if (d.suppliers)     S.suppliers     = d.suppliers;
+    if (d.dispatch)      S.dispatch      = d.dispatch;
 
     lsSet('dpanel', JSON.stringify(S));
     if (typeof render      === 'function') render();
@@ -94,6 +95,27 @@ function _listen() {
     console.warn('Cloud sync error:', err);
     toast('⚠️ Nube: ' + err.message);
   });
+
+  // Listen for new form submissions
+  _unsubs.push(
+    _db.collection('ws').doc(_wsId).collection('pedidos').onSnapshot(snap => {
+      let added = 0;
+      snap.docChanges().forEach(ch => {
+        if (ch.type !== 'added') return;
+        const d = ch.doc.data();
+        if (!d || !d.id) return;
+        if (S.shipments.find(x => x.id === d.id)) return;
+        S.shipments.push(d);
+        added++;
+      });
+      if (added > 0) {
+        lsSet('dpanel', JSON.stringify(S));
+        if (typeof render === 'function') render();
+        if (typeof renderChips === 'function') renderChips();
+        toast('📥 ' + added + ' nuevo' + (added > 1 ? 's' : '') + ' pedido' + (added > 1 ? 's' : '') + ' del formulario');
+      }
+    })
+  );
 }
 
 /* ── Push (debounced 800ms) ───────────────────────────── */
@@ -113,6 +135,7 @@ function cloudSync() {
       tasks:         S.tasks      || [],
       config:        S.config,
       suppliers:     S.suppliers  || [],
+      dispatch:      S.dispatch   || {},
       t: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(e => toast('⚠️ Error sync: ' + e.message));
   }, 800);
