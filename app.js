@@ -1627,7 +1627,7 @@ function renderTasks() {
 
   const colors = ['#388bfd','#a371f7','#3fb950','#f78166','#e3b341','#58a6ff'];
   el.innerHTML = Object.entries(groups).map(([emp, items]) => {
-    const empIdx = S.employees.indexOf(emp);
+    const empIdx = S.employees.findIndex(e => _eName(e) === emp);
     const col = empIdx >= 0 ? colors[empIdx % colors.length] : 'var(--text2)';
     const ini = emp.slice(0,1).toUpperCase();
     const pending = items.filter(t => t.status !== 'done').length;
