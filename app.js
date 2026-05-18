@@ -569,7 +569,14 @@ function emptyTrash() {
   $('delMsg').textContent = `¿Eliminar definitivamente ${S.trash.length} envío(s)? Esto no se puede deshacer.`;
   $('delYes').style.background = 'var(--red)';
   $('delYes').textContent = 'Eliminar definitivamente';
-  $('delYes').onclick = () => { S.trash=[]; save(); closeOverlay('delOverlay'); openTrash(); toast('🗑️ Papelera vaciada'); };
+  $('delYes').onclick = () => {
+    S.trash.forEach(x => {
+      const id = x.shipment && x.shipment.id; if (!id) return;
+      if (!S.deletedPedidoIds.includes(id)) S.deletedPedidoIds.push(id);
+      _purgePedidoDoc(id);
+    });
+    S.trash=[]; save(); closeOverlay('delOverlay'); openTrash(); toast('🗑️ Papelera vaciada');
+  };
   openOverlay('delOverlay');
 }
 
