@@ -1094,9 +1094,7 @@ function setTrackContent(html){
   const tc=$('trackContent'); if(tc) tc.innerHTML=html;
 }
 
-function notMyOrderBtn(){
-  return `<button class="small-link" onclick="clearOrderAndReset()">Este no es mi pedido</button>`;
-}
+function notMyOrderBtn(){ return ''; }
 
 function renderTrackResult(ship, code){
   const meta   = STATUS_META[ship.status]||{color:'#6b7280',emoji:'🏷️',step:0};
