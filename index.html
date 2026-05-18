@@ -1225,24 +1225,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 <div class="overlay" id="taskFormOverlay">
   <div class="sheet">
     <div class="sheet-title" id="taskFormTitle">Nueva Tarea</div>
-    <div class="fg"><label class="fl">Título *</label><input class="fi" id="tTitle" placeholder="Ej: Alistar pedidos de hoy"></div>
-    <div class="fg"><label class="fl">Descripción</label><input class="fi" id="tDesc" placeholder="Detalle opcional..."></div>
-    <div class="fg"><label class="fl">Empleado asignado</label>
-      <select class="fs" id="tEmp">
-        <option value="">Sin asignar</option>
-      </select>
+
+    <!-- Título -->
+    <div class="fg">
+      <input class="fi" id="tTitle" placeholder="Título de la tarea *" autocomplete="off"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveTask()}">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="fg"><label class="fl">Fecha límite</label><input class="fi" id="tDue" type="date"></div>
-      <div class="fg"><label class="fl">Prioridad</label>
-        <select class="fs" id="tPriority">
-          <option value="normal">Normal</option>
-          <option value="alta">🔴 Alta</option>
-          <option value="baja">🔵 Baja</option>
-        </select>
-      </div>
+
+    <!-- Descripción -->
+    <div class="fg">
+      <input class="fi" id="tDesc" placeholder="Descripción (opcional)" autocomplete="off">
     </div>
-    <div style="display:flex;gap:8px;margin-top:8px">
+
+    <!-- Empleado: chips dinámicos -->
+    <div class="fl" style="margin-bottom:7px">EMPLEADO</div>
+    <div id="tEmpChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+    <!-- Fecha: chips rápidos -->
+    <div class="fl" style="margin-bottom:7px">FECHA LÍMITE</div>
+    <div id="tDateChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px"></div>
+    <input class="fi" id="tDue" type="date" style="display:none;margin-top:6px;margin-bottom:10px">
+
+    <!-- Prioridad: 3 botones -->
+    <div class="fl" style="margin-bottom:7px">PRIORIDAD</div>
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <button id="tPriBaja"  onclick="_setTaskFormPri('baja')"
+        style="flex:1;padding:11px 4px;border-radius:10px;border:2px solid var(--bd);background:var(--bg3);color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">🔵 Baja</button>
+      <button id="tPriNorm"  onclick="_setTaskFormPri('normal')"
+        style="flex:1;padding:11px 4px;border-radius:10px;border:2px solid var(--blue);background:rgba(79,142,247,.1);color:var(--text);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">⚪ Normal</button>
+      <button id="tPriAlta"  onclick="_setTaskFormPri('alta')"
+        style="flex:1;padding:11px 4px;border-radius:10px;border:2px solid var(--bd);background:var(--bg3);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">🔴 Alta</button>
+    </div>
+
+    <div style="display:flex;gap:8px">
       <button class="btn-sec" onclick="closeOverlay('taskFormOverlay')" style="flex:1">Cancelar</button>
       <button class="btn-pri" onclick="saveTask()" style="flex:2">💾 Guardar</button>
     </div>
