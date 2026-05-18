@@ -151,6 +151,7 @@ function cloudSync() {
       config:        S.config,
       suppliers:     S.suppliers  || [],
       dispatch:      S.dispatch   || {},
+      trash:         _clean(S.trash) || [],
       t: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(e => toast('⚠️ Error sync: ' + e.message));
   }, 800);
