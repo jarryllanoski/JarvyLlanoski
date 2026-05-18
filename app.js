@@ -1941,7 +1941,7 @@ function _updateUserBtn() {
 
 function _enforcePermisos() {
   const tabs    = ['tareas','envios','compartir','configurar'];
-  const keys    = ['tareas','envios','compartir','config'];
+  const keys    = ['tareas','verPedidos','compartir','config'];
   const tabEls  = document.querySelectorAll('.tab');
   tabs.forEach((tab, i) => {
     if (tabEls[i]) tabEls[i].style.display = hasPermiso(keys[i]) ? '' : 'none';
