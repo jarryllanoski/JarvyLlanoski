@@ -1513,13 +1513,20 @@ let _blockingTaskId = null;
 
 function setTaskFilter(f) {
   _taskStatusFilter = f;
+  /* chips */
   ['All','Alta','Pend','Prog','Done','Block'].forEach(x => {
-    const el = $('tFilter' + x);
-    if (el) el.classList.remove('active');
+    const el = $('tFilter' + x); if (el) el.classList.remove('active');
   });
-  const map = {all:'All', alta:'Alta', pending:'Pend', inprogress:'Prog', done:'Done', blocked:'Block'};
-  const el = $('tFilter' + (map[f] || 'All'));
-  if (el) el.classList.add('active');
+  const chipMap = {all:'All', alta:'Alta', pending:'Pend', inprogress:'Prog', done:'Done', blocked:'Block'};
+  const chip = $('tFilter' + (chipMap[f] || 'All'));
+  if (chip) chip.classList.add('active');
+  /* pills */
+  ['All','Pend','Prog','Block','Done'].forEach(x => {
+    const el = $('tPill' + x); if (el) el.classList.remove('active');
+  });
+  const pillMap = {all:'All', pending:'Pend', inprogress:'Prog', blocked:'Block', done:'Done'};
+  const pill = $('tPill' + (pillMap[f] || 'All'));
+  if (pill) pill.classList.add('active');
   renderTasks();
 }
 
