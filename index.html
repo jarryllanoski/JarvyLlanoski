@@ -470,7 +470,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       <div id="cloudBadge" onclick="openOverlay('cloudConnectOverlay')" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--text2);cursor:pointer;white-space:nowrap">⬜ Sin nube</div>
     </div>
   </div>
-  <button class="hdr-out">↪</button>
+  <button class="usr-btn" id="userBtn" onclick="openUserSwitcher()">
+    <div class="usr-av-sm" id="userBtnAv" style="background:linear-gradient(135deg,#e3b341,#a36b00)">👑</div>
+    <span class="usr-btn-nm" id="userBtnName">Jefe</span>
+  </button>
 </div>
 
 <!-- TABS -->
