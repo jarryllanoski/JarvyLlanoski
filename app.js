@@ -45,8 +45,15 @@ FIXED_COURIERS.forEach(c => { if (!S.couriers.includes(c)) S.couriers.unshift(c)
 
 // Migrate employees from string[] to object[]
 if (S.employees.length && typeof S.employees[0] === 'string') {
-  S.employees = S.employees.map(n => ({ name: n, pin: '', permisos: ['envios','tareas'] }));
+  S.employees = S.employees.map(n => ({ name: n, pin: '', dni: '', phone: '', permisos: ['verPedidos','tareas'] }));
 }
+// Migrate old permission keys to granular keys
+const _permKeyMap = { envios:'verPedidos', compartir:'compartir' };
+S.employees.forEach(e => {
+  if (typeof e === 'object' && e.permisos) {
+    e.permisos = e.permisos.map(k => _permKeyMap[k] || k);
+  }
+});
 
 /* ── SAVE ────────────────────────────────────────────────────────── */
 function save() {
