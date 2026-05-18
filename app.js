@@ -1579,7 +1579,8 @@ function renderEmpAvatars() {
     style="background:${_taskEmpFilter===''?'var(--blue)':'var(--bg3)'}">
     <span style="font-size:18px">👤</span><span>Todos</span>
   </div>`;
-  const empAv = S.employees.map((name, i) => {
+  const empAv = S.employees.map((e, i) => {
+    const name = _eName(e);
     const col = colors[i % colors.length];
     const ini = name.slice(0,1).toUpperCase();
     const cnt = S.tasks.filter(t => t.assignedTo === name && t.status !== 'done').length;
