@@ -1894,63 +1894,218 @@ function reassignTask(id) {
   openTaskForm(id);
 }
 
+/* ── EMPLOYEE HELPERS ────────────────────────────────────────────── */
+function _eName(e)  { return typeof e === 'string' ? e : (e && e.name) || ''; }
+function _ePin(e)   { return typeof e === 'string' ? '' : (e && e.pin) || ''; }
+function _ePerms(e) { return typeof e === 'string' ? ['envios','tareas'] : (e && e.permisos) || []; }
+function _eObj(name){ return (S.employees||[]).find(e => _eName(e) === name); }
+
+function hasPermiso(p) {
+  if (!S.activeUser) return true;
+  const emp = _eObj(S.activeUser);
+  return emp ? _ePerms(emp).includes(p) : true;
+}
+
+/* ── USER SWITCHER ───────────────────────────────────────────────── */
+function _updateUserBtn() {
+  const btn = $('userBtn'); if (!btn) return;
+  const av  = $('userBtnAv');
+  const nm  = $('userBtnName');
+  if (!S.activeUser) {
+    if (av) { av.textContent = '👑'; av.style.background = 'linear-gradient(135deg,#e3b341,#a36b00)'; av.style.fontSize = '14px'; }
+    if (nm) nm.textContent = 'Jefe';
+    btn.style.borderColor = 'rgba(227,179,65,.4)';
+    btn.style.background  = 'rgba(227,179,65,.08)';
+    btn.style.color       = '#e3b341';
+  } else {
+    const idx = (S.employees||[]).findIndex(e => _eName(e) === S.activeUser);
+    const col = _EMP_COLORS[idx >= 0 ? idx % _EMP_COLORS.length : 0];
+    if (av) { av.textContent = S.activeUser.charAt(0).toUpperCase(); av.style.background = col; av.style.fontSize = '12px'; }
+    if (nm) nm.textContent = S.activeUser.split(' ')[0];
+    btn.style.borderColor = col + '66';
+    btn.style.background  = col + '15';
+    btn.style.color       = col;
+  }
+}
+
+function _enforcePermisos() {
+  const tabs    = ['tareas','envios','compartir','configurar'];
+  const keys    = ['tareas','envios','compartir','config'];
+  const tabEls  = document.querySelectorAll('.tab');
+  tabs.forEach((tab, i) => {
+    if (tabEls[i]) tabEls[i].style.display = hasPermiso(keys[i]) ? '' : 'none';
+  });
+  const activePage = document.querySelector('.page.active');
+  if (activePage) {
+    const pid    = activePage.id.replace('page-','');
+    const pidKey = pid === 'configurar' ? 'config' : pid;
+    if (!hasPermiso(pidKey)) {
+      const first = keys.find(k => hasPermiso(k));
+      if (first && typeof goPage === 'function') goPage(first === 'config' ? 'configurar' : first);
+    }
+  }
+}
+
+function openUserSwitcher() {
+  const list = $('userSwitcherList'); if (!list) return;
+  const emps = S.employees || [];
+  list.innerHTML = [
+    `<div class="usr-item ${!S.activeUser?'usr-active':''}" onclick="switchToJefe()">
+      <div class="usr-av" style="background:linear-gradient(135deg,#e3b341,#a36b00)">👑</div>
+      <div class="usr-info"><div class="usr-nm">Jefe / Admin</div><div class="usr-sub">Acceso total</div></div>
+      ${!S.activeUser?'<div class="usr-dot"></div>':''}
+    </div>`,
+    ...emps.map((e,i) => {
+      const nm   = _eName(e);
+      const active = S.activeUser === nm;
+      const perms  = _ePerms(e).length;
+      const col    = _EMP_COLORS[i % _EMP_COLORS.length];
+      return `<div class="usr-item ${active?'usr-active':''}" onclick="switchToEmp('${nm.replace(/'/g,"\\'")}')">
+        <div class="usr-av" style="background:${col};font-size:14px;font-weight:700">${nm.charAt(0).toUpperCase()}</div>
+        <div class="usr-info"><div class="usr-nm">${nm}</div><div class="usr-sub">${perms} permiso${perms!==1?'s':''}</div></div>
+        ${active?'<div class="usr-dot"></div>':''}
+      </div>`;
+    })
+  ].join('');
+  openOverlay('userSwitcherOverlay');
+}
+
+function switchToJefe() {
+  if (!S.activeUser) { closeOverlay('userSwitcherOverlay'); return; }
+  const jPin = S.statusPin || '';
+  if (!jPin) { _doSwitch(null); closeOverlay('userSwitcherOverlay'); return; }
+  _openPinFor(jPin, 'PIN de Jefe / Admin', () => {
+    _doSwitch(null); closeOverlay('userSwitcherOverlay');
+  });
+}
+
+function switchToEmp(name) {
+  if (S.activeUser === name) { closeOverlay('userSwitcherOverlay'); return; }
+  const emp = _eObj(name); if (!emp) return;
+  const pin = _ePin(emp);
+  if (!pin) { _doSwitch(name); closeOverlay('userSwitcherOverlay'); return; }
+  _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => {
+    _doSwitch(name); closeOverlay('userSwitcherOverlay');
+  });
+}
+
+function _doSwitch(userName) {
+  S.activeUser = userName;
+  lsSet('dpanel', JSON.stringify(S));
+  _updateUserBtn();
+  _enforcePermisos();
+  toast('👤 Sesión: ' + (userName || 'Jefe / Admin'));
+}
+
+/* ── EMPLOYEE FORM ───────────────────────────────────────────────── */
+let _empEditIdx = -1;
+
 function addEmployee() {
   const name = ($('newEmpName')||{value:''}).value.trim();
   if (!name) { toast('Escribe el nombre del empleado'); return; }
-  if (S.employees.includes(name)) { toast('Ya existe ese empleado'); return; }
-  S.employees.push(name);
+  if (S.employees.find(e => _eName(e) === name)) { toast('Ya existe ese empleado'); return; }
+  S.employees.push({ name, pin: '', permisos: ['envios','tareas'] });
   $('newEmpName').value = '';
   save(); renderEmpList(); renderEmpAvatars();
   toast(`✅ Empleado "${name}" agregado`);
 }
 
 function renderEmpList() {
-  const el = $('empList');
-  if (!el) return;
+  const el = $('empList'); if (!el) return;
   if (!S.employees.length) {
     el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Sin empleados aún</div>`;
     return;
   }
-  el.innerHTML = S.employees.map((name, i) =>
-    `<div class="cfl-item">
-      <span class="cfl-icon">👤</span>
-      <span class="cfl-name">${name}</span>
-      <span style="font-size:11px;color:var(--text2)">${S.tasks.filter(t=>t.assignedTo===name).length} tareas</span>
-      <button class="cfl-btn cfl-btn-del" onclick="deleteEmployee(${i})">🗑️</button>
+  el.innerHTML = S.employees.map((e, i) => {
+    const nm   = _eName(e);
+    const pin  = _ePin(e);
+    const perms = _ePerms(e).length;
+    const col  = _EMP_COLORS[i % _EMP_COLORS.length];
+    return `<div class="cfl-item">
+      <div style="width:30px;height:30px;border-radius:50%;background:${col};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">${nm.charAt(0).toUpperCase()}</div>
+      <span class="cfl-name">${nm}</span>
+      <div style="display:flex;gap:3px;flex-shrink:0">
+        <span style="font-size:9px;padding:2px 5px;border-radius:4px;border:1px solid ${pin?'rgba(56,139,253,.4)':'var(--bd)'};color:${pin?'var(--blue)':'var(--text2)'};">${pin?'🔐 PIN':'Sin PIN'}</span>
+        <span style="font-size:9px;padding:2px 5px;border-radius:4px;border:1px solid var(--bd);color:var(--text2);">${perms}p</span>
+      </div>
+      <div class="cfl-actions">
+        <button class="cfl-btn cfl-btn-edit" onclick="openEmpEdit(${i})">✏️</button>
+        <button class="cfl-btn cfl-btn-del" onclick="deleteEmployee(${i})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEmpEdit(i) {
+  _empEditIdx = i;
+  const e = S.employees[i]; if (!e) return;
+  const nm = _eName(e); const pin = _ePin(e); const perms = _ePerms(e);
+  $('empEditName').value = nm;
+  $('empEditPin').value  = pin;
+  $('empEditPermisos').innerHTML = PERMISOS_DEF.map(p =>
+    `<div class="perm-row" onclick="document.getElementById('perm_${p.key}').classList.toggle('on')">
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${p.label}</div><div style="font-size:11px;color:var(--text2)">${p.desc}</div></div>
+      <div class="tgl ${perms.includes(p.key)?'on':''}" id="perm_${p.key}"></div>
     </div>`
   ).join('');
+  openOverlay('empEditOverlay');
+}
+
+function saveEmpEdit() {
+  const name = ($('empEditName')||{value:''}).value.trim();
+  const pin  = ($('empEditPin') ||{value:''}).value.trim().replace(/\D/g,'').slice(0,4);
+  if (!name) { toast('⚠️ Escribe el nombre'); return; }
+  const perms = PERMISOS_DEF.filter(p => { const el=$('perm_'+p.key); return el && el.classList.contains('on'); }).map(p => p.key);
+  if (_empEditIdx >= 0 && _empEditIdx < S.employees.length) {
+    const oldName = _eName(S.employees[_empEditIdx]);
+    if (oldName !== name) {
+      S.tasks.forEach(t => { if (t.assignedTo === oldName) t.assignedTo = name; });
+      if (S.activeUser === oldName) S.activeUser = name;
+    }
+    S.employees[_empEditIdx] = { name, pin, permisos: perms };
+  }
+  save(); renderEmpList(); renderEmpAvatars(); _updateUserBtn();
+  closeOverlay('empEditOverlay');
+  toast('✅ Empleado actualizado');
 }
 
 function deleteEmployee(i) {
-  const name = S.employees[i];
+  const name = _eName(S.employees[i]);
   if (!confirm(`¿Eliminar a "${name}"? Sus tareas quedarán sin asignar.`)) return;
   S.tasks.forEach(t => { if (t.assignedTo === name) t.assignedTo = ''; });
+  if (S.activeUser === name) { S.activeUser = null; _updateUserBtn(); }
   S.employees.splice(i, 1);
   if (_taskEmpFilter === name) _taskEmpFilter = '';
   save(); renderEmpList(); renderEmpAvatars(); renderTasks();
 }
 
-/* ════════════════════════════════════════
-   PIN
-════════════════════════════════════════ */
-let _pinEntry = '', _pinCallback = null;
+/* ── PIN ─────────────────────────────────────────────────────────── */
+let _pinEntry = '', _pinCallback = null, _pinExpected = '';
+
 function openPin(cb) {
-  _pinEntry = ''; _pinCallback = cb;
+  _openPinFor(S.statusPin || '', 'Ingresa la clave para continuar', cb);
+}
+
+function _openPinFor(expected, msg, cb) {
+  _pinEntry = ''; _pinExpected = expected; _pinCallback = cb;
   updatePinDots();
-  $('pinMsg').textContent = 'Ingresa la clave para cambiar el estado';
+  $('pinMsg').textContent = msg;
   $('pinMsg').style.color = 'var(--text2)';
   openOverlay('pinOverlay');
 }
+
 function pinTap(d) {
   if (_pinEntry.length >= 4) return;
   _pinEntry += d;
   updatePinDots();
   if (_pinEntry.length === 4) setTimeout(checkPin, 150);
 }
+
 function pinDel() {
   _pinEntry = _pinEntry.slice(0, -1);
   updatePinDots();
 }
+
 function updatePinDots() {
   for (let i = 0; i < 4; i++) {
     const dot = $('pd' + i); if (!dot) continue;
@@ -1958,8 +2113,10 @@ function updatePinDots() {
     dot.classList.remove('error');
   }
 }
+
 function checkPin() {
-  if (_pinEntry === (S.statusPin || '')) {
+  const ok = _pinExpected === null || _pinEntry === _pinExpected;
+  if (ok) {
     closeOverlay('pinOverlay');
     if (_pinCallback) { _pinCallback(); _pinCallback = null; }
   } else {
@@ -1972,9 +2129,10 @@ function checkPin() {
     }, 700);
   }
 }
+
 function changePIN() {
-  openPin(() => {
-    _pinEntry = ''; updatePinDots();
+  _openPinFor(S.statusPin || '', 'Ingresa la clave actual', () => {
+    _pinEntry = ''; _pinExpected = null; updatePinDots();
     $('pinMsg').textContent = 'Ingresa la NUEVA clave (4 dígitos)';
     $('pinMsg').style.color = 'var(--blue)';
     openOverlay('pinOverlay');
