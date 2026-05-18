@@ -12,8 +12,10 @@ const STATUS_MIGRATE = {'NUEVO PEDIDO':'Nuevo pedido','EN PROCESO':'Faltante / p
 const FIXED_COURIERS = ['SHALOM','OLVA COURIER','MARVISUR','DINSIDES','DELIVERY','RETIRO EN TIENDA','ENCOMIENDA'];
 
 const PERMISOS_DEF = [
-  { key:'envios',    label:'🚚 Envíos',    desc:'Ver y gestionar envíos' },
-  { key:'tareas',    label:'📋 Tareas',    desc:'Ver y gestionar tareas' },
-  { key:'compartir', label:'🔗 Compartir', desc:'Generar links de clientes' },
-  { key:'config',    label:'⚙️ Config',    desc:'Cambiar ajustes del negocio' },
+  { key:'verPedidos',     label:'👁️ Ver pedidos de clientes',  desc:'Ver tarjetas y detalles' },
+  { key:'verPrecios',     label:'💰 Ver precios y costos',      desc:'Costos de envío y valores' },
+  { key:'editarEstado',   label:'🏷️ Cambiar estado de pedidos', desc:'Mover entre etiquetas' },
+  { key:'verProveedores', label:'📚 Ver proveedores',           desc:'Lista y pendientes de proveedores' },
+  { key:'tareas',         label:'📋 Ver y gestionar tareas',    desc:'Ver la pizarra de tareas' },
+  { key:'config',         label:'⚙️ Ver configuración',         desc:'Cambiar ajustes del negocio' },
 ];
