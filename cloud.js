@@ -11,7 +11,7 @@ const FB_CONFIG = {
 
 let _db     = null;
 let _wsId   = null;
-let _unsub  = null;
+let _unsubs = [];
 let _timer  = null;
 
 /* ── Init ─────────────────────────────────────────────── */
