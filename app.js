@@ -1679,10 +1679,12 @@ function taskCardHTML(t) {
 function cycleTaskStatus(id) {
   const t = S.tasks.find(x => x.id === id);
   if (!t) return;
-  if (t.status === 'pending')    { t.status = 'done'; }
-  else if (t.status === 'done')  { t.status = 'pending'; t.blockReason = ''; t.availableForVolunteers = false; }
-  else if (t.status === 'blocked') { t.status = 'done'; }
-  else { t.status = 'done'; }
+  /* cycle: pending → inprogress → done → pending */
+  if (t.status === 'pending')     { t.status = 'inprogress'; }
+  else if (t.status === 'inprogress') { t.status = 'done'; }
+  else if (t.status === 'done')   { t.status = 'pending'; t.blockReason = ''; t.availableForVolunteers = false; }
+  else if (t.status === 'blocked'){ t.status = 'pending'; }
+  else { t.status = 'inprogress'; }
   save(); renderTasks();
 }
 
