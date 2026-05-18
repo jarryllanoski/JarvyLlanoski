@@ -1774,7 +1774,8 @@ function _renderEmpChips() {
   const box = $('tEmpChips'); if (!box) return;
   const chips = [`<button class="tf-emp-chip" data-emp="" onclick="_setTaskFormEmp('')"
     style="padding:7px 13px;border-radius:20px;border:2px solid var(--bd);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">Sin asignar</button>`];
-  S.employees.forEach((name, i) => {
+  S.employees.forEach((e, i) => {
+    const name = _eName(e);
     const col = _EMP_COLORS[i % _EMP_COLORS.length];
     chips.push(`<button class="tf-emp-chip" data-emp="${name}" onclick="_setTaskFormEmp('${name.replace(/'/g,"\\'")}')"
       style="padding:7px 13px;border-radius:20px;border:2px solid var(--bd);background:var(--bg3);color:${col};font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">${name}</button>`);
