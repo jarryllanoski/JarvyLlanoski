@@ -2022,7 +2022,7 @@ function addEmployee() {
   const name = ($('newEmpName')||{value:''}).value.trim();
   if (!name) { toast('Escribe el nombre del empleado'); return; }
   if (S.employees.find(e => _eName(e) === name)) { toast('Ya existe ese empleado'); return; }
-  S.employees.push({ name, pin: '', permisos: ['envios','tareas'] });
+  S.employees.push({ name, pin: '', dni: '', phone: '', permisos: ['verPedidos','tareas'] });
   $('newEmpName').value = '';
   save(); renderEmpList(); renderEmpAvatars();
   toast(`✅ Empleado "${name}" agregado`);
