@@ -497,12 +497,13 @@ function getAgencyData(courierName){
 
   /* Check URL ?tracking=CODE first */
   const tCode = new URLSearchParams(location.search).get('tracking');
-  if(tCode){
-    loadCfgThenTrack(tCode);
-    return;
-  }
+  if(tCode){ loadCfgThenTrack(tCode); return; }
 
-  /* Check localStorage one-shot */
+  /* Token-based link (?t=TOKEN) */
+  const tok = new URLSearchParams(location.search).get('t') || '';
+  if(tok){ checkToken(tok); return; }
+
+  /* Fallback: localStorage one-shot (links sin token) */
   const saved = localStorage.getItem('dpanel_order_'+wsId);
   if(saved){
     try{
@@ -513,6 +514,47 @@ function getAgencyData(courierName){
 
   loadCfg();
 })();
+
+/* ─── TOKEN CHECK ────────────────────────────────────────────────── */
+async function checkToken(tok){
+  try{
+    const doc  = await fsGet(`ws/${wsId}/tokens/${tok}`);
+    const data = fsDocToObj(doc);
+    /* Expired? */
+    if(data.expiresAt && new Date(data.expiresAt) < new Date()){
+      showTokenScreen('⏰','Link vencido','Este link ya venció. Solicitá uno nuevo.');
+      return;
+    }
+    /* Already used? */
+    if(data.used){
+      if(data.trackCode){
+        currentToken = tok;
+        loadCfgThenTrack(data.trackCode);
+      } else {
+        showTokenScreen('🔒','Link ya utilizado','Este link ya fue utilizado.\nPara registrar un nuevo pedido, solicitá un nuevo link.');
+      }
+      return;
+    }
+    /* Valid — show form */
+    currentToken = tok;
+    loadCfg();
+  }catch(e){
+    /* 404 or network error */
+    if(e.message&&e.message.includes('404')){
+      showTokenScreen('❌','Link inválido','Este link no existe o fue eliminado.');
+    } else {
+      showTokenScreen('⚠️','Error de conexión',e.message+'\n\nReintentá más tarde.');
+    }
+  }
+}
+
+function showTokenScreen(icon, title, msg){
+  setApp(`<div class="unconf">
+    <div class="unconf-icon">${icon}</div>
+    <div class="unconf-ttl">${esc(title)}</div>
+    <div class="unconf-sub">${esc(msg).replace(/\n/g,'<br>')}</div>
+  </div>`);
+}
 
 /* ─── LOAD CONFIG ───────────────────────────────────────────────── */
 async function loadCfg(){
