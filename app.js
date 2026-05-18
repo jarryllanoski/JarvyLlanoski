@@ -43,6 +43,11 @@ const _initCustom = S.labels.slice();
 S.labels = [...FIXED_LABELS, ..._initCustom];
 FIXED_COURIERS.forEach(c => { if (!S.couriers.includes(c)) S.couriers.unshift(c); });
 
+// Migrate employees from string[] to object[]
+if (S.employees.length && typeof S.employees[0] === 'string') {
+  S.employees = S.employees.map(n => ({ name: n, pin: '', permisos: ['envios','tareas'] }));
+}
+
 /* ── SAVE ────────────────────────────────────────────────────────── */
 function save() {
   lsSet('dpanel', JSON.stringify(S));
