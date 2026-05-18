@@ -19,6 +19,7 @@ function goPage(id) {
   });
   if (id === 'configurar') loadCfgUI();
   if (id === 'tareas') renderTasks();
+  if (id === 'compartir') renderTokenList();
 }
 
 /* OVERLAYS */
