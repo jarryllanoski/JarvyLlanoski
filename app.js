@@ -2072,8 +2072,10 @@ function openEmpEdit(i) {
 }
 
 function saveEmpEdit() {
-  const name = ($('empEditName')||{value:''}).value.trim();
-  const pin  = ($('empEditPin') ||{value:''}).value.trim().replace(/\D/g,'').slice(0,4);
+  const name  = ($('empEditName') ||{value:''}).value.trim();
+  const dni   = ($('empEditDni')  ||{value:''}).value.trim();
+  const phone = ($('empEditPhone')||{value:''}).value.trim().replace(/\s/g,'');
+  const pin   = ($('empEditPin')  ||{value:''}).value.trim().replace(/\D/g,'').slice(0,4);
   if (!name) { toast('⚠️ Escribe el nombre'); return; }
   const perms = PERMISOS_DEF.filter(p => { const el=$('perm_'+p.key); return el && el.classList.contains('on'); }).map(p => p.key);
   if (_empEditIdx >= 0 && _empEditIdx < S.employees.length) {
@@ -2082,7 +2084,7 @@ function saveEmpEdit() {
       S.tasks.forEach(t => { if (t.assignedTo === oldName) t.assignedTo = name; });
       if (S.activeUser === oldName) S.activeUser = name;
     }
-    S.employees[_empEditIdx] = { name, pin, permisos: perms };
+    S.employees[_empEditIdx] = { name, pin, dni, phone, permisos: perms };
   }
   save(); renderEmpList(); renderEmpAvatars(); _updateUserBtn();
   closeOverlay('empEditOverlay');
