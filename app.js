@@ -1688,27 +1688,128 @@ function cycleTaskStatus(id) {
   save(); renderTasks();
 }
 
-let _editTaskId = null;
+/* ── Task form state ── */
+let _editTaskId  = null;
+let _tfEmp  = '';
+let _tfDate = '';
+let _tfPri  = 'normal';
+
+const _EMP_COLORS = ['#388bfd','#a371f7','#3fb950','#f78166','#e3b341','#58a6ff'];
+
+function _setTaskFormEmp(name) {
+  _tfEmp = name;
+  document.querySelectorAll('.tf-emp-chip').forEach(el => {
+    const sel = el.dataset.emp === name;
+    el.style.borderColor  = sel ? 'var(--blue)' : 'var(--bd)';
+    el.style.background   = sel ? 'rgba(79,142,247,.15)' : 'var(--bg3)';
+    el.style.color        = sel ? 'var(--text)' : 'var(--text2)';
+    el.style.fontWeight   = sel ? '700' : '500';
+  });
+}
+
+function _setTaskFormDate(d) {
+  const inp = $('tDue');
+  if (d === 'custom') {
+    if (inp) { inp.style.display = 'block'; setTimeout(() => inp.focus(), 50); inp.onchange = () => { _tfDate = inp.value; }; }
+    document.querySelectorAll('.tf-date-chip').forEach(el => {
+      const sel = el.dataset.date === 'custom';
+      el.style.borderColor = sel ? 'var(--blue)' : 'var(--bd)';
+      el.style.background  = sel ? 'rgba(79,142,247,.15)' : 'var(--bg3)';
+    });
+    return;
+  }
+  _tfDate = d;
+  if (inp) { inp.style.display = 'none'; inp.value = d; }
+  document.querySelectorAll('.tf-date-chip').forEach(el => {
+    const sel = el.dataset.date === d;
+    el.style.borderColor = sel ? 'var(--blue)' : 'var(--bd)';
+    el.style.background  = sel ? 'rgba(79,142,247,.15)' : 'var(--bg3)';
+  });
+}
+
+function _setTaskFormPri(p) {
+  _tfPri = p;
+  const cfg = {
+    baja:   {id:'tPriBaja', border:'var(--blue)',   bg:'rgba(79,142,247,.12)',   color:'var(--blue)'},
+    normal: {id:'tPriNorm', border:'var(--blue)',   bg:'rgba(79,142,247,.1)',    color:'var(--text)'},
+    alta:   {id:'tPriAlta', border:'var(--red)',    bg:'rgba(248,113,113,.12)',  color:'var(--red)'},
+  };
+  Object.keys(cfg).forEach(key => {
+    const btn = $(cfg[key].id); if (!btn) return;
+    const sel = key === p;
+    btn.style.borderColor = sel ? cfg[key].border : 'var(--bd)';
+    btn.style.background  = sel ? cfg[key].bg     : 'var(--bg3)';
+    btn.style.color       = sel ? cfg[key].color  : 'var(--text2)';
+  });
+}
+
+function _renderEmpChips() {
+  const box = $('tEmpChips'); if (!box) return;
+  const chips = [`<button class="tf-emp-chip" data-emp="" onclick="_setTaskFormEmp('')"
+    style="padding:7px 13px;border-radius:20px;border:2px solid var(--bd);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">Sin asignar</button>`];
+  S.employees.forEach((name, i) => {
+    const col = _EMP_COLORS[i % _EMP_COLORS.length];
+    chips.push(`<button class="tf-emp-chip" data-emp="${name}" onclick="_setTaskFormEmp('${name.replace(/'/g,"\\'")}')"
+      style="padding:7px 13px;border-radius:20px;border:2px solid var(--bd);background:var(--bg3);color:${col};font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">${name}</button>`);
+  });
+  box.innerHTML = chips.join('');
+  _setTaskFormEmp(_tfEmp);
+}
+
+function _renderDateChips() {
+  const box = $('tDateChips'); if (!box) return;
+  const now = new Date();
+  const iso = d => d.toISOString().slice(0,10);
+  const chips = [
+    {label:'Sin fecha', date:''},
+    {label:'Hoy',       date: iso(now)},
+    {label:'Mañana',    date: iso(new Date(now.getTime()+86400000))},
+    {label:'+3 días',   date: iso(new Date(now.getTime()+3*86400000))},
+    {label:'+7 días',   date: iso(new Date(now.getTime()+7*86400000))},
+    {label:'📅 Elegir', date:'custom'},
+  ];
+  box.innerHTML = chips.map(c =>
+    `<button class="tf-date-chip" data-date="${c.date}" onclick="_setTaskFormDate('${c.date}')"
+      style="padding:8px 12px;border-radius:10px;border:2px solid var(--bd);background:var(--bg3);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap">${c.label}</button>`
+  ).join('');
+  /* If editing with a saved date that's not one of the chips, show custom input */
+  const presets = chips.slice(1,-1).map(c => c.date);
+  if (_tfDate && !presets.includes(_tfDate)) {
+    const inp = $('tDue');
+    if (inp) { inp.style.display = 'block'; }
+    document.querySelectorAll('.tf-date-chip').forEach(el => {
+      const sel = el.dataset.date === 'custom';
+      el.style.borderColor = sel ? 'var(--blue)' : 'var(--bd)';
+      el.style.background  = sel ? 'rgba(79,142,247,.15)' : 'var(--bg3)';
+    });
+  } else {
+    _setTaskFormDate(_tfDate);
+  }
+}
+
 function openTaskForm(id) {
   _editTaskId = id;
   $('taskFormTitle').textContent = id ? 'Editar Tarea' : 'Nueva Tarea';
-  const empSel = $('tEmp');
-  empSel.innerHTML = `<option value="">Sin asignar</option>` +
-    S.employees.map(e => `<option value="${e}">${e}</option>`).join('');
   if (id) {
     const t = S.tasks.find(x => x.id === id);
     if (!t) return;
-    $('tTitle').value    = t.title;
-    $('tDesc').value     = t.description || '';
-    $('tEmp').value      = t.assignedTo || '';
-    $('tDue').value      = t.dueDate || '';
-    $('tPriority').value = t.priority || 'normal';
+    $('tTitle').value = t.title;
+    $('tDesc').value  = t.description || '';
+    _tfEmp  = t.assignedTo || '';
+    _tfDate = t.dueDate    || '';
+    _tfPri  = t.priority   || 'normal';
   } else {
-    $('tTitle').value = ''; $('tDesc').value = ''; $('tDue').value = '';
-    $('tEmp').value = _taskEmpFilter || '';
-    $('tPriority').value = 'normal';
+    $('tTitle').value = '';
+    $('tDesc').value  = '';
+    _tfEmp  = _taskEmpFilter || '';
+    _tfDate = '';
+    _tfPri  = 'normal';
   }
+  _renderEmpChips();
+  _renderDateChips();
+  _setTaskFormPri(_tfPri);
   openOverlay('taskFormOverlay');
+  setTimeout(() => { const el = $('tTitle'); if (el) el.focus(); }, 120);
 }
 
 function saveTask() {
