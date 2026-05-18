@@ -180,6 +180,10 @@ function disconnectCloud() {
   if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
 }
 
+/* ── Expose db for other modules ─────────────────────────────── */
+function cloudDb(){ return _db; }
+function cloudWsId(){ return _wsId; }
+
 /* ── Auto-reconnect ───────────────────────────────────── */
 if (S.wsId) {
   setTimeout(() => connectCloud(S.wsId), 400);
