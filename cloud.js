@@ -124,7 +124,9 @@ function _listen() {
         lsSet('dpanel', JSON.stringify(S));
         if (typeof render === 'function') render();
         if (typeof renderChips === 'function') renderChips();
-        toast('📥 ' + added + ' nuevo' + (added > 1 ? 's' : '') + ' pedido' + (added > 1 ? 's' : '') + ' del formulario');
+        const msg = '📥 ' + added + ' nuevo' + (added > 1 ? 's' : '') + ' pedido' + (added > 1 ? 's' : '') + ' del formulario';
+        toast(msg);
+        _alertNewOrder(added);
       }
     })
   );
