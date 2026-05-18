@@ -907,18 +907,111 @@ function shareTG(){
   window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${msg}`, '_blank');
 }
 
-/* ── TOKEN STUBS (sin Firebase) ── */
-function renderTokenList(){
+/* ── TOKENS ── */
+function _tokenBase(){
+  const db = typeof cloudDb === 'function' ? cloudDb() : null;
+  const wsId = typeof cloudWsId === 'function' ? cloudWsId() : (S.wsId||'');
+  return {db, wsId};
+}
+
+async function renderTokenList(){
   const el = $('tokenList');
   if (!el) return;
-  el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2);font-size:13px">
-    <div style="font-size:28px;margin-bottom:8px">☁️</div>
-    <div>La gestión de tokens requiere integración en la nube.</div>
-    <div style="font-size:11px;margin-top:4px;opacity:.6">Disponible en una futura versión.</div>
-  </div>`;
+  const {db, wsId} = _tokenBase();
+  if (!db || !wsId) {
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2);font-size:13px">
+      <div style="font-size:28px;margin-bottom:8px">☁️</div>
+      <div>Conectate a la nube para gestionar links.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div style="text-align:center;padding:12px;color:var(--text2);font-size:12px">Cargando...</div>`;
+  try {
+    const snap = await db.collection('ws').doc(wsId).collection('tokens')
+      .orderBy('createdAt','desc').limit(30).get();
+    const tokens = [];
+    snap.forEach(doc => tokens.push({id: doc.id, ...doc.data()}));
+    if (!tokens.length) {
+      el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2);font-size:13px">Aún no generaste ningún link.<br><span style="font-size:11px;opacity:.6">Creá uno arriba para empezar.</span></div>`;
+      return;
+    }
+    const base = window.location.href.replace(/\/[^/]*$/, '/');
+    el.innerHTML = tokens.map(t => {
+      const url = `${base}form.html?ws=${encodeURIComponent(wsId)}&t=${encodeURIComponent(t.id)}`;
+      const expired = t.expiresAt && new Date(t.expiresAt) < new Date();
+      const statusColor = t.used ? 'var(--green)' : expired ? 'var(--red)' : 'var(--blue)';
+      const statusTxt   = t.used
+        ? `✅ Usado${t.clientName ? ' — ' + t.clientName : ''}`
+        : expired ? '⏰ Vencido' : '🔵 Disponible';
+      const label = t.label ? `<div style="font-size:13px;font-weight:600;margin-bottom:3px">${t.label}</div>` : '';
+      const actions = (!t.used && !expired) ? `
+        <button onclick="copyToken('${t.id}')" style="flex:1;padding:7px;background:var(--bg);border:1px solid var(--bd);border-radius:7px;color:var(--text);font-size:11px;cursor:pointer">📋 Copiar</button>
+        <button onclick="shareTokenWA('${t.id}')" style="flex:1;padding:7px;background:var(--bg);border:1px solid var(--bd);border-radius:7px;color:var(--text);font-size:11px;cursor:pointer">📱 WA</button>` : '';
+      return `<div style="background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:8px">
+        ${label}
+        <div style="font-size:11px;color:${statusColor};margin-bottom:6px;font-weight:600">${statusTxt}</div>
+        <div style="font-size:10px;color:var(--text2);word-break:break-all;margin-bottom:8px;opacity:.7">${url}</div>
+        <div style="display:flex;gap:6px">
+          ${actions}
+          <button onclick="deleteToken('${t.id}')" style="${!t.used&&!expired?'flex:0 0 auto;':'flex:1;'}padding:7px 10px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:7px;color:var(--red);font-size:11px;cursor:pointer">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--red);font-size:12px;padding:8px">Error: ${e.message}</div>`;
+  }
 }
+
 function generateToken(){
-  toast('☁️ Función disponible próximamente');
+  const {db, wsId} = _tokenBase();
+  if (!db || !wsId) { toast('⚠️ Conectate a la nube primero'); return; }
+  const label    = ($('tokenLabel')        ||{value:''}).value.trim();
+  const singleUse= ($('tokenSingleUseBtn') ||{classList:{contains:()=>true}}).classList.contains('on');
+  const expDays  = ($('tokenExpiry')       ||{value:''}).value;
+  const tok = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const data = {
+    label:     label || '',
+    singleUse: !!singleUse,
+    used:      false,
+    createdAt: new Date().toISOString(),
+    expiresAt: expDays ? new Date(Date.now() + Number(expDays)*86400000).toISOString() : null,
+    clientName: null, orderId: null, trackCode: null,
+  };
+  db.collection('ws').doc(wsId).collection('tokens').doc(tok).set(data)
+    .then(() => {
+      const base = window.location.href.replace(/\/[^/]*$/, '/');
+      const url = `${base}form.html?ws=${encodeURIComponent(wsId)}&t=${encodeURIComponent(tok)}`;
+      navigator.clipboard.writeText(url).then(()=>{}).catch(()=>{});
+      toast('✅ Link generado y copiado');
+      const lbl = $('tokenLabel'); if (lbl) lbl.value = '';
+      renderTokenList();
+    })
+    .catch(e => toast('⚠️ Error: ' + e.message));
+}
+
+function _tokenUrl(tokenId){
+  const wsId = typeof cloudWsId === 'function' ? cloudWsId() : (S.wsId||'');
+  const base = window.location.href.replace(/\/[^/]*$/, '/');
+  return `${base}form.html?ws=${encodeURIComponent(wsId)}&t=${encodeURIComponent(tokenId)}`;
+}
+function copyToken(tokenId){
+  const url = _tokenUrl(tokenId);
+  navigator.clipboard.writeText(url).then(()=>toast('📋 Link copiado')).catch(()=>{});
+}
+function shareTokenWA(tokenId){
+  const url = _tokenUrl(tokenId);
+  const msg = encodeURIComponent(`📦 ${S.config.name||'Mi tienda'}\nRealizá tu pedido aquí:\n${url}`);
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
+}
+async function deleteToken(tokenId){
+  const {db, wsId} = _tokenBase();
+  if (!db || !wsId) return;
+  if (!confirm('¿Eliminar este link?')) return;
+  try {
+    await db.collection('ws').doc(wsId).collection('tokens').doc(tokenId).delete();
+    toast('🗑️ Link eliminado');
+    renderTokenList();
+  } catch(e) { toast('⚠️ Error: ' + e.message); }
 }
 
 /* ── SUPPLIERS ── */
