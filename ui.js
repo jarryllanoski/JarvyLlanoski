@@ -135,6 +135,8 @@ function loadCfgUI() {
    INIT
 ════════════════════════════════════════ */
 if ($('hdrName')) $('hdrName').textContent = S.config.name || '';
+if (typeof _updateUserBtn === 'function') _updateUserBtn();
+if (typeof _enforcePermisos === 'function') _enforcePermisos();
 renderChips();
 updateAutoStatusBadge();
 if ($('suppList')) renderSuppList();
