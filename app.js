@@ -1635,14 +1635,21 @@ function renderTasks() {
   const colors = ['#388bfd','#a371f7','#3fb950','#f78166','#e3b341','#58a6ff'];
   el.innerHTML = Object.entries(groups).map(([emp, items]) => {
     const empIdx = S.employees.findIndex(e => _eName(e) === emp);
-    const col = empIdx >= 0 ? colors[empIdx % colors.length] : 'var(--text2)';
-    const ini = emp.slice(0,1).toUpperCase();
+    const col    = empIdx >= 0 ? colors[empIdx % colors.length] : 'var(--text2)';
+    const ini    = emp.slice(0,1).toUpperCase();
     const pending = items.filter(t => t.status !== 'done').length;
+    const empObj  = empIdx >= 0 ? S.employees[empIdx] : null;
+    const phone   = empObj ? _ePhone(empObj) : '';
+    const phone51 = phone.replace(/\D/g,'');
+    const pending_titles = items.filter(t=>t.status!=='done').map(t=>`📋 ${t.title}${t.dueDate?' ('+t.dueDate+')':''}`).join('\n');
+    const waMsg   = encodeURIComponent(`Hola ${emp.split(' ')[0]}, estas son tus tareas pendientes:\n\n${pending_titles}\n\nGracias 💪`);
     return `<div style="margin-bottom:14px">
       <div class="task-group-hdr">
         <div style="width:26px;height:26px;border-radius:50%;background:${col};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${ini}</div>
-        <span style="color:var(--text)">${emp}</span>
+        <span style="color:var(--text);flex:1">${emp}</span>
         ${pending > 0 ? `<span style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;font-size:10px;padding:1px 7px;color:var(--text2)">${pending} pendiente${pending>1?'s':''}</span>` : ''}
+        ${phone ? `<a href="tel:+51${phone51}" style="text-decoration:none;font-size:17px;padding:2px 4px;border-radius:7px;-webkit-tap-highlight-color:transparent" title="Llamar a ${emp}">📞</a>` : ''}
+        ${phone && pending > 0 ? `<a href="https://wa.me/51${phone51}?text=${waMsg}" target="_blank" style="text-decoration:none;font-size:17px;padding:2px 4px;border-radius:7px;-webkit-tap-highlight-color:transparent" title="Enviar tareas por WhatsApp">💬</a>` : ''}
       </div>
       ${items.map(t => taskCardHTML(t)).join('')}
     </div>`;
