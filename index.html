@@ -1079,6 +1079,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
     <div id="cloudConnectedView" style="display:none">
       <div id="cloudConnectedInfo" style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:16px;padding:12px;background:rgba(46,160,67,.08);border:1px solid rgba(46,160,67,.3);border-radius:10px">🟢 Conectado</div>
       <p style="font-size:12px;color:var(--text2);margin:0 0 16px;line-height:1.6">Todos los cambios se sincronizan automáticamente con los demás dispositivos que usen el mismo código de equipo.</p>
+      <button onclick="requestNotifPermission()"
+        style="width:100%;padding:12px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.25);border-radius:10px;color:var(--blue);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:10px">
+        🔔 Activar notificaciones de nuevos pedidos
+      </button>
       <button onclick="disconnectCloud()"
         style="width:100%;padding:12px;background:rgba(247,129,102,.1);border:1px solid rgba(247,129,102,.3);border-radius:10px;color:var(--red);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">
         ⛔ Desconectar
