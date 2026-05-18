@@ -1009,8 +1009,14 @@ async function submitOrder(){
 
   try{
     await fsPatch(`ws/${wsId}/pedidos/${orderId}`, order);
+    /* Mark token as used (if link was token-based) */
+    if(currentToken){
+      fsPatch(`ws/${wsId}/tokens/${currentToken}`, {
+        used: true, orderId: order.id, trackCode,
+        clientName: order.name, usedAt: new Date().toISOString()
+      }).catch(()=>{});
+    }
     showOverlay(false);
-    /* Save to localStorage — one-shot */
     localStorage.setItem('dpanel_order_'+wsId, JSON.stringify({trackCode, orderId:order.id, name:order.name}));
     renderSuccessStep(order, trackCode);
   }catch(e){
