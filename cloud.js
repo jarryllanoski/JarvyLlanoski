@@ -120,6 +120,7 @@ function _listen() {
         if (!d || !d.id) return;
         if (S.shipments.find(x => x.id === d.id)) return;
         if ((S.trash||[]).find(x => x.shipment && x.shipment.id === d.id)) return;
+        if ((S.deletedPedidoIds||[]).includes(d.id)) return;
         S.shipments.push(d);
         added++;
       });
