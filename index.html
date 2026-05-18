@@ -513,56 +513,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 
 <!-- COMPARTIR -->
 <div class="page" id="page-compartir">
-  <div class="share-card">
-    <div class="share-icon">🔗</div>
-    <div class="share-ttl">¡Listo para compartir!</div>
-    <div class="share-sub">Tus clientes llenan sus datos en este link y tú recibes el pedido.</div>
-    <div class="link-box" id="shareUrl" onclick="copyLink()">https://jarryllanoski.github.io/JarvyLlanoski</div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn-copy" onclick="copyLink()" style="flex:1">📋 Copiar Link</button>
-      <button class="btn-copy" onclick="genFormUrl()" style="flex:1;background:linear-gradient(135deg,#1a7f37,var(--green))">⚡ Generar link</button>
-    </div>
-    <div style="margin-top:12px;background:var(--bg3);border-radius:10px;padding:12px;border:1px solid var(--bd)">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin-bottom:8px">✏️ CAMBIAR LINK DEL FORMULARIO</div>
-      <div style="display:flex;gap:8px">
-        <input class="fi" id="newShareUrl" placeholder="https://jarryllanoski.github.io/JarvyLlanoski" style="flex:1;font-size:12px">
-        <button class="cfl-plus" onclick="updateShareUrl()" style="flex-shrink:0">✓</button>
-      </div>
-      <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5">
-        El formulario ya está incluido en tu repositorio GitHub Pages. Usa el botón <b>⚡ Generar link</b> para obtener el link directo.
-      </div>
-    </div>
+  <!-- Hero -->
+  <div style="text-align:center;padding:24px 16px 8px">
+    <div style="font-size:40px;margin-bottom:10px">🔑</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px">Links para clientes</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6">Generá un link único por cliente.<br>Una vez que lo usa queda bloqueado automáticamente.</div>
   </div>
+
+  <!-- Generator -->
   <div class="cfg-sec">
-    <div class="cfg-ttl">📨 Compartir por</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="tb-btn" style="width:auto;padding:0 14px;height:38px;font-size:12px" onclick="shareWA()">📱 WhatsApp</button>
-      <button class="tb-btn" style="width:auto;padding:0 14px;height:38px;font-size:12px" onclick="copyLink()">🔗 Copiar</button>
-      <button class="tb-btn" style="width:auto;padding:0 14px;height:38px;font-size:12px" onclick="shareTG()">✈️ Telegram</button>
+    <div class="cfg-ttl">✨ Nuevo link</div>
+    <div class="fg">
+      <input class="fi" id="tokenLabel" placeholder="Nombre del cliente (ej. Juan Pérez)" maxlength="40" onkeydown="if(event.key==='Enter')generateToken()">
     </div>
+    <select class="fs" id="tokenExpiry" style="width:100%;margin-bottom:14px">
+      <option value="">Sin vencimiento</option>
+      <option value="1">Vence en 1 día</option>
+      <option value="3">Vence en 3 días</option>
+      <option value="7">Vence en 7 días</option>
+      <option value="30">Vence en 30 días</option>
+    </select>
+    <button onclick="generateToken()" style="width:100%;padding:15px;background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">🔑 Generar y copiar link</button>
   </div>
+
+  <!-- Token list -->
   <div class="cfg-sec">
-    <div class="cfg-ttl">🔑 Links con token</div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">Genera links únicos por cliente con control de uso y vencimiento.</div>
-    <div class="fg">
-      <label class="fl">Etiqueta del link (opcional)</label>
-      <input class="fi" id="tokenLabel" placeholder="Ej. Juan Pérez" maxlength="40">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="cfg-ttl" style="margin:0">📋 Links generados</div>
+      <button onclick="renderTokenList()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:4px 8px">🔄</button>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <span class="fl" style="margin:0;flex:1">De un solo uso</span>
-      <div id="tokenSingleUseBtn" class="courier-toggle on" onclick="this.classList.toggle('on')"><div class="courier-toggle-dot"></div></div>
-    </div>
-    <div class="fg">
-      <label class="fl">Vencimiento</label>
-      <select class="fs" id="tokenExpiry">
-        <option value="">Sin vencimiento</option>
-        <option value="1">1 día</option>
-        <option value="3">3 días</option>
-        <option value="7">7 días</option>
-        <option value="30">30 días</option>
-      </select>
-    </div>
-    <button onclick="generateToken()" style="width:100%;padding:11px;background:linear-gradient(135deg,#1a3a6b,var(--blue));border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:14px">🔑 Generar link con token</button>
     <div id="tokenList"></div>
   </div>
 </div>
