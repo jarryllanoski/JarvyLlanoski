@@ -2058,8 +2058,10 @@ function openEmpEdit(i) {
   _empEditIdx = i;
   const e = S.employees[i]; if (!e) return;
   const nm = _eName(e); const pin = _ePin(e); const perms = _ePerms(e);
-  $('empEditName').value = nm;
-  $('empEditPin').value  = pin;
+  $('empEditName').value  = nm;
+  $('empEditDni').value   = _eDni(e);
+  $('empEditPhone').value = _ePhone(e);
+  $('empEditPin').value   = pin;
   $('empEditPermisos').innerHTML = PERMISOS_DEF.map(p =>
     `<div class="perm-row" onclick="document.getElementById('perm_${p.key}').classList.toggle('on')">
       <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${p.label}</div><div style="font-size:11px;color:var(--text2)">${p.desc}</div></div>
