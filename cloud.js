@@ -204,13 +204,21 @@ function _alertNewOrder(count) {
       osc.stop(ctx.currentTime + t + 0.3);
     });
   } catch(e) {}
-  /* Browser notification */
-  const body = count === 1 ? 'Nuevo pedido desde el formulario' : `${count} nuevos pedidos desde el formulario`;
-  if (Notification.permission === 'granted') {
+  /* Browser notification — solo si ya tiene permiso (nunca pedir automáticamente) */
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    const body = count === 1 ? 'Nuevo pedido desde el formulario' : `${count} nuevos pedidos desde el formulario`;
     new Notification('📦 Pedido recibido', { body, silent: true });
-  } else if (Notification.permission === 'default') {
-    Notification.requestPermission();
   }
+}
+
+/* Llamar manualmente desde el botón en Config */
+function requestNotifPermission() {
+  if (typeof Notification === 'undefined') { toast('⚠️ Tu navegador no soporta notificaciones'); return; }
+  if (Notification.permission === 'granted') { toast('✅ Notificaciones ya activadas'); return; }
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') toast('🔔 Notificaciones activadas');
+    else toast('❌ Permiso denegado');
+  });
 }
 
 /* ── Auto-reconnect ───────────────────────────────────── */
