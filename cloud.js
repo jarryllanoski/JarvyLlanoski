@@ -106,7 +106,7 @@ function _listen() {
   }, err => {
     console.warn('Cloud sync error:', err);
     toast('⚠️ Nube: ' + err.message);
-  });
+  }));
 
   // Listen for new form submissions
   _unsubs.push(
