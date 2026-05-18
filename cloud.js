@@ -171,7 +171,7 @@ function connectCloud(wsId) {
 
 function disconnectCloud() {
   clearTimeout(_timer);
-  if (_unsub) { _unsub(); _unsub = null; }
+  _unsubs.forEach(u => u()); _unsubs = [];
   _wsId = null;
   delete S.wsId;
   lsSet('dpanel', JSON.stringify(S));
