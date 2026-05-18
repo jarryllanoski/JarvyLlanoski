@@ -1814,22 +1814,23 @@ function openTaskForm(id) {
 
 function saveTask() {
   const title = $('tTitle').value.trim();
-  if (!title) { toast('⚠️ Escribe el título de la tarea'); return; }
+  if (!title) { toast('⚠️ Escribe el título'); return; }
+  /* If custom date input is visible, grab its value */
+  const duEl = $('tDue');
+  if (duEl && duEl.style.display !== 'none' && duEl.value) _tfDate = duEl.value;
+  const desc = ($('tDesc')||{value:''}).value.trim();
   if (_editTaskId) {
     const t = S.tasks.find(x => x.id === _editTaskId);
     if (t) {
-      t.title = title; t.description = $('tDesc').value.trim();
-      t.assignedTo = $('tEmp').value; t.dueDate = $('tDue').value;
-      t.priority = $('tPriority').value;
+      t.title = title; t.description = desc;
+      t.assignedTo = _tfEmp; t.dueDate = _tfDate; t.priority = _tfPri;
     }
     toast('✅ Tarea actualizada');
   } else {
     S.tasks.push({
-      id: 'task_' + Date.now(),
-      title, description: $('tDesc').value.trim(),
-      assignedTo: $('tEmp').value, dueDate: $('tDue').value,
-      priority: $('tPriority').value, status: 'pending',
-      blockReason: '', availableForVolunteers: false,
+      id: 'task_' + Date.now(), title, description: desc,
+      assignedTo: _tfEmp, dueDate: _tfDate, priority: _tfPri,
+      status: 'pending', blockReason: '', availableForVolunteers: false,
       createdAt: new Date().toISOString()
     });
     toast('✅ Tarea creada');
