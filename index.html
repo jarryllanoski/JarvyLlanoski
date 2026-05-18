@@ -1300,10 +1300,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">✏️ Editar empleado</div>
-    <div class="fg"><label class="fl">Nombre</label><input class="fi" id="empEditName" placeholder="Nombre del empleado"></div>
-    <div class="fg"><label class="fl">PIN (4 dígitos, opcional)</label><input class="fi" id="empEditPin" type="tel" maxlength="4" placeholder="Sin PIN = acceso libre"></div>
-    <div style="margin-top:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:8px">PERMISOS</div>
+    <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:8px">👤 DATOS PERSONALES</div>
+    <div class="fg"><label class="fl">Nombre completo *</label><input class="fi" id="empEditName" placeholder="Nombre del empleado"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">DNI</label><input class="fi" id="empEditDni" type="tel" maxlength="8" placeholder="12345678"></div>
+      <div class="fg"><label class="fl">Teléfono WhatsApp</label><input class="fi" id="empEditPhone" type="tel" placeholder="9XXXXXXXX"></div>
+    </div>
+    <div class="fg"><label class="fl">Clave personal (4 dígitos)</label><input class="fi" id="empEditPin" type="tel" maxlength="4" placeholder="Sin clave = acceso libre"></div>
+    <div style="margin-top:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:8px">🔒 PERMISOS</div>
       <div id="empEditPermisos"></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
