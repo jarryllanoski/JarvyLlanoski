@@ -186,6 +186,33 @@ function disconnectCloud() {
 function cloudDb(){ return _db; }
 function cloudWsId(){ return _wsId; }
 
+/* ── New-order alert (sound + browser notification) ──────── */
+function _alertNewOrder(count) {
+  /* Sound via Web Audio API */
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[0, 660], [0.18, 880], [0.36, 1100]].forEach(([t, freq]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + t);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime + t);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.25);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + 0.3);
+    });
+  } catch(e) {}
+  /* Browser notification */
+  const body = count === 1 ? 'Nuevo pedido desde el formulario' : `${count} nuevos pedidos desde el formulario`;
+  if (Notification.permission === 'granted') {
+    new Notification('📦 Pedido recibido', { body, silent: true });
+  } else if (Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
 /* ── Auto-reconnect ───────────────────────────────────── */
 if (S.wsId) {
   setTimeout(() => connectCloud(S.wsId), 400);
