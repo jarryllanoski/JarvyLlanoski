@@ -1906,7 +1906,9 @@ function reassignTask(id) {
 /* ── EMPLOYEE HELPERS ────────────────────────────────────────────── */
 function _eName(e)  { return typeof e === 'string' ? e : (e && e.name) || ''; }
 function _ePin(e)   { return typeof e === 'string' ? '' : (e && e.pin) || ''; }
-function _ePerms(e) { return typeof e === 'string' ? ['envios','tareas'] : (e && e.permisos) || []; }
+function _ePerms(e) { return typeof e === 'string' ? ['verPedidos','tareas'] : (e && e.permisos) || []; }
+function _ePhone(e) { return typeof e === 'string' ? '' : (e && e.phone) || ''; }
+function _eDni(e)   { return typeof e === 'string' ? '' : (e && e.dni) || ''; }
 function _eObj(name){ return (S.employees||[]).find(e => _eName(e) === name); }
 
 function hasPermiso(p) {
