@@ -521,9 +521,21 @@ function onTrashBtnTap() {
   if (_trashTaps >= 2) { _trashTaps=0; openTrash(); return; }
   _trashTapTimer = setTimeout(() => { _trashTaps=0; delSelected(); }, 350);
 }
+function _purgePedidoDoc(id) {
+  const db = cloudDb(); const wsId = cloudWsId();
+  if (db && wsId) db.collection('ws').doc(wsId).collection('pedidos').doc(id).delete().catch(()=>{});
+}
 function openTrash() {
   const now = Date.now();
   const before = S.trash.length;
+  const expired = S.trash.filter(x => (now - x.deletedAt) >= 30*24*60*60*1000);
+  if (expired.length) {
+    expired.forEach(x => {
+      const id = x.shipment && x.shipment.id; if (!id) return;
+      if (!S.deletedPedidoIds.includes(id)) S.deletedPedidoIds.push(id);
+      _purgePedidoDoc(id);
+    });
+  }
   S.trash = S.trash.filter(x => (now - x.deletedAt) < 30*24*60*60*1000);
   if (S.trash.length !== before) save();
   if (!S.trash.length) {
