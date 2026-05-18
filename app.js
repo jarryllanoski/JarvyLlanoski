@@ -1539,7 +1539,8 @@ function setEmpFilter(name) {
 function updateTaskStats() {
   const t = S.tasks;
   if ($('tTotal'))   $('tTotal').textContent   = t.length;
-  if ($('tPend'))    $('tPend').textContent     = t.filter(x => x.status === 'pending' || x.status === 'inprogress').length;
+  if ($('tPend'))    $('tPend').textContent     = t.filter(x => x.status === 'pending').length;
+  if ($('tInProg'))  $('tInProg').textContent   = t.filter(x => x.status === 'inprogress').length;
   if ($('tBlocked')) $('tBlocked').textContent  = t.filter(x => x.status === 'blocked').length;
   if ($('tDone'))    $('tDone').textContent      = t.filter(x => x.status === 'done').length;
 }
