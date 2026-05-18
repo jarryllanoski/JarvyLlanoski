@@ -4,144 +4,163 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Formulario de Pedido</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#080810;--card:#0f0f1a;--card2:#13131f;--bd:#1e1e30;--blue:#4f8ef7;--green:#22c55e;--red:#f87171;--purple:#a78bfa;--text:#f0f0f8;--text2:#6b7280}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,-apple-system,sans-serif;min-height:100vh;padding:16px;display:flex;flex-direction:column;align-items:center}
-.container{width:100%;max-width:460px}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 0 40px}
+.container{width:100%;max-width:460px;padding:0 16px}
 
 /* HEADER */
-.biz-header{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center}
-.biz-name{font-size:22px;font-weight:700;margin-bottom:4px}
-.biz-city{font-size:13px;color:var(--text2);margin-bottom:10px}
-.biz-meta{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.biz-badge{background:var(--card2);border:1px solid var(--bd);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--text2)}
+.biz-header{padding:20px 0 12px;text-align:center}
+.biz-name{font-size:22px;font-weight:700;margin-bottom:2px}
+.biz-city{font-size:13px;color:var(--text2)}
 
-/* CARDS */
-.form-card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:16px}
-.form-title{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.6px;margin-bottom:16px;text-transform:uppercase}
+/* PROGRESS DOTS */
+.prog-dots{display:flex;gap:8px;justify-content:center;padding:12px 0 20px}
+.pdot{width:10px;height:10px;border-radius:50%;background:var(--bd);transition:background .25s,transform .25s}
+.pdot.active{background:var(--blue);transform:scale(1.2)}
+.pdot.done{background:var(--blue);opacity:.5}
+
+/* WIZARD CONTAINER */
+.wizard{position:relative;overflow:hidden}
+.wstep{display:none;animation:slideIn .25s ease}
+.wstep.active{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideBack{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+.wstep.back{animation:slideBack .25s ease}
+
+/* STEP HEADER */
+.step-head{margin-bottom:20px}
+.step-ttl{font-size:20px;font-weight:700;margin-bottom:4px}
+.step-sub{font-size:13px;color:var(--text2)}
 
 /* FIELDS */
 .fg{margin-bottom:14px}
-.fl{display:block;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
-.fl .req{color:var(--red);margin-left:2px}
-.fi{width:100%;background:var(--card2);border:1px solid var(--bd);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:9px 12px;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none}
+.fi{width:100%;background:var(--card);border:1.5px solid var(--bd);border-radius:12px;color:var(--text);font-family:inherit;font-size:16px;padding:14px 16px;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none}
 .fi:focus{border-color:var(--blue)}
 .fi::placeholder{color:var(--text2)}
-textarea.fi{resize:vertical}
+textarea.fi{resize:vertical;line-height:1.5}
 .fi.err{border-color:var(--red)}
-.fi.sel{background:var(--card2);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
-.field-err{font-size:11px;color:var(--red);margin-top:4px;display:none}
-.field-err.show{display:block}
+.fi.sel{background:var(--card);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;cursor:pointer}
+.ferr{font-size:12px;color:var(--red);margin-top:5px;display:none}
+.ferr.show{display:block}
 
 /* COURIER GRID */
-.courier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
-.c-opt{background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+.courier-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.c-opt{background:var(--card);border:1.5px solid var(--bd);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none;min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 .c-opt:hover{border-color:var(--blue)}
-.c-opt.active{border-color:var(--blue);background:#1a2540}
-.c-opt .c-icon{font-size:22px;margin-bottom:4px}
-.c-opt .c-name{font-size:11px;font-weight:600;color:var(--text2)}
+.c-opt.active{border-color:var(--blue);background:#12203d}
+.c-icon{font-size:32px;line-height:1}
+.c-name{font-size:12px;font-weight:600;color:var(--text2);line-height:1.3}
 .c-opt.active .c-name{color:var(--text)}
 
-/* DATES */
-.dates{display:flex;gap:8px;flex-wrap:wrap}
-.date-opt{background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none;min-width:64px}
+/* DATE CHIPS */
+.dates-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none}
+.dates-scroll::-webkit-scrollbar{display:none}
+.date-opt{background:var(--card);border:1.5px solid var(--bd);border-radius:12px;padding:10px 14px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none;flex-shrink:0;min-width:60px}
 .date-opt:hover{border-color:var(--blue)}
-.date-opt.active{border-color:var(--blue);background:#1a2540}
-.date-opt .d-day{font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:600}
-.date-opt .d-num{font-size:18px;font-weight:700;line-height:1.2}
-.date-opt .d-mon{font-size:10px;color:var(--text2)}
+.date-opt.active{border-color:var(--blue);background:#12203d}
+.d-day{font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:600}
+.d-num{font-size:20px;font-weight:700;line-height:1.2}
+.d-mon{font-size:10px;color:var(--text2)}
 .date-opt.active .d-day,.date-opt.active .d-mon{color:var(--blue)}
 
-/* AGENCY / CASCADE */
-.agc-box{margin-top:10px}
-.agc-label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px;display:block}
-.cascade{display:flex;flex-direction:column;gap:8px}
-.agc-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:200px;overflow-y:auto}
-.agc-item{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;transition:border-color .15s,background .15s}
+/* AGENCY CASCADE */
+.agc-box{margin-top:14px;padding:14px;background:var(--card2);border:1px solid var(--bd);border-radius:12px}
+.agc-lbl{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px;display:block}
+.cascade{display:flex;flex-direction:column;gap:10px}
+.agc-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:180px;overflow-y:auto}
+.agc-item{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:13px;transition:border-color .15s,background .15s}
 .agc-item:hover{border-color:var(--blue)}
-.agc-item.active{border-color:var(--blue);background:#1a2540}
-.sel-badge{display:inline-flex;align-items:center;gap:6px;background:#1a2540;border:1px solid var(--blue);border-radius:8px;padding:6px 10px;font-size:13px;margin-top:6px}
-.sel-badge .clr-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;padding:0;line-height:1}
+.agc-item.active{border-color:var(--blue);background:#12203d}
+.sel-badge{display:inline-flex;align-items:center;gap:8px;background:#12203d;border:1px solid var(--blue);border-radius:10px;padding:8px 12px;font-size:13px;margin-top:8px;width:100%}
+.sel-badge .clr-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;padding:0;line-height:1;margin-left:auto}
 
-/* BTN SUBMIT */
-.btn-submit{width:100%;background:linear-gradient(135deg,#1d4ed8,var(--blue));color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;padding:13px;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px}
-.btn-submit:hover{opacity:.9}
-.btn-submit:active{transform:scale(.98)}
-.btn-submit:disabled{opacity:.5;cursor:not-allowed}
-.btn-sec{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;padding:11px;cursor:pointer;margin-top:10px}
-.btn-wa{width:100%;background:linear-gradient(135deg,#128c7e,#25d366);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;padding:13px;cursor:pointer;margin-top:10px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px}
-.btn-track{width:100%;background:linear-gradient(135deg,#3730a3,var(--purple));color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;padding:13px;cursor:pointer;margin-top:10px}
+/* BUTTONS */
+.btn-main{width:100%;background:linear-gradient(135deg,#1d4ed8,var(--blue));color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:600;padding:15px;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px}
+.btn-main:hover{opacity:.9}
+.btn-main:active{transform:scale(.98)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed}
+.btn-sec{width:100%;background:var(--card);color:var(--text);border:1.5px solid var(--bd);border-radius:14px;font-family:inherit;font-size:15px;font-weight:500;padding:13px;cursor:pointer;margin-top:10px}
+.btn-wa{width:100%;background:linear-gradient(135deg,#128c7e,#25d366);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:600;padding:15px;cursor:pointer;margin-top:10px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-purple{width:100%;background:linear-gradient(135deg,#3730a3,var(--purple));color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;padding:13px;cursor:pointer;margin-top:10px}
 
 /* SUCCESS */
-.success{text-align:center;padding:10px 0}
-.success-icon{font-size:56px;margin-bottom:12px}
-.success-ttl{font-size:22px;font-weight:700;margin-bottom:8px}
-.success-sub{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
-.track-code{display:inline-block;background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:8px 20px;font-size:24px;font-weight:700;letter-spacing:3px;margin-bottom:16px;color:var(--purple)}
-.summary-rows{background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px;text-align:left;margin-bottom:12px}
-.sum-row{display:flex;gap:8px;margin-bottom:6px;font-size:13px}
+.success{text-align:center;padding:8px 0}
+.success-icon{font-size:64px;margin-bottom:12px}
+.success-ttl{font-size:24px;font-weight:700;margin-bottom:6px}
+.success-sub{font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.track-code{display:inline-block;background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px 24px;font-size:28px;font-weight:700;letter-spacing:4px;margin-bottom:16px;color:var(--purple)}
+.summary-rows{background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:left;margin-bottom:14px}
+.sum-row{display:flex;gap:8px;margin-bottom:8px;font-size:13px}
 .sum-row:last-child{margin-bottom:0}
-.sum-lbl{color:var(--text2);min-width:74px;font-size:11px;font-weight:600;text-transform:uppercase;padding-top:1px}
-.sum-val{color:var(--text);flex:1}
+.sum-lbl{color:var(--text2);min-width:72px;font-size:11px;font-weight:700;text-transform:uppercase;padding-top:1px;letter-spacing:.4px}
+.sum-val{color:var(--text);flex:1;line-height:1.5}
 
-/* TRACKING */
-.track-wrap{padding:4px 0}
-.track-card{background:var(--card2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:12px}
-.track-section{margin-bottom:16px}
-.track-section:last-child{margin-bottom:0}
-.track-ttl{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
-.status-badge{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600}
-.prog-bar{display:flex;gap:0;margin-top:4px}
-.prog-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
-.prog-step:not(:last-child)::after{content:'';position:absolute;top:10px;left:50%;width:100%;height:2px;background:var(--bd);z-index:0}
-.prog-step.done:not(:last-child)::after{background:var(--blue)}
-.prog-dot{width:20px;height:20px;border-radius:50%;background:var(--bd);border:2px solid var(--bd);position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-size:10px}
-.prog-step.done .prog-dot{background:var(--blue);border-color:var(--blue)}
-.prog-step.current .prog-dot{background:var(--purple);border-color:var(--purple);box-shadow:0 0 0 3px rgba(167,139,250,.3)}
-.prog-lbl{font-size:9px;color:var(--text2);text-align:center;line-height:1.2}
-.prog-step.done .prog-lbl,.prog-step.current .prog-lbl{color:var(--text)}
+/* TRACKING PAGE */
+.track-back{font-size:13px;color:var(--text2);padding:12px 0;cursor:pointer;background:none;border:none;font-family:inherit;display:flex;align-items:center;gap:6px}
+.track-card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:12px}
+.tk-section{margin-bottom:18px}
+.tk-section:last-child{margin-bottom:0}
+.tk-lbl{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+.status-badge{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:8px 14px;font-size:14px;font-weight:600}
 
-/* LOADING OVERLAY */
-.loading-overlay{position:fixed;inset:0;background:rgba(8,8,16,.8);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
-.loading-overlay.hidden{display:none}
+/* PROGRESS BAR TRACKING */
+.track-prog{display:flex;gap:0;margin-top:4px}
+.tp-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative}
+.tp-step:not(:last-child)::after{content:'';position:absolute;top:11px;left:50%;width:100%;height:2px;background:var(--bd);z-index:0}
+.tp-step.done:not(:last-child)::after{background:var(--blue)}
+.tp-dot{width:22px;height:22px;border-radius:50%;background:var(--bd);border:2px solid var(--bd);position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-size:11px}
+.tp-step.done .tp-dot{background:var(--blue);border-color:var(--blue)}
+.tp-step.current .tp-dot{background:var(--purple);border-color:var(--purple);box-shadow:0 0 0 4px rgba(167,139,250,.25)}
+.tp-lbl{font-size:9px;color:var(--text2);text-align:center;line-height:1.3}
+.tp-step.done .tp-lbl,.tp-step.current .tp-lbl{color:var(--text)}
+
+/* TRACK ROWS */
+.tk-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;font-size:13px}
+.tk-row:last-child{margin-bottom:0}
+.tk-row-lbl{color:var(--text2);font-size:11px;font-weight:700;text-transform:uppercase;min-width:72px;padding-top:1px;letter-spacing:.4px}
+.tk-row-val{color:var(--text);flex:1;line-height:1.5}
+
+/* SPINNERS / LOADING */
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
 .spin{width:44px;height:44px;border:3px solid var(--bd);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.spin-lbl{color:var(--text2);font-size:14px}
 
-/* SEARCH TRACK */
-.search-track{display:flex;gap:8px}
-.search-track .fi{flex:1}
-.btn-icon{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-family:inherit;font-weight:600}
+.loading-overlay{position:fixed;inset:0;background:rgba(8,8,16,.75);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
+.loading-overlay.hidden{display:none}
 
-/* ERROR BOX */
-.error-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--red);margin-bottom:12px}
+/* ERROR */
+.error-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:14px;font-size:13px;color:var(--red);margin-bottom:12px}
 
-/* MISC */
-.footer{text-align:center;font-size:11px;color:var(--text2);padding:20px 0 10px;opacity:.4}
-.unconfigured{text-align:center;padding:40px 20px}
-.unconfigured-icon{font-size:48px;margin-bottom:12px}
-.unconfigured-ttl{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text2)}
+/* UNCONFIGURED */
+.unconf{text-align:center;padding:60px 20px}
+.unconf-icon{font-size:48px;margin-bottom:12px}
+.unconf-ttl{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text2)}
+.unconf-sub{font-size:13px;color:var(--text2);line-height:1.6}
 
-.spinner-wrap{text-align:center;padding:60px 20px}
-.spinner-wrap .spin{margin:0 auto 16px}
-.spinner-txt{color:var(--text2);font-size:14px}
+/* REFRESH ROW */
+.refresh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.refresh-lbl{font-size:12px;color:var(--text2)}
+.refresh-btn{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit}
 
-.track-info-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:13px}
-.track-info-lbl{color:var(--text2);font-size:11px;font-weight:600;text-transform:uppercase;min-width:72px;padding-top:1px}
-.track-info-val{color:var(--text);flex:1}
+/* SMALL LINK */
+.small-link{background:none;border:none;font-family:inherit;font-size:12px;color:var(--text2);cursor:pointer;text-align:center;display:block;margin:16px auto 0;opacity:.6;text-decoration:underline}
+.small-link:hover{opacity:1}
+
+.footer{text-align:center;font-size:11px;color:var(--text2);padding:24px 0 8px;opacity:.35}
+
+/* Section divider */
+.section-ttl{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.7px;text-transform:uppercase;margin-bottom:10px}
 </style>
 </head>
 <body>
-<div class="container">
-  <div id="root">
-    <div class="spinner-wrap"><div class="spin"></div><div class="spinner-txt">Cargando formulario...</div></div>
-  </div>
-  <div class="footer">Panel de Entregas · Formulario público</div>
+<div class="container" id="app">
+  <div class="loading-screen"><div class="spin"></div><div class="spin-lbl">Cargando...</div></div>
 </div>
 
-<div class="loading-overlay hidden" id="loadingOverlay">
+<div class="loading-overlay hidden" id="loadOverlay">
   <div class="spin"></div>
 </div>
 
@@ -149,59 +168,58 @@ textarea.fi{resize:vertical}
 (function(){
 'use strict';
 
-/* ─── CONSTANTS ─────────────────────────────────────────────── */
+/* ─── FIREBASE CONFIG ───────────────────────────────────────────── */
 const FB_KEY  = 'AIzaSyDXCDMYukwtQk79ide6XVnwzxcLEpHSMl4';
 const FB_PRJ  = 'jarvyllanoski';
 const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB_PRJ}/databases/(default)/documents`;
 
 const wsId = new URLSearchParams(location.search).get('ws') || '';
 
-/* ─── STATUS CONFIG ─────────────────────────────────────────── */
+/* ─── STATUS MAP ────────────────────────────────────────────────── */
 const STATUS_META = {
-  'Nuevo pedido':                {color:'#f59e0b',emoji:'🆕',step:0},
-  'Faltante / pedir proveedor':  {color:'#f97316',emoji:'⚠️',step:1},
-  'Por alistar':                 {color:'#3b82f6',emoji:'📦',step:2},
-  'Alistado':                    {color:'#14b8a6',emoji:'✅',step:3},
-  'Enviado':                     {color:'#8b5cf6',emoji:'🚚',step:4},
-  'Llegó a destino':             {color:'#06b6d4',emoji:'📍',step:5},
-  'Pendiente de pago':           {color:'#eab308',emoji:'💰',step:6},
-  'Finalizado':                  {color:'#22c55e',emoji:'🏁',step:7},
+  'Nuevo pedido':               {color:'#f59e0b',emoji:'🆕',step:0},
+  'Faltante / pedir proveedor': {color:'#f97316',emoji:'⚠️',step:1},
+  'Por alistar':                {color:'#3b82f6',emoji:'📦',step:2},
+  'Alistado':                   {color:'#14b8a6',emoji:'✅',step:3},
+  'Enviado':                    {color:'#8b5cf6',emoji:'🚚',step:4},
+  'Llegó a destino':            {color:'#06b6d4',emoji:'📍',step:5},
+  'Pendiente de pago':          {color:'#eab308',emoji:'💰',step:6},
+  'Finalizado':                 {color:'#22c55e',emoji:'🏁',step:7},
 };
 
-/* Progress stages: step ranges → stage index */
 function statusToStage(status){
   const s = (STATUS_META[status]||{}).step ?? -1;
-  if(s<=0) return 0;
-  if(s<=3) return 1;
-  if(s<=5) return 2;
+  if(s <= 1) return 0;
+  if(s <= 3) return 1;
+  if(s <= 5) return 2;
   return 3;
 }
 
-/* ─── COURIER EMOJI ─────────────────────────────────────────── */
+/* ─── COURIER EMOJI ─────────────────────────────────────────────── */
 function courierEmoji(name, type){
   if(type==='agencia') return '🏢';
   const u = (name||'').toUpperCase();
-  if(u.includes('SHALOM'))    return '🚌';
-  if(u.includes('OLVA'))      return '📬';
-  if(u.includes('MARVISUR'))  return '🚐';
-  if(u.includes('DINSIDES'))  return '📦';
+  if(u.includes('SHALOM'))                         return '🚌';
+  if(u.includes('OLVA'))                           return '📬';
+  if(u.includes('MARVISUR'))                       return '🚐';
+  if(u.includes('DINSIDES'))                       return '📦';
   if(u.includes('DELIVERY')||u.includes('MOTORIZADO')) return '🛵';
-  if(u.includes('RETIRO'))    return '🏪';
-  if(u.includes('ENCOMIENDA'))return '📦';
+  if(u.includes('RETIRO'))                         return '🏪';
+  if(u.includes('ENCOMIENDA'))                     return '📦';
   return '🏢';
 }
 
-/* ─── AGENCY DATA ───────────────────────────────────────────── */
+/* ─── AGENCY DATA ───────────────────────────────────────────────── */
 const AD = {
   SHALOM:{
     Lima:{
       Lima:['Independencia – Av. Túpac Amaru 2543','San Martín de Porres – Av. Perú 3215','Los Olivos – Av. Universitaria Norte 4520','Comas – Av. Belaúnde Oeste 124','Carabayllo – Av. Túpac Amaru km 22','Puente Piedra – Av. San Roque 120','Santa Rosa – Av. La Marina s/n'],
-      'El Agustino':['El Agustino – Av. Riva Agüero 1200'],
+      'El Agustino':['El Agustino – Av. Riva Agüero 1200','El Agustino – Av. César Vallejo 1120'],
       'San Juan de Lurigancho':['SJL – Av. Gran Chimú 530','SJL – Av. Próceres de la Independencia 1244','SJL – Av. Los Jardines 204'],
       'La Victoria':['La Victoria – Av. México 1238','La Victoria – Jr. Huánuco 1480'],
       Chorrillos:['Chorrillos – Av. Defensores del Morro 1540'],
       Surquillo:['Surquillo – Av. Angamos Oeste 530'],
-      Miraflores:['Miraflores – Av. José Larco 1150'],
+      Miraflores:['Miraflores – Av. José Larco 1150','Miraflores – Av. Ricardo Palma 280'],
       'San Borja':['San Borja – Av. Javier Prado Este 2760'],
       'San Isidro':['San Isidro – Av. República de Panamá 3620'],
       Lince:['Lince – Av. Arequipa 2450'],
@@ -210,7 +228,6 @@ const AD = {
       Magdalena:['Magdalena – Av. Brasil 2870'],
       'Pueblo Libre':['Pueblo Libre – Av. Sucre 1580'],
       'San Miguel':['San Miguel – Av. La Marina 2050'],
-      Miraflores:['Miraflores – Av. Ricardo Palma 280'],
       Surco:['Surco – Av. Caminos del Inca 1200','Surco – Av. Primavera 780'],
       'La Molina':['La Molina – Av. La Molina 1490'],
       'Villa El Salvador':['VES – Av. Separadora Industrial 1400'],
@@ -221,7 +238,6 @@ const AD = {
       Cieneguilla:['Cieneguilla – Carretera a Cieneguilla 1204'],
       Ate:['Ate – Av. Nicolás Ayllón 1520','Ate – Av. Separadora Industrial 400'],
       'Santa Anita':['Santa Anita – Av. Los Frutales 650'],
-      'El Agustino':['El Agustino – Av. César Vallejo 1120'],
       Lurigancho:['Lurigancho – Av. Nicolás Ayllón 3500'],
     },
     Callao:{
@@ -234,7 +250,7 @@ const AD = {
   },
   Arequipa:{
     Arequipa:{
-      'Arequipa':['Cercado – Calle San Juan de Dios 216','Cayma – Av. Ejército 112',''+'Cerro Colorado – Av. Aviación 100','Mariano Melgar – Av. Mariscal Castilla 400','Miraflores – Av. Los Arces 210','Paucarpata – Av. Víctor Andrés Belaúnde 310'],
+      'Arequipa':['Cercado – Calle San Juan de Dios 216','Cayma – Av. Ejército 112','Cerro Colorado – Av. Aviación 100','Mariano Melgar – Av. Mariscal Castilla 400','Miraflores – Av. Los Arces 210','Paucarpata – Av. Víctor Andrés Belaúnde 310'],
       'Camana':['Camana – Jr. Lima 420'],
       'Mollendo':['Mollendo – Av. Comercio 250'],
     },
@@ -380,10 +396,9 @@ const AD_OLVA = {
   },
 };
 
-/* Build combined keyed by courier name */
-const AGENCY_DATA = { SHALOM: AD, OLVA: AD_OLVA };
+const AGENCY_DATA = { SHALOM: AD.SHALOM, OLVA: AD_OLVA };
 
-/* ─── FIRESTORE REST HELPERS ────────────────────────────────── */
+/* ─── FIRESTORE HELPERS ─────────────────────────────────────────── */
 function toFs(v){
   if(v===null||v===undefined) return {nullValue:null};
   if(typeof v==='boolean')    return {booleanValue:v};
@@ -429,16 +444,12 @@ async function fsGet(path){
 async function fsPatch(path, obj){
   const fields={};
   for(const k in obj) fields[k]=toFs(obj[k]);
-  const url=`${FB_BASE}/${path}?key=${FB_KEY}`;
-  const r=await fetch(url,{
+  const r=await fetch(`${FB_BASE}/${path}?key=${FB_KEY}`,{
     method:'PATCH',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({fields})
   });
-  if(!r.ok){
-    const t=await r.text();
-    throw new Error(`HTTP ${r.status}: ${t}`);
-  }
+  if(!r.ok){ const t=await r.text(); throw new Error(`HTTP ${r.status}: ${t}`); }
   return r.json();
 }
 
@@ -449,461 +460,492 @@ async function fsListDocs(collectionPath){
   return (d.documents||[]);
 }
 
-/* ─── STATE ─────────────────────────────────────────────────── */
-let CFG    = null;
+/* ─── GLOBAL STATE ──────────────────────────────────────────────── */
+let CFG            = null;
+let curStep        = 1;        // 1 or 2 (wizard steps)
 let selCourierName = '';
 let selCourierType = '';
-let selDateIso  = '';
-let selDateLbl  = '';
-let agState = { dept:'', prov:'', dist:'', addr:'' };
-let pendingOrder = null; /* set after submit, used for success screen */
+let selDateIso     = '';
+let selDateLbl     = '';
+let agState        = {dept:'',prov:'',dist:'',addr:''};
+let trackRefreshId = null;
 
-/* ─── DOM HELPERS ───────────────────────────────────────────── */
-const root = document.getElementById('root');
-function $  (id){ return document.getElementById(id); }
-function setRoot(html){ root.innerHTML = html; }
-function showLoading(v){ $('loadingOverlay').classList.toggle('hidden',!v); }
+/* ─── DOM HELPERS ───────────────────────────────────────────────── */
+const app = document.getElementById('app');
+function $ (id){ return document.getElementById(id); }
+function setApp(html){ app.innerHTML = html; }
+function showOverlay(v){ $('loadOverlay').classList.toggle('hidden',!v); }
 function esc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function isoDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
-/* ─── INIT ──────────────────────────────────────────────────── */
-(function init(){
-  if(!wsId){
-    setRoot(`<div class="form-card"><div class="unconfigured"><div class="unconfigured-icon">⚙️</div><div class="unconfigured-ttl">Formulario no configurado</div><p style="font-size:13px;color:var(--text2)">No se especificó un espacio de trabajo. Usa el enlace correcto con el parámetro <code>?ws=...</code>.</p></div></div>`);
-    return;
-  }
-  /* Check if tracking code in URL */
-  const tCode = new URLSearchParams(location.search).get('tracking');
-  if(tCode){
-    loadConfigAndTrack(tCode);
-    return;
-  }
-  loadConfig();
-})();
-
-/* ─── LOAD CONFIG ───────────────────────────────────────────── */
-async function loadConfig(){
-  try{
-    const doc  = await fsGet(`ws/${wsId}`);
-    CFG        = fsDocToObj(doc);
-    renderForm();
-  }catch(e){
-    setRoot(`<div class="form-card"><div class="unconfigured"><div class="unconfigured-icon">❌</div><div class="unconfigured-ttl">Error al cargar</div><p style="font-size:13px;color:var(--text2)">${esc(e.message)}</p><button class="btn-sec" onclick="loadConfig()" style="margin-top:12px">🔄 Reintentar</button></div></div>`);
-  }
+/* ─── AGENCY DATA LOOKUP ────────────────────────────────────────── */
+function getAgencyData(courierName){
+  const u=(courierName||'').toUpperCase();
+  if(u.includes('SHALOM')) return AD.SHALOM;
+  if(u.includes('OLVA'))   return AD_OLVA;
+  return null;
 }
 
-async function loadConfigAndTrack(code){
+/* ─── INIT ──────────────────────────────────────────────────────── */
+(function init(){
+  if(!wsId){
+    setApp(`<div class="unconf"><div class="unconf-icon">⚙️</div><div class="unconf-ttl">Formulario no configurado</div><div class="unconf-sub">No se especificó un espacio de trabajo.<br>Usa el enlace con el parámetro <code>?ws=...</code>.</div></div>`);
+    return;
+  }
+
+  /* Check URL ?tracking=CODE first */
+  const tCode = new URLSearchParams(location.search).get('tracking');
+  if(tCode){
+    loadCfgThenTrack(tCode);
+    return;
+  }
+
+  /* Check localStorage one-shot */
+  const saved = localStorage.getItem('dpanel_order_'+wsId);
+  if(saved){
+    try{
+      const {trackCode} = JSON.parse(saved);
+      if(trackCode){ loadCfgThenTrack(trackCode); return; }
+    }catch(e){}
+  }
+
+  loadCfg();
+})();
+
+/* ─── LOAD CONFIG ───────────────────────────────────────────────── */
+async function loadCfg(){
   try{
     const doc = await fsGet(`ws/${wsId}`);
     CFG       = fsDocToObj(doc);
-    renderTrackingPage(code);
+    renderStep1();
   }catch(e){
-    setRoot(`<div class="form-card"><div class="unconfigured"><div class="unconfigured-icon">❌</div><div class="unconfigured-ttl">Error al cargar</div><p style="font-size:13px;color:var(--text2)">${esc(e.message)}</p></div></div>`);
+    setApp(`<div class="unconf"><div class="unconf-icon">❌</div><div class="unconf-ttl">Error al cargar</div><div class="unconf-sub">${esc(e.message)}</div><button class="btn-sec" onclick="loadCfg()" style="margin-top:16px">🔄 Reintentar</button></div>`);
   }
 }
 
-/* ─── RENDER FORM ───────────────────────────────────────────── */
-function renderForm(){
-  const config    = CFG.config        || {};
-  const couriers  = (CFG.couriers     || []);
-  const cAct      = CFG.courierActive || {};
-  const cTypes    = CFG.courierTypes  || {};
-  const dispatch  = CFG.dispatch      || {};
-  const extraF    = (CFG.extraFields  || []).filter(f => f && f.visible !== false);
-
-  const bizName  = config.name  || 'Formulario de Pedido';
-  const bizCity  = config.city  || '';
-
-  const activeCouriers = couriers.filter(c => cAct[c] !== false);
-
-  const html = `
-    <div class="biz-header">
-      <div class="biz-name">${esc(bizName)}</div>
-      ${bizCity ? `<div class="biz-city">📍 ${esc(bizCity)}</div>` : ''}
-      <div class="biz-meta">
-        <span class="biz-badge">📦 Formulario de pedido</span>
-      </div>
-    </div>
-
-    <div class="form-card" id="formCard">
-      <div class="form-title">📋 Tus datos</div>
-      <div class="fg">
-        <label class="fl" for="f_name">Nombre completo <span class="req">*</span></label>
-        <input class="fi" id="f_name" type="text" placeholder="Ej. Juan Pérez">
-        <div class="field-err" id="err_name">Ingresa tu nombre completo</div>
-      </div>
-      <div class="fg">
-        <label class="fl" for="f_phone">Teléfono <span class="req">*</span></label>
-        <input class="fi" id="f_phone" type="tel" placeholder="987654321" maxlength="9">
-        <div class="field-err" id="err_phone">Ingresa un número de 9 dígitos</div>
-      </div>
-      <div class="fg">
-        <label class="fl" for="f_address">Dirección de destino <span class="req">*</span></label>
-        <textarea class="fi" id="f_address" rows="2" placeholder="Av. Lima 123, Miraflores..."></textarea>
-        <div class="field-err" id="err_address">Ingresa la dirección</div>
-      </div>
-    </div>
-
-    <div class="form-card" id="courierCard">
-      <div class="form-title">🚚 Courier</div>
-      <div id="courierGrid" class="courier-grid"></div>
-      <div class="field-err" id="err_courier" style="margin-top:6px">Selecciona un courier</div>
-      <div id="agencyBox" style="display:none" class="agc-box">
-        <span class="agc-label">🏢 Selecciona la agencia</span>
-        <div class="cascade" id="cascadeBox"></div>
-        <div id="agcSelected" style="display:none"></div>
-        <div class="field-err" id="err_agency" style="margin-top:6px">Selecciona una agencia</div>
-      </div>
-    </div>
-
-    <div class="form-card" id="dateCard">
-      <div class="form-title">📅 Fecha de envío</div>
-      <div class="dates" id="datesGrid"></div>
-      <div class="field-err" id="err_date" style="margin-top:6px">Selecciona una fecha</div>
-    </div>
-
-    <div class="form-card" id="notesCard">
-      <div class="form-title">📝 Pedido / Notas</div>
-      <div class="fg">
-        <label class="fl" for="f_notes">Descripción del pedido</label>
-        <textarea class="fi" id="f_notes" rows="3" placeholder="Describe tu pedido o añade notas..."></textarea>
-      </div>
-      <div id="extraFieldsBox"></div>
-    </div>
-
-    <div id="submitErrBox" class="error-box" style="display:none"></div>
-    <button class="btn-submit" id="submitBtn" onclick="submitOrder()">Registrar pedido 📦</button>
-
-    <div class="form-card" style="margin-top:20px">
-      <div class="form-title">🔍 Rastrear pedido</div>
-      <div class="search-track">
-        <input class="fi" id="trackInput" type="text" placeholder="Últimos 4 dígitos de tu código" maxlength="10">
-        <button class="btn-icon" onclick="buscarPedido()">Buscar</button>
-      </div>
-      <div id="trackResult" style="margin-top:12px"></div>
-    </div>
-  `;
-  setRoot(html);
-
-  renderCouriers(activeCouriers, cTypes);
-  renderDates(dispatch);
-  renderExtraFields(extraF);
+async function loadCfgThenTrack(code){
+  try{
+    const doc = await fsGet(`ws/${wsId}`);
+    CFG       = fsDocToObj(doc);
+    renderTracking(code);
+  }catch(e){
+    setApp(`<div class="unconf"><div class="unconf-icon">❌</div><div class="unconf-ttl">Error al cargar</div><div class="unconf-sub">${esc(e.message)}</div></div>`);
+  }
 }
 
-/* ─── RENDER COURIERS ───────────────────────────────────────── */
-function renderCouriers(couriers, cTypes){
-  const box = $('courierGrid');
-  if(!box) return;
-  if(!couriers.length){
-    box.innerHTML='<div style="color:var(--text2);font-size:13px">No hay couriers configurados</div>';
-    return;
-  }
-  box.innerHTML = couriers.map(c=>{
-    const t = cTypes[c] || 'delivery';
-    const em = courierEmoji(c, t);
-    return `<div class="c-opt" id="copt_${esc(c)}" onclick="selCourier('${c.replace(/'/g,"\\'")}','${t}')">
-      <div class="c-icon">${em}</div>
-      <div class="c-name">${esc(c)}</div>
+/* ─── HEADER HTML ───────────────────────────────────────────────── */
+function headerHtml(){
+  const config  = (CFG&&CFG.config)||{};
+  const bizName = config.name || 'Formulario de Pedido';
+  const bizCity = config.city || '';
+  return `<div class="biz-header"><div class="biz-name">${esc(bizName)}</div>${bizCity?`<div class="biz-city">📍 ${esc(bizCity)}</div>`:''}</div>`;
+}
+
+/* ─── DOTS HTML ─────────────────────────────────────────────────── */
+function dotsHtml(step){
+  return `<div class="prog-dots">
+    <div class="pdot ${step>=1?(step>1?'done':'active'):''}"></div>
+    <div class="pdot ${step>=2?(step>2?'done':'active'):''}"></div>
+  </div>`;
+}
+
+/* ─── STEP 1: TUS DATOS ─────────────────────────────────────────── */
+function renderStep1(back){
+  clearTrackRefresh();
+  curStep = 1;
+  const extraF = ((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
+
+  const extraHtml = extraF.map(f=>{
+    const fname = typeof f==='string' ? f : (f.name||'');
+    const isReq = typeof f==='object' && !!f.required;
+    const eid   = 'ex_'+fname.replace(/\W/g,'_');
+    return `<div class="fg">
+      <input class="fi" id="${esc(eid)}" data-extra="${esc(fname)}" data-req="${isReq?'1':'0'}"
+        placeholder="${esc(fname)}${isReq?' *':''}" autocomplete="off">
+      ${isReq?`<div class="ferr" id="exerr_${esc(fname.replace(/\W/g,'_'))}">Este campo es obligatorio</div>`:''}
     </div>`;
   }).join('');
+
+  setApp(`
+    ${headerHtml()}
+    ${dotsHtml(1)}
+    <div class="wizard">
+      <div class="wstep active${back?' back':''}">
+        <div class="step-head">
+          <div class="step-ttl">Tus datos</div>
+          <div class="step-sub">Cuéntanos dónde enviar tu pedido</div>
+        </div>
+        <div class="fg">
+          <input class="fi" id="f_name" type="text" placeholder="Nombre completo *" autocomplete="name">
+          <div class="ferr" id="err_name">Ingresa tu nombre completo</div>
+        </div>
+        <div class="fg">
+          <input class="fi" id="f_phone" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Número WhatsApp *" maxlength="9" autocomplete="tel">
+          <div class="ferr" id="err_phone">Ingresa un número de 9 dígitos</div>
+        </div>
+        <div class="fg">
+          <textarea class="fi" id="f_address" rows="2" placeholder="Dirección de destino *" autocomplete="street-address"></textarea>
+          <div class="ferr" id="err_address">Ingresa la dirección</div>
+        </div>
+        ${extraHtml}
+        <div class="fg">
+          <textarea class="fi" id="f_notes" rows="2" placeholder="Notas u observaciones (opcional)"></textarea>
+        </div>
+        <button class="btn-main" onclick="goStep2()">Continuar →</button>
+      </div>
+    </div>
+    <div class="footer">Panel de Entregas · Formulario público</div>
+  `);
 }
 
+/* ─── STEP 1 VALIDATION → GO STEP 2 ────────────────────────────── */
+function goStep2(){
+  const name    = ($('f_name')||{value:''}).value.trim();
+  const phone   = ($('f_phone')||{value:''}).value.trim();
+  const address = ($('f_address')||{value:''}).value.trim();
+
+  let ok = true;
+  function chk(fid,eid,bad){
+    const fe=$(fid),ee=$(eid);
+    if(bad){ fe&&fe.classList.add('err'); ee&&ee.classList.add('show'); ok=false; }
+    else    { fe&&fe.classList.remove('err'); ee&&ee.classList.remove('show'); }
+  }
+  chk('f_name',   'err_name',   !name);
+  chk('f_phone',  'err_phone',  !/^\d{9}$/.test(phone));
+  chk('f_address','err_address',!address);
+
+  const extraF = ((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
+  extraF.forEach(f=>{
+    const fname = typeof f==='string' ? f : (f.name||'');
+    const isReq = typeof f==='object' && !!f.required;
+    if(!isReq) return;
+    const eid_el = $('ex_'+fname.replace(/\W/g,'_'));
+    const eid_err = $('exerr_'+fname.replace(/\W/g,'_'));
+    if(eid_el && !eid_el.value.trim()){
+      eid_el.classList.add('err');
+      eid_err&&eid_err.classList.add('show');
+      ok=false;
+    } else if(eid_el){
+      eid_el.classList.remove('err');
+      eid_err&&eid_err.classList.remove('show');
+    }
+  });
+
+  if(!ok) return;
+
+  /* Stash step1 values */
+  window._s1 = {
+    name, phone, address,
+    notes: ($('f_notes')||{value:''}).value.trim(),
+    extra: collectExtra(),
+  };
+  renderStep2();
+}
+
+function collectExtra(){
+  const extra={};
+  document.querySelectorAll('[data-extra]').forEach(el=>{ extra[el.dataset.extra]=el.value.trim(); });
+  return extra;
+}
+
+/* ─── STEP 2: COURIER + DATE ────────────────────────────────────── */
+function renderStep2(){
+  curStep = 2;
+  const couriers  = (CFG.couriers||[]);
+  const cAct      = CFG.courierActive||{};
+  const cTypes    = CFG.courierTypes||{};
+  const dispatch  = CFG.dispatch||{};
+  const active    = couriers.filter(c=>cAct[c]!==false);
+
+  const courierGrid = active.length
+    ? active.map(c=>{
+        const t  = cTypes[c]||'delivery';
+        const em = courierEmoji(c,t);
+        return `<div class="c-opt" id="copt_${esc(c)}" onclick="selCourier('${c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}','${t}')">
+          <div class="c-icon">${em}</div>
+          <div class="c-name">${esc(c)}</div>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--text2);font-size:13px;grid-column:1/-1">No hay couriers configurados</div>';
+
+  const datesChips = buildDatesChips(dispatch);
+
+  setApp(`
+    ${headerHtml()}
+    ${dotsHtml(2)}
+    <div class="wizard">
+      <div class="wstep active">
+        <div class="step-head">
+          <div class="step-ttl">¿Cómo enviamos?</div>
+          <div class="step-sub">Elige courier y fecha de envío</div>
+        </div>
+
+        <div class="section-ttl">Courier</div>
+        <div class="courier-grid">${courierGrid}</div>
+        <div class="ferr" id="err_courier" style="margin-bottom:8px">Selecciona un courier</div>
+
+        <div id="agencyBox" style="display:none"></div>
+
+        <div style="margin-top:18px">
+          <div class="section-ttl">Fecha de envío</div>
+          <div class="dates-scroll" id="datesGrid">${datesChips}</div>
+          <div class="ferr" id="err_date" style="margin-top:6px">Selecciona una fecha</div>
+        </div>
+
+        <div id="submitErrBox" class="error-box" style="display:none;margin-top:14px"></div>
+        <button class="btn-main" id="confirmBtn" onclick="submitOrder()" style="margin-top:20px">Confirmar pedido →</button>
+        <button class="btn-sec" onclick="renderStep1(true)">← Atrás</button>
+      </div>
+    </div>
+    <div class="footer">Panel de Entregas · Formulario público</div>
+  `);
+
+  /* Restore prior selection */
+  if(selCourierName){
+    const el = $('copt_'+selCourierName);
+    if(el) el.classList.add('active');
+    if(selCourierType==='agencia') renderAgencyBox(selCourierName);
+  }
+
+  /* Auto-select first date if none selected */
+  if(!selDateIso){
+    const first = document.querySelector('.date-opt');
+    if(first) first.click();
+  } else {
+    const el = $('dopt_'+selDateIso);
+    if(el) el.classList.add('active');
+  }
+}
+
+/* ─── COURIER SELECTION ─────────────────────────────────────────── */
 function selCourier(name, type){
   selCourierName = name;
   selCourierType = type;
   document.querySelectorAll('.c-opt').forEach(el=>el.classList.remove('active'));
-  const el = document.getElementById('copt_'+name);
+  const el = $('copt_'+name);
   if(el) el.classList.add('active');
-  $('err_courier').classList.remove('show');
+  $('err_courier')&&$('err_courier').classList.remove('show');
 
-  /* Show/hide agency box */
   const agBox = $('agencyBox');
   if(!agBox) return;
   if(type==='agencia'){
     agBox.style.display='block';
-    initCascade(name);
+    renderAgencyBox(name);
   } else {
     agBox.style.display='none';
     resetAgency();
   }
 }
 
-/* ─── RENDER DATES ──────────────────────────────────────────── */
-function renderDates(dispatch){
-  const box = $('datesGrid');
-  if(!box) return;
-  const days        = Array.isArray(dispatch.days)  ? dispatch.days  : [1,2,3,4,5];
-  const cutHour     = dispatch.cutHour || '23:59';
-  const anticipation= parseInt(dispatch.anticipation)||0;
-
-  const DAY_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  const MON_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-
-  /* Compute min start date considering cutHour and anticipation */
-  const now      = new Date();
-  const [ch, cm] = cutHour.split(':').map(Number);
-  let   start    = new Date(now);
-  start.setHours(0,0,0,0);
-  start.setDate(start.getDate() + anticipation);
-  /* If past cut hour today, add 1 more day */
-  const nowMins = now.getHours()*60 + now.getMinutes();
-  const cutMins = (ch||0)*60 + (cm||0);
-  if(nowMins >= cutMins) start.setDate(start.getDate()+1);
-
-  const dates = [];
-  let probe = new Date(start);
-  for(let i=0; i<30 && dates.length<7; i++){
-    if(!days.length || days.includes(probe.getDay())){
-      dates.push(new Date(probe));
-    }
-    probe.setDate(probe.getDate()+1);
-  }
-
-  if(!dates.length){
-    box.innerHTML='<div style="color:var(--text2);font-size:13px">No hay fechas disponibles</div>';
-    return;
-  }
-
-  box.innerHTML = dates.map(d=>{
-    const iso = isoDate(d);
-    const dayN= DAY_SHORT[d.getDay()];
-    const num = d.getDate();
-    const mon = MON_SHORT[d.getMonth()];
-    return `<div class="date-opt" id="dopt_${iso}" onclick="selDate('${iso}','${dayN} ${num} ${mon}')">
-      <div class="d-day">${dayN}</div>
-      <div class="d-num">${num}</div>
-      <div class="d-mon">${mon}</div>
-    </div>`;
-  }).join('');
-
-  /* Auto-select first date */
-  const first = dates[0];
-  const fiso  = isoDate(first);
-  const fd    = first;
-  selDate(fiso, `${DAY_SHORT[fd.getDay()]} ${fd.getDate()} ${MON_SHORT[fd.getMonth()]}`);
-}
-
-function selDate(iso, lbl){
-  selDateIso = iso;
-  selDateLbl = lbl;
-  document.querySelectorAll('.date-opt').forEach(el=>el.classList.remove('active'));
-  const el = document.getElementById('dopt_'+iso);
-  if(el) el.classList.add('active');
-  $('err_date') && $('err_date').classList.remove('show');
-}
-
-function isoDate(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-/* ─── RENDER EXTRA FIELDS ───────────────────────────────────── */
-function renderExtraFields(fields){
-  const box = $('extraFieldsBox');
-  if(!box||!fields.length) return;
-  box.innerHTML = fields.map(f=>{
-    const fname = typeof f==='string' ? f : (f.name||'');
-    const isReq = typeof f==='object' && !!f.required;
-    const eid   = 'ex_'+fname.replace(/\s/g,'_');
-    return `<div class="fg">
-      <label class="fl" for="${esc(eid)}">${esc(fname)}${isReq?'<span class="req">*</span>':''}</label>
-      <input class="fi" id="${esc(eid)}" data-extra="${esc(fname)}" data-req="${isReq?'1':'0'}" placeholder="${esc(fname)}">
-      ${isReq?`<div class="field-err" id="exerr_${esc(fname.replace(/\s/g,'_'))}">Este campo es obligatorio</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-/* ─── CASCADE AGENCY ────────────────────────────────────────── */
-function getAgencyData(courierName){
-  const u = (courierName||'').toUpperCase();
-  if(u.includes('SHALOM')) return AD;
-  if(u.includes('OLVA'))   return AD_OLVA;
-  return null;
-}
-
-function initCascade(courierName){
-  resetAgency();
-  const data = getAgencyData(courierName);
-  const box  = $('cascadeBox');
-  if(!box) return;
+function renderAgencyBox(courierName){
+  const agBox = $('agencyBox');
+  if(!agBox) return;
+  const data  = getAgencyData(courierName);
   if(!data){
-    box.innerHTML='<div style="font-size:13px;color:var(--text2)">No hay datos de agencia para este courier.</div>';
+    agBox.innerHTML=`<div class="agc-box"><span class="agc-lbl">Agencia</span><div style="font-size:13px;color:var(--text2)">Sin datos de agencia para este courier.</div></div>`;
     return;
   }
   const depts = Object.keys(data).sort();
-  box.innerHTML=`
-    <div class="fg" style="margin:0">
-      <label class="fl">Departamento</label>
-      <select class="fi sel" id="agc_dept" onchange="onDept('${courierName.replace(/'/g,"\\'")}')">
-        <option value="">— Selecciona —</option>
-        ${depts.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+  const safeName = courierName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  agBox.innerHTML=`<div class="agc-box">
+    <span class="agc-lbl">🏢 Selecciona la agencia</span>
+    <div class="cascade">
+      <select class="fi sel" id="agc_dept" onchange="onDept('${safeName}')">
+        <option value="">— Departamento —</option>
+        ${depts.map(d=>`<option value="${esc(d)}"${agState.dept===d?' selected':''}>${esc(d)}</option>`).join('')}
       </select>
+      <div id="agc_prov_wrap" style="display:${agState.dept?'block':'none'}">
+        <select class="fi sel" id="agc_prov" onchange="onProv('${safeName}')">
+          <option value="">— Provincia —</option>
+          ${agState.dept&&data[agState.dept]?Object.keys(data[agState.dept]).sort().map(p=>`<option value="${esc(p)}"${agState.prov===p?' selected':''}>${esc(p)}</option>`).join(''):''}
+        </select>
+      </div>
+      <div id="agc_dist_wrap" style="display:${agState.prov?'block':'none'}">
+        <select class="fi sel" id="agc_dist" onchange="onDist('${safeName}')">
+          <option value="">— Distrito —</option>
+          ${agState.dept&&agState.prov&&data[agState.dept]&&data[agState.dept][agState.prov]?Object.keys(data[agState.dept][agState.prov]).sort().map(d=>`<option value="${esc(d)}"${agState.dist===d?' selected':''}>${esc(d)}</option>`).join(''):''}
+        </select>
+      </div>
+      <div id="agc_addr_wrap" style="display:${agState.dist?'block':'none'}">
+        <div class="agc-lbl" style="margin-top:4px">Agencia</div>
+        <div class="agc-list" id="agc_addr_list">
+          ${agState.dept&&agState.prov&&agState.dist&&data[agState.dept]&&data[agState.dept][agState.prov]&&data[agState.dept][agState.prov][agState.dist]
+            ? data[agState.dept][agState.prov][agState.dist].map(a=>`<div class="agc-item${agState.addr===a?' active':''}" onclick="selAgency(this,'${a.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${esc(a)}</div>`).join('')
+            : ''}
+        </div>
+      </div>
+      ${agState.addr?`<div class="sel-badge">🏢 <span>${esc(agState.addr)}</span><button class="clr-btn" onclick="resetAgencySelection()">✕</button></div>`:''}
     </div>
-    <div id="agc_prov_wrap" style="display:none" class="fg" style="margin:0">
-      <label class="fl">Provincia</label>
-      <select class="fi sel" id="agc_prov" onchange="onProv('${courierName.replace(/'/g,"\\'")}')">
-        <option value="">— Selecciona —</option>
-      </select>
-    </div>
-    <div id="agc_dist_wrap" style="display:none" class="fg" style="margin:0">
-      <label class="fl">Distrito</label>
-      <select class="fi sel" id="agc_dist" onchange="onDist('${courierName.replace(/'/g,"\\'")}')">
-        <option value="">— Selecciona —</option>
-      </select>
-    </div>
-    <div id="agc_addr_wrap" style="display:none">
-      <label class="fl">Agencia</label>
-      <div class="agc-list" id="agc_addr_list"></div>
-    </div>
-  `;
+    <div class="ferr" id="err_agency" style="margin-top:6px">Selecciona una agencia</div>
+  </div>`;
 }
 
 function onDept(courier){
   const data  = getAgencyData(courier);
-  const dept  = $('agc_dept') && $('agc_dept').value;
-  agState.dept = dept; agState.prov=''; agState.dist=''; agState.addr='';
-  $('agcSelected') && ($('agcSelected').style.display='none');
-  if(!dept||!data||!data[dept]){ hideAgcFrom('prov'); return; }
+  const dept  = $('agc_dept')&&$('agc_dept').value;
+  agState = {dept:dept||'', prov:'', dist:'', addr:''};
+  if(!dept||!data||!data[dept]){
+    $('agc_prov_wrap')&&($('agc_prov_wrap').style.display='none');
+    $('agc_dist_wrap')&&($('agc_dist_wrap').style.display='none');
+    $('agc_addr_wrap')&&($('agc_addr_wrap').style.display='none');
+    return;
+  }
   const provs = Object.keys(data[dept]).sort();
-  const ps = $('agc_prov'); if(!ps) return;
-  ps.innerHTML='<option value="">— Selecciona —</option>'+provs.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
-  $('agc_prov_wrap').style.display='block';
-  hideAgcFrom('dist');
+  const ps = $('agc_prov');
+  if(ps){
+    ps.innerHTML='<option value="">— Provincia —</option>'+provs.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
+    $('agc_prov_wrap').style.display='block';
+  }
+  $('agc_dist_wrap')&&($('agc_dist_wrap').style.display='none');
+  $('agc_addr_wrap')&&($('agc_addr_wrap').style.display='none');
 }
 
 function onProv(courier){
   const data  = getAgencyData(courier);
   const dept  = agState.dept;
-  const prov  = $('agc_prov') && $('agc_prov').value;
-  agState.prov = prov; agState.dist=''; agState.addr='';
-  $('agcSelected') && ($('agcSelected').style.display='none');
-  if(!prov||!data||!data[dept]||!data[dept][prov]){ hideAgcFrom('dist'); return; }
+  const prov  = $('agc_prov')&&$('agc_prov').value;
+  agState.prov = prov||''; agState.dist=''; agState.addr='';
+  if(!prov||!data||!data[dept]||!data[dept][prov]){
+    $('agc_dist_wrap')&&($('agc_dist_wrap').style.display='none');
+    $('agc_addr_wrap')&&($('agc_addr_wrap').style.display='none');
+    return;
+  }
   const dists = Object.keys(data[dept][prov]).sort();
-  const ds = $('agc_dist'); if(!ds) return;
-  ds.innerHTML='<option value="">— Selecciona —</option>'+dists.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('');
-  $('agc_dist_wrap').style.display='block';
-  hideAgcFrom('addr');
+  const ds = $('agc_dist');
+  if(ds){
+    ds.innerHTML='<option value="">— Distrito —</option>'+dists.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('');
+    $('agc_dist_wrap').style.display='block';
+  }
+  $('agc_addr_wrap')&&($('agc_addr_wrap').style.display='none');
 }
 
 function onDist(courier){
   const data  = getAgencyData(courier);
   const dept  = agState.dept;
   const prov  = agState.prov;
-  const dist  = $('agc_dist') && $('agc_dist').value;
-  agState.dist=dist; agState.addr='';
-  $('agcSelected') && ($('agcSelected').style.display='none');
-  if(!dist||!data||!data[dept]||!data[dept][prov]||!data[dept][prov][dist]){ $('agc_addr_wrap').style.display='none'; return; }
+  const dist  = $('agc_dist')&&$('agc_dist').value;
+  agState.dist=dist||''; agState.addr='';
+  if(!dist||!data||!data[dept]||!data[dept][prov]||!data[dept][prov][dist]){
+    $('agc_addr_wrap')&&($('agc_addr_wrap').style.display='none');
+    return;
+  }
   const addrs = data[dept][prov][dist];
-  const al = $('agc_addr_list'); if(!al) return;
-  al.innerHTML = addrs.map(a=>`<div class="agc-item" onclick="selAgency(this,'${a.replace(/'/g,"\\'")}')"> ${esc(a)}</div>`).join('');
-  $('agc_addr_wrap').style.display='block';
+  const al = $('agc_addr_list');
+  if(al){
+    al.innerHTML=addrs.map(a=>`<div class="agc-item" onclick="selAgency(this,'${a.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')"> ${esc(a)}</div>`).join('');
+    $('agc_addr_wrap').style.display='block';
+  }
 }
 
 function selAgency(el, addr){
-  agState.addr = addr;
+  agState.addr=addr;
   document.querySelectorAll('.agc-item').forEach(x=>x.classList.remove('active'));
   if(el) el.classList.add('active');
-  const sel = $('agcSelected');
-  if(sel){
-    sel.style.display='block';
-    sel.innerHTML=`<div class="sel-badge">🏢 <span>${esc(addr)}</span> <button class="clr-btn" onclick="resetAgencySelection()">✕</button></div>`;
+  /* show selected badge */
+  const existing = document.querySelector('.sel-badge');
+  if(existing) existing.remove();
+  const agcBox = document.querySelector('.cascade');
+  if(agcBox){
+    const badge = document.createElement('div');
+    badge.className='sel-badge';
+    badge.innerHTML=`🏢 <span>${esc(addr)}</span><button class="clr-btn" onclick="resetAgencySelection()">✕</button>`;
+    agcBox.appendChild(badge);
   }
-  $('err_agency') && $('err_agency').classList.remove('show');
+  $('err_agency')&&$('err_agency').classList.remove('show');
 }
 
 function resetAgencySelection(){
   agState.addr='';
-  const sel=$('agcSelected'); if(sel) sel.style.display='none';
+  const badge = document.querySelector('.sel-badge');
+  if(badge) badge.remove();
   document.querySelectorAll('.agc-item').forEach(x=>x.classList.remove('active'));
 }
 
-function hideAgcFrom(from){
-  const order=['prov','dist','addr'];
-  const idx = order.indexOf(from);
-  for(let i=idx;i<order.length;i++){
-    const w = $('agc_'+order[i]+'_wrap'); if(w) w.style.display='none';
-  }
-}
-
 function resetAgency(){
-  agState = {dept:'',prov:'',dist:'',addr:''};
-  const sel=$('agcSelected'); if(sel) sel.style.display='none';
+  agState={dept:'',prov:'',dist:'',addr:''};
 }
 
-/* ─── SUBMIT ────────────────────────────────────────────────── */
+/* ─── DATE CHIPS ────────────────────────────────────────────────── */
+function buildDatesChips(dispatch){
+  const days         = Array.isArray(dispatch.days) ? dispatch.days : [1,2,3,4,5];
+  const cutHour      = dispatch.cutHour||'23:59';
+  const anticipation = parseInt(dispatch.anticipation)||0;
+  const DAY_SHORT    = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MON_SHORT    = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  const now   = new Date();
+  const [ch,cm] = cutHour.split(':').map(Number);
+  let start = new Date(now);
+  start.setHours(0,0,0,0);
+  start.setDate(start.getDate()+anticipation);
+  const nowMins = now.getHours()*60+now.getMinutes();
+  const cutMins = (ch||0)*60+(cm||0);
+  if(nowMins>=cutMins) start.setDate(start.getDate()+1);
+
+  const dates=[];
+  let probe=new Date(start);
+  for(let i=0;i<30&&dates.length<7;i++){
+    if(!days.length||days.includes(probe.getDay())) dates.push(new Date(probe));
+    probe.setDate(probe.getDate()+1);
+  }
+
+  if(!dates.length) return '<div style="color:var(--text2);font-size:13px">No hay fechas disponibles</div>';
+
+  return dates.map(d=>{
+    const iso  = isoDate(d);
+    const dayN = DAY_SHORT[d.getDay()];
+    const num  = d.getDate();
+    const mon  = MON_SHORT[d.getMonth()];
+    return `<div class="date-opt" id="dopt_${iso}" onclick="selDate('${iso}','${dayN} ${num} ${mon}')">
+      <div class="d-day">${dayN}</div>
+      <div class="d-num">${num}</div>
+      <div class="d-mon">${mon}</div>
+    </div>`;
+  }).join('');
+}
+
+function selDate(iso, lbl){
+  selDateIso=iso; selDateLbl=lbl;
+  document.querySelectorAll('.date-opt').forEach(el=>el.classList.remove('active'));
+  const el=$('dopt_'+iso);
+  if(el) el.classList.add('active');
+  $('err_date')&&$('err_date').classList.remove('show');
+}
+
+/* ─── SUBMIT ────────────────────────────────────────────────────── */
 async function submitOrder(){
-  const name    = ($('f_name')    ||{value:''}).value.trim();
-  const phone   = ($('f_phone')   ||{value:''}).value.trim();
-  const address = ($('f_address') ||{value:''}).value.trim();
-  const notes   = ($('f_notes')   ||{value:''}).value.trim();
+  const s1 = window._s1||{};
 
-  let valid = true;
-  function setErr(fid, eid, cond){
-    const fe=$( fid), ee=$(eid);
-    if(cond){ fe&&fe.classList.add('err'); ee&&ee.classList.add('show'); valid=false; }
-    else     { fe&&fe.classList.remove('err'); ee&&ee.classList.remove('show'); }
+  let ok=true;
+  if(!selCourierName){ $('err_courier')&&$('err_courier').classList.add('show'); ok=false; }
+  else                { $('err_courier')&&$('err_courier').classList.remove('show'); }
+  if(selCourierType==='agencia'&&!agState.addr){ $('err_agency')&&$('err_agency').classList.add('show'); ok=false; }
+  else                { $('err_agency')&&$('err_agency').classList.remove('show'); }
+  if(!selDateIso)     { $('err_date')&&$('err_date').classList.add('show'); ok=false; }
+  else                { $('err_date')&&$('err_date').classList.remove('show'); }
+  if(!ok) return;
+
+  let fullNotes = s1.notes||'';
+  if(selCourierType==='agencia'&&agState.addr){
+    const agLine=`Agencia: ${agState.dist}, ${agState.dept} - ${agState.addr}`;
+    fullNotes = fullNotes ? `${fullNotes} | ${agLine}` : agLine;
   }
 
-  setErr('f_name',   'err_name',   !name);
-  setErr('f_phone',  'err_phone',  !/^\d{9}$/.test(phone));
-  setErr('f_address','err_address',!address);
-
-  /* Courier */
-  if(!selCourierName){
-    $('err_courier')&&$('err_courier').classList.add('show'); valid=false;
-  } else {
-    $('err_courier')&&$('err_courier').classList.remove('show');
-  }
-
-  /* Agency */
-  if(selCourierType==='agencia' && !agState.addr){
-    $('err_agency')&&$('err_agency').classList.add('show'); valid=false;
-  } else {
-    $('err_agency')&&$('err_agency').classList.remove('show');
-  }
-
-  /* Date */
-  if(!selDateIso){
-    $('err_date')&&$('err_date').classList.add('show'); valid=false;
-  } else {
-    $('err_date')&&$('err_date').classList.remove('show');
-  }
-
-  /* Extra required fields */
-  document.querySelectorAll('[data-extra][data-req="1"]').forEach(el=>{
-    const eid='exerr_'+el.dataset.extra.replace(/\s/g,'_');
-    if(!el.value.trim()){ el.classList.add('err'); $(eid)&&$(eid).classList.add('show'); valid=false; }
-    else { el.classList.remove('err'); $(eid)&&$(eid).classList.remove('show'); }
-  });
-
-  if(!valid) return;
-
-  /* Build extra obj */
-  const extra={};
-  document.querySelectorAll('[data-extra]').forEach(el=>{ extra[el.dataset.extra]=el.value.trim(); });
-
-  /* Build notes with agency info */
-  let fullNotes = notes;
-  if(selCourierType==='agencia' && agState.addr){
-    const agLine = `Agencia: ${agState.dist}, ${agState.dept} - ${agState.addr}`;
-    fullNotes = notes ? `${notes} | ${agLine}` : agLine;
-  }
-
-  /* Generate id */
-  const now    = Date.now();
-  const rand   = Math.random().toString(36).slice(2,6).toUpperCase();
-  const orderId= `id_${now}`;
-  const trackCode = orderId.slice(-4).toUpperCase();
+  const now      = Date.now();
+  const orderId  = `id_${now}`;
+  const trackCode= orderId.slice(-4).toUpperCase();
 
   const order = {
     id:             orderId,
-    name,
-    phone,
-    address,
+    name:           s1.name||'',
+    phone:          s1.phone||'',
+    address:        s1.address||'',
     courier:        selCourierName,
     date:           selDateIso,
     status:         'Nuevo pedido',
     cost:           '',
     notes:          fullNotes,
-    extra,
+    extra:          s1.extra||{},
     docGuia:        null,
     docEmbalado:    null,
     docComprobante: null,
@@ -916,224 +958,242 @@ async function submitOrder(){
     fromForm:       true,
   };
 
-  const btn = $('submitBtn');
+  const btn=$('confirmBtn');
   if(btn){ btn.disabled=true; btn.textContent='Registrando...'; }
   $('submitErrBox')&&($('submitErrBox').style.display='none');
-  showLoading(true);
+  showOverlay(true);
 
   try{
     await fsPatch(`ws/${wsId}/pedidos/${orderId}`, order);
-    pendingOrder = order;
-    showLoading(false);
-    showSuccess(order, trackCode);
+    showOverlay(false);
+    /* Save to localStorage — one-shot */
+    localStorage.setItem('dpanel_order_'+wsId, JSON.stringify({trackCode, orderId:order.id, name:order.name}));
+    renderSuccessStep(order, trackCode);
   }catch(e){
-    showLoading(false);
-    if(btn){ btn.disabled=false; btn.textContent='Registrar pedido 📦'; }
+    showOverlay(false);
+    if(btn){ btn.disabled=false; btn.textContent='Confirmar pedido →'; }
     const eb=$('submitErrBox');
     if(eb){ eb.style.display='block'; eb.textContent=`Error al guardar: ${e.message}`; }
   }
 }
 
-/* ─── SUCCESS PAGE ──────────────────────────────────────────── */
-function showSuccess(order, trackCode){
+/* ─── SUCCESS STEP 3 ────────────────────────────────────────────── */
+function renderSuccessStep(order, trackCode){
   const config   = (CFG&&CFG.config)||{};
-  const bizName  = config.name  || '';
-  const bizPhone = config.phone || '';
+  const bizName  = config.name||'';
+  const bizPhone = config.phone||'';
 
   const dateLabel = order.date
     ? new Date(order.date+'T12:00:00').toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
-    : selDateLbl || order.date;
+    : selDateLbl||order.date;
 
   const trackUrl = `${location.origin}${location.pathname}?ws=${wsId}&tracking=${trackCode}`;
 
-  const agLine = (selCourierType==='agencia' && agState.addr)
-    ? `\n🏢 Agencia: ${agState.addr}` : '';
-  const notesLine = order.notes ? `\n📝 Notas: ${order.notes}` : '';
-
-  const waMsg = `📦 NUEVO PEDIDO — ${bizName}\n\n👤 Cliente: ${order.name}\n📞 WhatsApp: +51${order.phone}\n🏠 Dirección: ${order.address}\n🚚 Courier: ${order.courier}\n📅 Fecha: ${dateLabel}${agLine}${notesLine}\n\n🔑 Código de seguimiento: #${trackCode}\n🔗 Ver estado: ${trackUrl}`;
-
-  const waHref = bizPhone
-    ? `https://wa.me/51${bizPhone}?text=${encodeURIComponent(waMsg)}`
-    : null;
+  const agLine   = (selCourierType==='agencia'&&agState.addr) ? `\n🏢 Agencia: ${agState.addr}` : '';
+  const notesLine= order.notes ? `\n📝 Notas: ${order.notes}` : '';
+  const waMsg    = `📦 NUEVO PEDIDO — ${bizName}\n\n👤 Cliente: ${order.name}\n📞 WhatsApp: +51${order.phone}\n🏠 Dirección: ${order.address}\n🚚 Courier: ${order.courier}\n📅 Fecha: ${dateLabel}${agLine}${notesLine}\n\n🔑 Código: #${trackCode}\n🔗 Ver estado: ${trackUrl}`;
+  const waHref   = bizPhone ? `https://wa.me/51${bizPhone}?text=${encodeURIComponent(waMsg)}` : null;
 
   const extraRows = Object.entries(order.extra||{})
     .filter(([,v])=>v)
     .map(([k,v])=>`<div class="sum-row"><span class="sum-lbl">${esc(k)}</span><span class="sum-val">${esc(v)}</span></div>`)
     .join('');
 
-  setRoot(`
-    <div class="form-card">
+  setApp(`
+    ${headerHtml()}
+    <div style="padding:8px 0">
       <div class="success">
         <div class="success-icon">✅</div>
         <div class="success-ttl">¡Pedido registrado!</div>
-        <div class="success-sub">Tu pedido fue recibido. Guarda tu código de seguimiento:</div>
+        <div class="success-sub">Tu pedido fue recibido con éxito.<br>Guarda tu código de seguimiento:</div>
         <div class="track-code">#${esc(trackCode)}</div>
         <div class="summary-rows">
           <div class="sum-row"><span class="sum-lbl">Cliente</span><span class="sum-val">${esc(order.name)}</span></div>
-          <div class="sum-row"><span class="sum-lbl">Teléfono</span><span class="sum-val">${esc(order.phone)}</span></div>
+          <div class="sum-row"><span class="sum-lbl">Teléfono</span><span class="sum-val">+51 ${esc(order.phone)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Dirección</span><span class="sum-val">${esc(order.address)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Courier</span><span class="sum-val">${esc(order.courier)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Fecha</span><span class="sum-val">${esc(dateLabel)}</span></div>
           ${order.notes?`<div class="sum-row"><span class="sum-lbl">Notas</span><span class="sum-val">${esc(order.notes)}</span></div>`:''}
           ${extraRows}
         </div>
-        ${waHref?`<a class="btn-wa" href="${esc(waHref)}" target="_blank" rel="noopener">💬 Confirmar por WhatsApp</a>`:''}
-        <button class="btn-track" onclick="goToTracking('${esc(trackCode)}')">📍 Ver seguimiento</button>
-        <button class="btn-sec" onclick="resetForm()">🔄 Registrar otro pedido</button>
+        ${waHref?`<a class="btn-wa" href="${esc(waHref)}" target="_blank" rel="noopener">💬 Enviar por WhatsApp</a>`:''}
+        <button class="btn-purple" onclick="goToTracking('${esc(trackCode)}')">📍 Ver mi seguimiento</button>
       </div>
     </div>
+    <div class="footer">Panel de Entregas · Formulario público</div>
   `);
 }
 
-function openWA(){
-  /* Called from success screen via waHref anchor — handled inline */
-}
-
+/* ─── GO TO TRACKING ────────────────────────────────────────────── */
 function goToTracking(code){
-  location.href = `${location.pathname}?ws=${wsId}&tracking=${code}`;
+  clearTrackRefresh();
+  history.replaceState(null,'',`${location.pathname}?ws=${wsId}&tracking=${code}`);
+  renderTracking(code);
 }
 
-function resetForm(){
-  selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
-  agState={dept:'',prov:'',dist:'',addr:''};
-  renderForm();
-  window.scrollTo(0,0);
-}
-
-/* ─── TRACKING PAGE ─────────────────────────────────────────── */
-function renderTrackingPage(code){
-  setRoot(`
-    <div class="form-card">
-      <div class="form-title">📍 Seguimiento de pedido</div>
-      <div class="search-track">
-        <input class="fi" id="trackInput" type="text" value="${esc(code)}" placeholder="Código (últimos 4 dígitos)" maxlength="10">
-        <button class="btn-icon" onclick="buscarPedido()">Buscar</button>
-      </div>
-      <div id="trackResult" style="margin-top:12px">
-        <div class="spinner-wrap"><div class="spin" style="margin:0 auto 12px"></div><div class="spinner-txt">Buscando pedido...</div></div>
+/* ─── TRACKING PAGE ─────────────────────────────────────────────── */
+function renderTracking(code){
+  clearTrackRefresh();
+  setApp(`
+    ${headerHtml()}
+    <div id="trackContent">
+      <div style="display:flex;align-items:center;justify-content:center;padding:60px 0">
+        <div class="spin"></div>
       </div>
     </div>
-    <button class="btn-sec" onclick="backToForm()">← Volver al formulario</button>
+    <div class="footer">Panel de Entregas · Formulario público</div>
   `);
   buscarPedido(code);
+
+  /* Auto-refresh every 30s */
+  trackRefreshId = setInterval(()=>{ buscarPedido(code, true); }, 30000);
 }
 
-function backToForm(){
-  history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
-  loadConfig();
+function clearTrackRefresh(){
+  if(trackRefreshId){ clearInterval(trackRefreshId); trackRefreshId=null; }
 }
 
-/* ─── SEARCH SHIPMENT ───────────────────────────────────────── */
-async function buscarPedido(codeOverride){
-  const input = $('trackInput');
-  const code  = (codeOverride || (input&&input.value)||'').trim().toUpperCase();
-  if(!code){ setTrackResult('<div style="color:var(--text2);font-size:13px">Ingresa un código de seguimiento</div>'); return; }
+/* ─── SEARCH PEDIDO ─────────────────────────────────────────────── */
+async function buscarPedido(code, silent){
+  const c = (code||'').trim().toUpperCase();
+  if(!c) return;
 
-  setTrackResult('<div class="spinner-wrap"><div class="spin" style="margin:0 auto 12px"></div><div class="spinner-txt">Buscando...</div></div>');
-  showLoading(false);
+  if(!silent){
+    const tc=$('trackContent');
+    if(tc) tc.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;padding:60px 0"><div class="spin"></div></div>`;
+  }
 
   try{
-    /* 1) Search s array in ws doc */
+    /* 1) check CFG.s */
     if(CFG){
-      const s = CFG.s || [];
-      const match = s.find(x => x.id && x.id.slice(-4).toUpperCase()===code.slice(-4).toUpperCase());
-      if(match){ renderTracking(match); return; }
+      const s = CFG.s||[];
+      const m = s.find(x=>x.id&&x.id.slice(-4).toUpperCase()===c.slice(-4));
+      if(m){ renderTrackResult(m, c); return; }
     }
-
-    /* 2) Reload ws doc and check s array */
+    /* 2) reload ws doc */
     const doc = await fsGet(`ws/${wsId}`);
     CFG = fsDocToObj(doc);
-    const s2 = CFG.s || [];
-    const m2 = s2.find(x => x.id && x.id.slice(-4).toUpperCase()===code.slice(-4).toUpperCase());
-    if(m2){ renderTracking(m2); return; }
-
-    /* 3) Search pedidos subcollection */
+    const s2 = CFG.s||[];
+    const m2 = s2.find(x=>x.id&&x.id.slice(-4).toUpperCase()===c.slice(-4));
+    if(m2){ renderTrackResult(m2, c); return; }
+    /* 3) pedidos subcollection */
     const docs = await fsListDocs(`ws/${wsId}/pedidos`);
     const m3   = docs.find(d=>{
-      const id = (d.name||'').split('/').pop();
-      return id.slice(-4).toUpperCase()===code.slice(-4).toUpperCase();
+      const id=(d.name||'').split('/').pop();
+      return id.slice(-4).toUpperCase()===c.slice(-4);
     });
-    if(m3){ renderTracking(fsDocToObj(m3)); return; }
-
-    setTrackResult(`<div class="error-box">No se encontró ningún pedido con el código <strong>#${esc(code)}</strong>.</div>`);
+    if(m3){ renderTrackResult(fsDocToObj(m3), c); return; }
+    /* Not found */
+    setTrackContent(`<div class="error-box">No se encontró ningún pedido con el código <strong>#${esc(c)}</strong>.</div>${notMyOrderBtn()}`);
   }catch(e){
-    setTrackResult(`<div class="error-box">Error al buscar: ${esc(e.message)}</div>`);
+    setTrackContent(`<div class="error-box">Error al buscar: ${esc(e.message)}</div>${notMyOrderBtn()}`);
   }
 }
 
-function setTrackResult(html){
-  const el = $('trackResult'); if(el) el.innerHTML=html;
+function setTrackContent(html){
+  const tc=$('trackContent'); if(tc) tc.innerHTML=html;
 }
 
-function renderTracking(ship){
-  const meta    = STATUS_META[ship.status] || {color:'#6b7280',emoji:'🏷️',step:0};
-  const stage   = statusToStage(ship.status);
-  const stages  = ['Recibido','Preparando','En camino','Entregado'];
-  const trackCode = (ship.id||'').slice(-4).toUpperCase();
+function notMyOrderBtn(){
+  return `<button class="small-link" onclick="clearOrderAndReset()">Este no es mi pedido</button>`;
+}
+
+function renderTrackResult(ship, code){
+  const meta   = STATUS_META[ship.status]||{color:'#6b7280',emoji:'🏷️',step:0};
+  const stage  = statusToStage(ship.status);
+  const stages = ['Recibido','Preparando','En camino','Entregado'];
+  const tc     = (ship.id||'').slice(-4).toUpperCase();
 
   const dateLabel = ship.date
     ? new Date(ship.date+'T12:00:00').toLocaleDateString('es-PE',{weekday:'short',year:'numeric',month:'short',day:'numeric'})
     : '—';
 
   const progHtml = stages.map((s,i)=>{
-    const cls = i<stage ? 'done' : i===stage ? 'current' : '';
-    return `<div class="prog-step ${cls}">
-      <div class="prog-dot">${i<stage?'✓':''}</div>
-      <div class="prog-lbl">${s}</div>
+    const cls = i<stage?'done':i===stage?'current':'';
+    return `<div class="tp-step ${cls}">
+      <div class="tp-dot">${i<stage?'✓':''}</div>
+      <div class="tp-lbl">${s}</div>
     </div>`;
   }).join('');
 
-  setTrackResult(`
-    <div class="track-wrap">
-      <div class="track-card">
-        <div class="track-section">
-          <div class="track-ttl">Código</div>
-          <div style="font-size:20px;font-weight:700;color:var(--purple);letter-spacing:2px">#${esc(trackCode)}</div>
-        </div>
-        <div class="track-section">
-          <div class="track-ttl">Estado actual</div>
-          <div class="status-badge" style="background:${meta.color}22;border:1px solid ${meta.color}55;color:${meta.color}">
-            ${meta.emoji} ${esc(ship.status||'Desconocido')}
-          </div>
-        </div>
-        <div class="track-section">
-          <div class="track-ttl">Progreso</div>
-          <div class="prog-bar">${progHtml}</div>
-        </div>
-        <div class="track-section">
-          <div class="track-ttl">Detalle</div>
-          <div class="track-info-row"><span class="track-info-lbl">Cliente</span><span class="track-info-val">${esc(ship.name||'—')}</span></div>
-          <div class="track-info-row"><span class="track-info-lbl">Courier</span><span class="track-info-val">${esc(ship.courier||'—')}</span></div>
-          <div class="track-info-row"><span class="track-info-lbl">Fecha</span><span class="track-info-val">${dateLabel}</span></div>
-          <div class="track-info-row"><span class="track-info-lbl">Dirección</span><span class="track-info-val">${esc(ship.address||'—')}</span></div>
-          ${ship.notes?`<div class="track-info-row"><span class="track-info-lbl">Notas</span><span class="track-info-val">${esc(ship.notes)}</span></div>`:''}
+  const extraRows = Object.entries(ship.extra||{})
+    .filter(([,v])=>v)
+    .map(([k,v])=>`<div class="tk-row"><span class="tk-row-lbl">${esc(k)}</span><span class="tk-row-val">${esc(v)}</span></div>`)
+    .join('');
+
+  setTrackContent(`
+    <div id="refreshRow" class="refresh-row">
+      <span class="refresh-lbl">Se actualiza automáticamente</span>
+      <button class="refresh-btn" onclick="buscarPedido('${esc(tc)}')">🔄 Actualizar</button>
+    </div>
+    <div class="track-card">
+      <div class="tk-section">
+        <div class="tk-lbl">Código de seguimiento</div>
+        <div style="font-size:22px;font-weight:700;color:var(--purple);letter-spacing:3px">#${esc(tc)}</div>
+      </div>
+      <div class="tk-section">
+        <div class="tk-lbl">Estado actual</div>
+        <div class="status-badge" style="background:${meta.color}22;border:1px solid ${meta.color}55;color:${meta.color}">
+          ${meta.emoji} ${esc(ship.status||'Desconocido')}
         </div>
       </div>
+      <div class="tk-section">
+        <div class="tk-lbl">Progreso</div>
+        <div class="track-prog">${progHtml}</div>
+      </div>
+      <div class="tk-section">
+        <div class="tk-lbl">Detalle</div>
+        <div class="tk-row"><span class="tk-row-lbl">Cliente</span><span class="tk-row-val">${esc(ship.name||'—')}</span></div>
+        <div class="tk-row"><span class="tk-row-lbl">Courier</span><span class="tk-row-val">${esc(ship.courier||'—')}</span></div>
+        <div class="tk-row"><span class="tk-row-lbl">Fecha</span><span class="tk-row-val">${dateLabel}</span></div>
+        <div class="tk-row"><span class="tk-row-lbl">Dirección</span><span class="tk-row-val">${esc(ship.address||'—')}</span></div>
+        ${ship.notes?`<div class="tk-row"><span class="tk-row-lbl">Notas</span><span class="tk-row-val">${esc(ship.notes)}</span></div>`:''}
+        ${extraRows}
+      </div>
     </div>
+    <button class="btn-sec" onclick="nuevoRegistro()">📝 Registrar nuevo pedido</button>
+    ${notMyOrderBtn()}
   `);
 }
 
-function resetTracking(){
-  setTrackResult('');
-  const inp=$('trackInput'); if(inp) inp.value='';
+/* ─── CLEAR & RESET ─────────────────────────────────────────────── */
+function clearOrderAndReset(){
+  localStorage.removeItem('dpanel_order_'+wsId);
+  clearTrackRefresh();
+  history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
+  selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
+  agState={dept:'',prov:'',dist:'',addr:''};
+  window._s1=null;
+  renderStep1();
 }
 
-/* ─── EXPOSE GLOBALS ────────────────────────────────────────── */
-window.loadConfig       = loadConfig;
-window.selCourier       = selCourier;
-window.selDate          = selDate;
-window.onDept           = onDept;
-window.onProv           = onProv;
-window.onDist           = onDist;
-window.selAgency        = selAgency;
-window.resetAgencySelection = resetAgencySelection;
-window.submitOrder      = submitOrder;
-window.buscarPedido     = buscarPedido;
-window.resetTracking    = resetTracking;
-window.resetForm        = resetForm;
-window.backToForm       = backToForm;
-window.goToTracking     = goToTracking;
-window.openWA           = openWA;
+function nuevoRegistro(){
+  localStorage.removeItem('dpanel_order_'+wsId);
+  clearTrackRefresh();
+  history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
+  selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
+  agState={dept:'',prov:'',dist:'',addr:''};
+  window._s1=null;
+  renderStep1();
+}
+
+/* ─── EXPOSE GLOBALS ────────────────────────────────────────────── */
+window.loadCfg             = loadCfg;
+window.goStep2             = goStep2;
+window.renderStep1         = renderStep1;
+window.renderStep2         = renderStep2;
+window.selCourier          = selCourier;
+window.selDate             = selDate;
+window.onDept              = onDept;
+window.onProv              = onProv;
+window.onDist              = onDist;
+window.selAgency           = selAgency;
+window.resetAgencySelection= resetAgencySelection;
+window.submitOrder         = submitOrder;
+window.buscarPedido        = buscarPedido;
+window.goToTracking        = goToTracking;
+window.clearOrderAndReset  = clearOrderAndReset;
+window.nuevoRegistro       = nuevoRegistro;
 
 })();
 </script>
