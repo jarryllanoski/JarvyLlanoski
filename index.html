@@ -1284,13 +1284,44 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 <!-- OVERLAY: EMPLEADO FORM -->
 <div class="overlay" id="empFormOverlay">
   <div class="sheet">
-    <div class="sheet-title">👤 Empleados</div>
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">👥 Empleados y permisos</div>
     <div id="empList" style="margin-bottom:12px"></div>
     <div style="display:flex;gap:8px">
       <input class="fi" id="newEmpName" placeholder="Nombre del empleado..." style="flex:1">
       <button class="btn-pri" onclick="addEmployee()" style="flex-shrink:0">＋ Agregar</button>
     </div>
     <button class="btn-sec" onclick="closeOverlay('empFormOverlay')" style="width:100%;margin-top:8px">Cerrar</button>
+  </div>
+</div>
+
+<!-- OVERLAY: EMPLOYEE EDIT -->
+<div class="overlay" id="empEditOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">✏️ Editar empleado</div>
+    <div class="fg"><label class="fl">Nombre</label><input class="fi" id="empEditName" placeholder="Nombre del empleado"></div>
+    <div class="fg"><label class="fl">PIN (4 dígitos, opcional)</label><input class="fi" id="empEditPin" type="tel" maxlength="4" placeholder="Sin PIN = acceso libre"></div>
+    <div style="margin-top:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.5px;margin-bottom:8px">PERMISOS</div>
+      <div id="empEditPermisos"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-sec" onclick="closeOverlay('empEditOverlay')" style="flex:1">Cancelar</button>
+      <button class="btn-pri" onclick="saveEmpEdit()" style="flex:2">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: USER SWITCHER -->
+<div class="overlay" id="userSwitcherOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">👤 Cambiar usuario</div>
+    <div id="userSwitcherList" style="margin-bottom:4px"></div>
+    <div style="height:1px;background:var(--bd);margin:12px 0"></div>
+    <button class="btn-sec" onclick="openOverlay('empFormOverlay');renderEmpList();closeOverlay('userSwitcherOverlay')" style="width:100%;margin-bottom:8px">⚙️ Gestionar empleados</button>
+    <button class="btn-sec" onclick="closeOverlay('userSwitcherOverlay')" style="width:100%">Cerrar</button>
   </div>
 </div>
 
