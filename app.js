@@ -16,6 +16,7 @@ if (!S.courierActive) S.courierActive= {};
 if (!S.suppliers)     S.suppliers    = [];
 if (!S.trash)              S.trash             = [];
 if (!S.deletedPedidoIds)   S.deletedPedidoIds  = [];
+if (S.activeUser === undefined) S.activeUser = null;
 if (!S.courierTypes)  S.courierTypes = {};
 if (!S.dispatch)      S.dispatch     = { days:[1,2,3,4,5], cutHour:'11:30', anticipation:0 };
 if (!S.tasks)         S.tasks        = [];
