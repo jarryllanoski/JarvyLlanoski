@@ -11,7 +11,7 @@ const FB_CONFIG = {
 
 let _db     = null;
 let _wsId   = null;
-let _unsub  = null;
+let _unsubs = [];
 let _timer  = null;
 
 /* ── Init ─────────────────────────────────────────────── */
@@ -69,8 +69,8 @@ function _badge(on) {
 
 /* ── Listen ───────────────────────────────────────────── */
 function _listen() {
-  if (_unsub) { _unsub(); _unsub = null; }
-  _unsub = _db.collection('ws').doc(_wsId).onSnapshot(snap => {
+  _unsubs.forEach(u => u()); _unsubs = [];
+  _unsubs.push(_db.collection('ws').doc(_wsId).onSnapshot(snap => {
     if (!snap.exists) return;
     if (snap.metadata.hasPendingWrites) return;
     const d = snap.data();
@@ -106,7 +106,7 @@ function _listen() {
   }, err => {
     console.warn('Cloud sync error:', err);
     toast('⚠️ Nube: ' + err.message);
-  });
+  }));
 
   // Listen for new form submissions
   _unsubs.push(
@@ -171,7 +171,7 @@ function connectCloud(wsId) {
 
 function disconnectCloud() {
   clearTimeout(_timer);
-  if (_unsub) { _unsub(); _unsub = null; }
+  _unsubs.forEach(u => u()); _unsubs = [];
   _wsId = null;
   delete S.wsId;
   lsSet('dpanel', JSON.stringify(S));
