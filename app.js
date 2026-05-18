@@ -1616,35 +1616,62 @@ function renderTasks() {
 }
 
 function taskCardHTML(t) {
-  const isDone    = t.status === 'done';
-  const isBlocked = t.status === 'blocked';
-  const chkCls    = isDone ? 'done' : isBlocked ? 'blocked' : '';
-  const chkIcon   = isDone ? '✓' : isBlocked ? '✕' : '';
-  const cardCls   = isDone ? 't-done' : isBlocked ? 't-blocked' : t.priority === 'alta' ? 't-alta' : t.priority === 'baja' ? 't-baja' : '';
-  const dueStr    = t.dueDate ? `📅 ${t.dueDate}` : '';
-  const priLabel  = t.priority === 'alta' ? `<span class="task-badge" style="background:rgba(247,129,102,.15);color:var(--red)">🔴 Alta</span>` :
-                    t.priority === 'baja' ? `<span class="task-badge" style="background:rgba(56,139,253,.12);color:var(--blue)">🔵 Baja</span>` : '';
+  const isDone      = t.status === 'done';
+  const isBlocked   = t.status === 'blocked';
+  const isInProg    = t.status === 'inprogress';
+  const today       = new Date().toISOString().slice(0, 10);
+  const isOverdue   = !isDone && !isBlocked && t.dueDate && t.dueDate < today;
+  const isToday     = !isDone && !isBlocked && t.dueDate === today;
+
+  const chkCls  = isDone ? 'done' : isInProg ? 'inprogress' : isBlocked ? 'blocked' : '';
+  const chkIcon = isDone ? '✓' : isInProg ? '▶' : isBlocked ? '✕' : '';
+
+  let cardCls = isDone ? 't-done' : isBlocked ? 't-blocked' : isOverdue ? 't-overdue' :
+                isInProg ? 't-inprogress' : t.priority === 'alta' ? 't-alta' : t.priority === 'baja' ? 't-baja' : '';
+
+  /* Priority badge */
+  const priLabel = t.priority === 'alta'
+    ? `<span class="task-badge" style="background:rgba(248,113,113,.12);color:var(--red)">🔴 Alta</span>`
+    : t.priority === 'baja'
+    ? `<span class="task-badge" style="background:rgba(79,142,247,.12);color:var(--blue)">🔵 Baja</span>`
+    : '';
+
+  /* Status badge for in-progress */
+  const inProgBadge = isInProg
+    ? `<span class="task-badge" style="background:rgba(79,142,247,.12);color:var(--blue)">⏳ En curso</span>`
+    : '';
+
+  /* Due date display */
+  let dueBadge = '';
+  if (t.dueDate && !isDone) {
+    if (isOverdue) {
+      const days = Math.round((new Date(today) - new Date(t.dueDate)) / 86400000);
+      dueBadge = `<span class="task-due-late">⚠️ Vencida hace ${days}d</span>`;
+    } else if (isToday) {
+      dueBadge = `<span class="task-due-today">📅 Hoy</span>`;
+    } else {
+      dueBadge = `<span class="task-due-ok">📅 ${t.dueDate}</span>`;
+    }
+  }
+
   return `<div class="task-card ${cardCls}" id="tc_${t.id}">
     <div class="task-top">
-      <div class="task-chk ${chkCls}" onclick="cycleTaskStatus('${t.id}')">${chkIcon}</div>
-      <div style="flex:1">
+      <div class="task-chk ${chkCls}" onclick="cycleTaskStatus('${t.id}')" title="Cambiar estado">${chkIcon}</div>
+      <div style="flex:1;min-width:0">
         <div class="task-title ${isDone?'done':''}">${t.title}</div>
+        ${t.description ? `<div class="task-desc" style="margin-left:0;margin-top:3px">${t.description}</div>` : ''}
       </div>
-      <button onclick="openTaskForm('${t.id}')" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 2px">✏️</button>
+      <button onclick="openTaskForm('${t.id}')" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:2px 4px;flex-shrink:0">✏️</button>
     </div>
-    ${t.description ? `<div class="task-desc">${t.description}</div>` : ''}
-    <div class="task-meta">
-      ${priLabel}
-      ${dueStr ? `<span style="font-size:11px;color:var(--text2)">${dueStr}</span>` : ''}
-    </div>
+    ${(priLabel || inProgBadge || dueBadge) ? `<div class="task-meta">${priLabel}${inProgBadge}${dueBadge}</div>` : ''}
     ${isBlocked ? `<div class="task-block-info">
-      <div style="font-weight:700;color:#e3b341">✕ Empleado no puede${t.blockReason ? ': ' + t.blockReason : ''}</div>
-      ${t.availableForVolunteers ? `<div style="color:var(--orange);margin-top:2px">🙋 Disponible para voluntarios</div>` : ''}
+      <span style="font-weight:700;color:#e3b341">✕ No puede${t.blockReason ? ': ' + t.blockReason : ''}</span>
+      ${t.availableForVolunteers ? `<div style="color:var(--orange);margin-top:3px">🙋 Disponible para voluntarios</div>` : ''}
     </div>` : ''}
     <div class="task-actions">
-      ${!isDone && !isBlocked ? `<button onclick="openBlockTask('${t.id}')" style="font-size:11px;background:rgba(227,179,65,.1);border:1px solid rgba(227,179,65,.3);color:#e3b341;border-radius:6px;padding:3px 8px;cursor:pointer">✕ No puede</button>` : ''}
-      ${isBlocked ? `<button onclick="reassignTask('${t.id}')" style="font-size:11px;background:rgba(56,139,253,.1);border:1px solid rgba(56,139,253,.3);color:var(--blue);border-radius:6px;padding:3px 8px;cursor:pointer">👤 Reasignar</button>` : ''}
-      <button onclick="deleteTask('${t.id}')" style="font-size:11px;background:rgba(247,129,102,.08);border:1px solid rgba(247,129,102,.2);color:var(--red);border-radius:6px;padding:3px 8px;cursor:pointer">🗑️</button>
+      ${!isDone && !isBlocked ? `<button onclick="openBlockTask('${t.id}')" style="font-size:11px;background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.25);color:#e3b341;border-radius:7px;padding:4px 9px;cursor:pointer">✕ No puede</button>` : ''}
+      ${isBlocked ? `<button onclick="reassignTask('${t.id}')" style="font-size:11px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);color:var(--blue);border-radius:7px;padding:4px 9px;cursor:pointer">👤 Reasignar</button>` : ''}
+      <button onclick="deleteTask('${t.id}')" style="font-size:11px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red);border-radius:7px;padding:4px 9px;cursor:pointer">🗑️</button>
     </div>
   </div>`;
 }
