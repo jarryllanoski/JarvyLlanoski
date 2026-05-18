@@ -152,7 +152,8 @@ function cloudSync() {
       config:        S.config,
       suppliers:     S.suppliers  || [],
       dispatch:      S.dispatch   || {},
-      trash:         _clean(S.trash) || [],
+      trash:            _clean(S.trash) || [],
+      deletedPedidoIds: S.deletedPedidoIds || [],
       t: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(e => toast('⚠️ Error sync: ' + e.message));
   }, 800);
