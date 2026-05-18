@@ -98,6 +98,7 @@ function _listen() {
     if (d.config)        S.config        = d.config;
     if (d.suppliers)     S.suppliers     = d.suppliers;
     if (d.dispatch)      S.dispatch      = d.dispatch;
+    if (d.trash)         S.trash         = d.trash;
 
     lsSet('dpanel', JSON.stringify(S));
     if (typeof render      === 'function') render();
