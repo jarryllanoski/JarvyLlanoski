@@ -69,8 +69,8 @@ function _badge(on) {
 
 /* ── Listen ───────────────────────────────────────────── */
 function _listen() {
-  if (_unsub) { _unsub(); _unsub = null; }
-  _unsub = _db.collection('ws').doc(_wsId).onSnapshot(snap => {
+  _unsubs.forEach(u => u()); _unsubs = [];
+  _unsubs.push(_db.collection('ws').doc(_wsId).onSnapshot(snap => {
     if (!snap.exists) return;
     if (snap.metadata.hasPendingWrites) return;
     const d = snap.data();
