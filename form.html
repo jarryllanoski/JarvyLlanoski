@@ -965,6 +965,101 @@ function resetAgency(){
   agState={dept:'',prov:'',dist:'',addr:''};
 }
 
+/* ─── DELIVERY ADDRESS ──────────────────────────────────────────── */
+function setAddrMode(mode){
+  _addrMode=mode;
+  _deliveryAddr='';
+  ['Gps','Search','Manual'].forEach(m=>{
+    const k=m.toLowerCase();
+    const opt=$('addrOpt'+m);
+    const panel=$('addr'+m+'Panel');
+    if(opt)   opt.classList.toggle('active',k===mode);
+    if(panel) panel.style.display=k===mode?'block':'none';
+  });
+  const result=$('addrGpsResult');
+  if(result){ result.classList.remove('show'); result.textContent=''; }
+  const sugg=$('addrSuggestions');
+  if(sugg){ sugg.classList.remove('show'); sugg.innerHTML=''; }
+  const inp=$('addrSearchInput');
+  if(inp) inp.value='';
+  const ta=$('addrManualInput');
+  if(ta) ta.value='';
+  $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show');
+}
+
+function getGPS(){
+  const panel=$('addrGpsPanel');
+  const btn=panel&&panel.querySelector('.btn-sec');
+  const result=$('addrGpsResult');
+  if(btn){ btn.disabled=true; btn.textContent='Localizando...'; }
+  if(result){ result.classList.remove('show'); result.textContent=''; }
+  if(!navigator.geolocation){
+    if(btn){ btn.disabled=false; btn.textContent='📍 Obtener ubicación actual'; }
+    if(result){ result.classList.add('show'); result.textContent='⚠️ Tu navegador no soporta GPS'; }
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    async pos=>{
+      const {latitude:lat,longitude:lon}=pos.coords;
+      try{
+        const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`);
+        const d=await r.json();
+        _deliveryAddr=d.display_name||`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      }catch(e){
+        _deliveryAddr=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      }
+      if(result){ result.classList.add('show'); result.textContent='📍 '+_deliveryAddr; }
+      if(btn){ btn.disabled=false; btn.textContent='📍 Obtener ubicación actual'; }
+      $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show');
+    },
+    err=>{
+      if(btn){ btn.disabled=false; btn.textContent='📍 Obtener ubicación actual'; }
+      const msg=err.code===1?'⚠️ Permiso denegado. Activa la ubicación en tu navegador.':'⚠️ No se pudo obtener la ubicación.';
+      if(result){ result.classList.add('show'); result.textContent=msg; }
+    },
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+
+function onAddrSearch(val){
+  clearTimeout(_addrSearchTimer);
+  const sugg=$('addrSuggestions');
+  _deliveryAddr='';
+  if(!val||val.trim().length<3){
+    if(sugg){ sugg.classList.remove('show'); sugg.innerHTML=''; }
+    return;
+  }
+  _addrSearchTimer=setTimeout(async()=>{
+    if(sugg){ sugg.classList.add('show'); sugg.innerHTML='<div class="addr-sug-item" style="color:var(--text2)">Buscando...</div>'; }
+    try{
+      const q=encodeURIComponent(val.trim());
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&accept-language=es&countrycodes=pe`);
+      const results=await r.json();
+      if(!results.length){
+        if(sugg) sugg.innerHTML='<div class="addr-sug-item" style="color:var(--text2)">Sin resultados. Prueba con otra búsqueda.</div>';
+        return;
+      }
+      if(sugg){
+        sugg.innerHTML=results.map(item=>{
+          const safe=item.display_name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+          return `<div class="addr-sug-item" onclick="selSugAddress('${safe}')">${esc(item.display_name)}</div>`;
+        }).join('');
+      }
+    }catch(e){
+      if(sugg) sugg.innerHTML='<div class="addr-sug-item" style="color:var(--red)">Error al buscar. Verifica tu conexión.</div>';
+    }
+  },400);
+}
+
+function selSugAddress(addr){
+  _deliveryAddr=addr;
+  const inp=$('addrSearchInput');
+  if(inp) inp.value=addr;
+  const sugg=$('addrSuggestions');
+  if(sugg){ sugg.classList.remove('show'); sugg.innerHTML=''; }
+  $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show');
+}
+
 /* ─── DATE CHIPS ────────────────────────────────────────────────── */
 function buildDatesChips(dispatch){
   const days         = Array.isArray(dispatch.days) ? dispatch.days : [1,2,3,4,5];
