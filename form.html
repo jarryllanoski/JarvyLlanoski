@@ -622,7 +622,7 @@ function _courierLabel(name, type){
 
 function renderForm(){
   clearTrackRefresh();
-  _knownClient=null; _deliveryAddr=''; _addrMode='';
+  _knownClient=null; _deliveryAddr=''; _addrMode=''; _gpsLat=null; _gpsLon=null;
   const extraF   = ((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
   const couriers = (CFG.couriers||[]);
   const cAct     = CFG.courierActive||{};
