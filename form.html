@@ -1110,36 +1110,53 @@ function selDate(iso, lbl){
 
 /* ─── SUBMIT ────────────────────────────────────────────────────── */
 async function submitOrder(){
-  const s1 = window._s1||{};
+  const name  = ($('f_name')||{value:''}).value.trim();
+  const phone = ($('f_phone')||{value:''}).value.trim();
+
+  function chk(fid,eid,bad){
+    const fe=$(fid),ee=$(eid);
+    if(bad){fe&&fe.classList.add('err');ee&&ee.classList.add('show');}
+    else   {fe&&fe.classList.remove('err');ee&&ee.classList.remove('show');}
+    return bad;
+  }
 
   let ok=true;
-  if(!selCourierName){ $('err_courier')&&$('err_courier').classList.add('show'); ok=false; }
-  else                { $('err_courier')&&$('err_courier').classList.remove('show'); }
-  if(selCourierType==='agencia'&&!agState.addr){ $('err_agency')&&$('err_agency').classList.add('show'); ok=false; }
-  else                { $('err_agency')&&$('err_agency').classList.remove('show'); }
-  if(!selDateIso)     { $('err_date')&&$('err_date').classList.add('show'); ok=false; }
-  else                { $('err_date')&&$('err_date').classList.remove('show'); }
+  if(chk('f_name','err_name',!name))           ok=false;
+  if(chk('f_phone','err_phone',!/^\d{9}$/.test(phone))) ok=false;
 
-  /* Delivery address validation */
+  if(!selCourierName){ $('err_courier')&&$('err_courier').classList.add('show'); ok=false; }
+  else               { $('err_courier')&&$('err_courier').classList.remove('show'); }
+  if(selCourierType==='agencia'&&!agState.addr){ $('err_agency')&&$('err_agency').classList.add('show'); ok=false; }
+  else               { $('err_agency')&&$('err_agency').classList.remove('show'); }
+  if(!selDateIso)    { $('err_date')&&$('err_date').classList.add('show'); ok=false; }
+  else               { $('err_date')&&$('err_date').classList.remove('show'); }
+
+  const extraF=((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
+  extraF.forEach(f=>{
+    const fname=typeof f==='string'?f:(f.name||'');
+    const isReq=typeof f==='object'&&!!f.required;
+    if(!isReq) return;
+    const el=$('ex_'+fname.replace(/\W/g,'_'));
+    const er=$('exerr_'+fname.replace(/\W/g,'_'));
+    if(el&&!el.value.trim()){el.classList.add('err');er&&er.classList.add('show');ok=false;}
+    else if(el){el.classList.remove('err');er&&er.classList.remove('show');}
+  });
+
   let deliveryAddress='';
   let referencia='';
   if(selCourierType==='delivery'){
-    if(_addrMode==='manual'){
-      deliveryAddress=($('addrManualInput')||{value:''}).value.trim();
-    } else {
-      deliveryAddress=_deliveryAddr;
-    }
+    deliveryAddress=_addrMode==='manual'?($('addrManualInput')||{value:''}).value.trim():_deliveryAddr;
     referencia=($('f_ref')||{value:''}).value.trim();
-    if(!deliveryAddress){ $('err_deliveryAddr')&&$('err_deliveryAddr').classList.add('show'); ok=false; }
-    else                { $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show'); }
+    if(!deliveryAddress){$('err_deliveryAddr')&&$('err_deliveryAddr').classList.add('show');ok=false;}
+    else               {$('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show');}
   }
 
   if(!ok) return;
 
-  let fullNotes = s1.notes||'';
+  let fullNotes=($('f_notes')||{value:''}).value.trim();
   if(selCourierType==='agencia'&&agState.addr){
     const agLine=`Agencia: ${agState.dist}, ${agState.dept} - ${agState.addr}`;
-    fullNotes = fullNotes ? `${fullNotes} | ${agLine}` : agLine;
+    fullNotes=fullNotes?`${fullNotes} | ${agLine}`:agLine;
   }
 
   const now      = Date.now();
@@ -1148,16 +1165,16 @@ async function submitOrder(){
 
   const order = {
     id:             orderId,
-    name:           s1.name||'',
-    phone:          s1.phone||'',
+    name,
+    phone,
     address:        deliveryAddress,
-    referencia:     referencia,
+    referencia,
     courier:        selCourierName,
     date:           selDateIso,
     status:         'Nuevo pedido',
     cost:           '',
     notes:          fullNotes,
-    extra:          s1.extra||{},
+    extra:          collectExtra(),
     docGuia:        null,
     docEmbalado:    null,
     docComprobante: null,
