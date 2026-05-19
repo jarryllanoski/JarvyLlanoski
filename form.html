@@ -779,14 +779,17 @@ function _showKnownBadge(){
 /* ─── COURIER SELECTION ─────────────────────────────────────────── */
 function onCourierChange(name){
   const cTypes=(CFG&&CFG.courierTypes)||{};
-  const baseType=name?(cTypes[name]||'delivery'):'';
+  const configType=name?(cTypes[name]||''):'';
   const u=(name||'').toUpperCase();
   const isEncomienda=u.includes('ENCOMIENDA');
   const isRetiro=!isEncomienda&&u.includes('RETIRO');
-  selCourierType = baseType==='agencia' ? 'agencia'
-                 : isEncomienda          ? 'encomienda'
-                 : isRetiro              ? 'retiro'
-                 :                        'delivery';
+  // Detect known agency couriers by name even if type not explicitly set
+  const isKnownAgency=['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n));
+  const isAgencia=configType==='agencia'||isKnownAgency;
+  selCourierType = isAgencia    ? 'agencia'
+                 : isEncomienda ? 'encomienda'
+                 : isRetiro     ? 'retiro'
+                 :                'delivery';
   selCourierName=name;
   $('err_courier')&&$('err_courier').classList.remove('show');
   _deliveryAddr=''; _addrMode='';
