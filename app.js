@@ -2206,4 +2206,125 @@ function changePIN() {
   });
 }
 
+/* ════════════════════════════════════════
+   DELIVERY ROUTE
+════════════════════════════════════════ */
+let _routeCourier = '', _routeDelivId = null;
+let _sigCtx = null, _sigDrawing = false, _sigHasContent = false;
+
+/* Triple-tap detection per courier header */
+const _cHdrTaps = {};
+function onCourierHdrTap(courier) {
+  const now = Date.now();
+  if (!_cHdrTaps[courier]) _cHdrTaps[courier] = { n: 0, t: 0 };
+  const tap = _cHdrTaps[courier];
+  if (now - tap.t > 600) tap.n = 0;
+  tap.n++; tap.t = now;
+  if (tap.n >= 3) { tap.n = 0; openRoute(courier); }
+}
+
+function openRoute(courier) {
+  _routeCourier = courier;
+  $('routeTitle').textContent = '🚚 Ruta — ' + courier;
+  renderRouteList();
+  openOverlay('routeOverlay');
+}
+
+function renderRouteList() {
+  const el = $('routeList'); if (!el) return;
+  const items = S.shipments.filter(x => x.courier === _routeCourier && x.status !== 'Finalizado');
+  if (!items.length) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2)">✅ Sin entregas pendientes</div>';
+    return;
+  }
+  el.innerHTML = items.map((s, i) => {
+    const proof = s.deliveryProof;
+    const done  = proof && proof.deliveredAt;
+    return `<div class="route-item ${done ? 'route-done' : ''}">
+      <div class="route-num" style="${done ? 'background:var(--green)' : ''}">${done ? '✓' : i + 1}</div>
+      <div class="route-info">
+        <div class="route-name">${s.name}</div>
+        <div class="route-addr">🏠 ${s.address}</div>
+        <div style="font-size:11px;color:var(--text2)">📞 ${s.phone}</div>
+        ${done ? `<div style="font-size:11px;color:var(--green);margin-top:3px">✅ Recibió: ${proof.receivedBy || '—'}</div>` : ''}
+      </div>
+      ${!done ? `<button class="route-btn" onclick="startDelivery('${s.id}')">📦 Entregar</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function startDelivery(id) {
+  _routeDelivId = id;
+  const s = S.shipments.find(x => x.id === id); if (!s) return;
+  $('deliveryClientName').textContent = s.name;
+  $('deliveryClientAddr').textContent  = '🏠 ' + s.address;
+  $('deliveryReceivedBy').value = '';
+  const prev = $('deliveryPhotoPrev');
+  if (prev) { prev.innerHTML = `<button class="btn-sec" onclick="$('deliveryPhotoInput').click()" style="flex:1">📷 Tomar foto</button>`; delete prev.dataset.photo; }
+  _initSigCanvas();
+  openOverlay('deliveryOverlay');
+}
+
+function _initSigCanvas() {
+  const c = $('sigCanvas'); if (!c) return;
+  c.width = c.offsetWidth || 300;
+  _sigHasContent = false;
+  _sigCtx = c.getContext('2d');
+  _sigCtx.clearRect(0, 0, c.width, c.height);
+  _sigCtx.strokeStyle = '#e6edf3';
+  _sigCtx.lineWidth = 2.5;
+  _sigCtx.lineCap = _sigCtx.lineJoin = 'round';
+  const pos = ev => {
+    const r = c.getBoundingClientRect();
+    const s = ev.touches ? ev.touches[0] : ev;
+    return { x: (s.clientX - r.left) * (c.width / r.width), y: (s.clientY - r.top) * (c.height / r.height) };
+  };
+  c.onpointerdown = ev => { _sigDrawing = true; const p = pos(ev); _sigCtx.beginPath(); _sigCtx.moveTo(p.x, p.y); ev.preventDefault(); };
+  c.onpointermove = ev => { if (!_sigDrawing) return; const p = pos(ev); _sigCtx.lineTo(p.x, p.y); _sigCtx.stroke(); _sigHasContent = true; ev.preventDefault(); };
+  c.onpointerup = c.onpointercancel = () => { _sigDrawing = false; };
+}
+
+function clearSig() {
+  const c = $('sigCanvas'); if (!c || !_sigCtx) return;
+  _sigCtx.clearRect(0, 0, c.width, c.height);
+  _sigHasContent = false;
+}
+
+function onDeliveryPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 800; let w = img.width, h = img.height;
+      if (w > max || h > max) { if (w > h) { h = Math.round(h * max / w); w = max; } else { w = Math.round(w * max / h); h = max; } }
+      const cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
+      cnv.getContext('2d').drawImage(img, 0, 0, w, h);
+      const compressed = cnv.toDataURL('image/jpeg', 0.72);
+      const prev = $('deliveryPhotoPrev');
+      prev.innerHTML = `<img src="${compressed}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--bd)">
+        <button class="btn-sec" onclick="$('deliveryPhotoInput').click()" style="flex:1">🔄 Cambiar</button>`;
+      prev.dataset.photo = compressed;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmDelivery() {
+  const receivedBy = ($('deliveryReceivedBy') || {value:''}).value.trim();
+  if (!receivedBy) { toast('⚠️ Escribe quién recibió el pedido'); return; }
+  const prev = $('deliveryPhotoPrev');
+  const photo     = prev && prev.dataset.photo || null;
+  const sigCanvas = $('sigCanvas');
+  const signature = (_sigHasContent && sigCanvas) ? sigCanvas.toDataURL('image/png') : null;
+  const s = S.shipments.find(x => x.id === _routeDelivId); if (!s) return;
+  s.deliveryProof = { receivedBy, photo, signature, deliveredAt: new Date().toISOString() };
+  s.status = 'Finalizado';
+  save(); render();
+  closeOverlay('deliveryOverlay');
+  toast('✅ Entregado a ' + receivedBy);
+  renderRouteList();
+}
+
 
