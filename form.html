@@ -1202,6 +1202,9 @@ async function submitOrder(){
   if(!ok) return;
 
   let fullNotes=($('f_notes')||{value:''}).value.trim();
+  const dniRecoger       = selCourierType==='agencia'    ? ($('f_dni_recoger')||{value:''}).value.trim() : '';
+  const ciudadDestino    = selCourierType==='encomienda'  ? ($('f_ciudad')||{value:''}).value.trim()      : '';
+  const dniDestinatario  = selCourierType==='encomienda'  ? ($('f_dni_dest')||{value:''}).value.trim()    : '';
   if(selCourierType==='agencia'&&agState.addr){
     const agLine=`Agencia: ${agState.dist}, ${agState.dept} - ${agState.addr}`;
     fullNotes=fullNotes?`${fullNotes} | ${agLine}`:agLine;
