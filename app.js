@@ -1488,51 +1488,81 @@ function dropLabel(e, i){
 function dragEnd(){ _dragIdx = null; }
 
 /* ── QR SCANNER ── */
-let _qrStream = null, _qrLoop = null;
+let _qrStream = null, _qrLoop = null, _qrDetector = null;
+
 function openQR(){
   openOverlay('qrOverlay');
   startQR();
 }
-function startQR(){
+
+async function startQR(){
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     toast('Cámara no disponible'); closeQR(); return;
   }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+  // Init BarcodeDetector (native — best on Android/Brave)
+  if ('BarcodeDetector' in window) {
+    try { _qrDetector = new BarcodeDetector({ formats: ['qr_code'] }); } catch(e) { _qrDetector = null; }
+  }
+  // If no native detector, load jsQR from CDN
+  if (!_qrDetector && !window.jsQR) {
+    await new Promise(res => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+      s.onload = res; s.onerror = res;
+      document.head.appendChild(s);
+    });
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
     _qrStream = stream;
     const vid = $('qrVideo');
-    if (vid) { vid.srcObject = stream; vid.play(); }
-    scanLoop();
-  }).catch(()=>{ toast('No se pudo acceder a la cámara'); closeQR(); });
+    if (vid) { vid.srcObject = stream; await vid.play().catch(()=>{}); }
+    _scanTick();
+  } catch(e) {
+    toast('No se pudo acceder a la cámara'); closeQR();
+  }
 }
-function scanLoop(){
+
+function _scanTick() {
   const vid = $('qrVideo');
-  const canvas = $('qrCanvas');
-  if (!vid || !canvas) return;
-  const ctx = canvas.getContext('2d');
-  _qrLoop = requestAnimationFrame(() => {
-    if (vid.readyState === vid.HAVE_ENOUGH_DATA) {
+  if (!vid || !_qrStream) return;
+
+  if (_qrDetector) {
+    _qrDetector.detect(vid).then(codes => {
+      if (codes.length) { handleQR(codes[0].rawValue); return; }
+      _qrLoop = setTimeout(_scanTick, 150);
+    }).catch(() => { _qrLoop = setTimeout(_scanTick, 150); });
+  } else if (window.jsQR) {
+    const canvas = $('qrCanvas');
+    if (!canvas) { _qrLoop = setTimeout(_scanTick, 150); return; }
+    const ctx = canvas.getContext('2d');
+    if (vid.readyState >= vid.HAVE_ENOUGH_DATA && vid.videoWidth > 0) {
+      canvas.width  = vid.videoWidth;
       canvas.height = vid.videoHeight;
-      canvas.width = vid.videoWidth;
-      ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(vid, 0, 0);
       try {
-        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        if (window.jsQR) {
-          const code = jsQR(img.data, img.width, img.height);
-          if (code) { handleQR(code.data); return; }
-        }
-      } catch(e){}
+        const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+        if (code) { handleQR(code.data); return; }
+      } catch(e) {}
     }
-    _qrLoop = requestAnimationFrame(scanLoop);
-  });
+    _qrLoop = setTimeout(_scanTick, 150);
+  } else {
+    _qrLoop = setTimeout(_scanTick, 300);
+  }
 }
+
 function handleQR(data){
   closeQR();
   const el = $('searchInput');
   if (el) { el.value = data; render(); }
   toast(`🔍 QR: ${data}`);
 }
+
 function closeQR(){
-  if (_qrLoop) { cancelAnimationFrame(_qrLoop); _qrLoop = null; }
+  if (_qrLoop) { clearTimeout(_qrLoop); cancelAnimationFrame(_qrLoop); _qrLoop = null; }
   if (_qrStream) { _qrStream.getTracks().forEach(t=>t.stop()); _qrStream = null; }
   closeOverlay('qrOverlay');
 }
