@@ -793,9 +793,9 @@ function onCourierChange(name){
   const u=(name||'').toUpperCase();
   const isEncomienda=u.includes('ENCOMIENDA');
   const isRetiro=!isEncomienda&&u.includes('RETIRO');
-  // Detect known agency couriers by name even if type not explicitly set
+  // Name-based RETIRO/ENCOMIENDA takes priority over stored configType
   const isKnownAgency=['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n));
-  const isAgencia=configType==='agencia'||isKnownAgency;
+  const isAgencia=!isRetiro&&!isEncomienda&&(configType==='agencia'||isKnownAgency);
   selCourierType = isAgencia    ? 'agencia'
                  : isEncomienda ? 'encomienda'
                  : isRetiro     ? 'retiro'
