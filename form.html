@@ -486,6 +486,9 @@ let selDateLbl     = '';
 let agState        = {dept:'',prov:'',dist:'',addr:''};
 let trackRefreshId = null;
 let currentToken   = '';   // token from ?t= param
+let _deliveryAddr  = '';
+let _addrMode      = '';
+let _addrSearchTimer = null;
 
 /* ─── DOM HELPERS ───────────────────────────────────────────────── */
 const app = document.getElementById('app');
