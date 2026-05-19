@@ -1248,6 +1248,7 @@ async function submitOrder(){
     name,
     phone,
     address:        deliveryAddress,
+    gpsCoords:      (_gpsLat&&_gpsLon) ? `${_gpsLat},${_gpsLon}` : null,
     referencia,
     dniRecoger,
     ciudadDestino,
