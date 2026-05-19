@@ -478,17 +478,18 @@ async function fsListDocs(collectionPath){
 
 /* ─── GLOBAL STATE ──────────────────────────────────────────────── */
 let CFG            = null;
-let curStep        = 1;        // 1 or 2 (wizard steps)
 let selCourierName = '';
 let selCourierType = '';
 let selDateIso     = '';
 let selDateLbl     = '';
 let agState        = {dept:'',prov:'',dist:'',addr:''};
 let trackRefreshId = null;
-let currentToken   = '';   // token from ?t= param
+let currentToken   = '';
 let _deliveryAddr  = '';
 let _addrMode      = '';
 let _addrSearchTimer = null;
+let _phoneTimer    = null;
+let _knownClient   = null;
 
 /* ─── DOM HELPERS ───────────────────────────────────────────────── */
 const app = document.getElementById('app');
