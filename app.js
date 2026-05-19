@@ -2283,7 +2283,7 @@ function renderRouteList() {
       <div class="route-num" style="${done ? 'background:var(--green)' : ''}">${done ? '✓' : i + 1}</div>
       <div class="route-info">
         <div class="route-name">${s.name}</div>
-        <div class="route-addr">🏠 ${mapsLink(s.address, s.gpsCoords)}</div>
+        <div class="route-addr">🏠 ${_isDeliveryCourier(s.courier) ? mapsLink(s.address, s.gpsCoords) : (s.address||'')}</div>
         <div style="font-size:11px;color:var(--text2)">📞 ${s.phone}</div>
         ${done ? `<div style="font-size:11px;color:var(--green);margin-top:3px">✅ Recibió: ${proof.receivedBy || '—'}</div>` : ''}
       </div>
