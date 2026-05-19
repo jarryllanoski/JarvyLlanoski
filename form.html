@@ -1054,6 +1054,7 @@ function getGPS(){
       }
       _deliveryAddr=addrText;
       _addrMode='gps';
+      _gpsLat=lat; _gpsLon=lon;
       const mapsUrl=`https://maps.google.com/?q=${lat},${lon}`;
       if(result){
         result.classList.add('show');
