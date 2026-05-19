@@ -1556,9 +1556,22 @@ function _scanTick() {
 
 function handleQR(data){
   closeQR();
+  if (typeof goPage === 'function') goPage('envios');
   const el = $('fSearch');
-  if (el) { el.value = data; render(); }
-  toast(`🔍 Buscando: ${data}`);
+  if (!el) return;
+  el.value = data;
+  render();
+  const phone = data.replace(/\D/g,'');
+  const match = S.shipments.find(x => x.phone.replace(/\D/g,'').includes(phone) || phone.includes(x.phone.replace(/\D/g,'')));
+  if (match) {
+    setTimeout(() => {
+      const card = document.getElementById('card_' + match.id) || document.querySelector('.ship-card');
+      if (card) card.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 150);
+    toast(`✅ Cliente: ${match.name}`);
+  } else {
+    toast(`🔍 ${data} — sin resultados`);
+  }
 }
 
 function closeQR(){
