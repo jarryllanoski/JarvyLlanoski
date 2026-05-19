@@ -1556,9 +1556,9 @@ function _scanTick() {
 
 function handleQR(data){
   closeQR();
-  const el = $('searchInput');
+  const el = $('fSearch');
   if (el) { el.value = data; render(); }
-  toast(`🔍 QR: ${data}`);
+  toast(`🔍 Buscando: ${data}`);
 }
 
 function closeQR(){
