@@ -1356,6 +1356,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   </div>
 </div>
 
+<!-- OVERLAY: RUTA DE ENTREGA -->
+<div class="overlay" id="routeOverlay">
+  <div class="sheet" style="max-height:85vh;display:flex;flex-direction:column">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="routeTitle">🚚 Ruta</div>
+    <div style="overflow-y:auto;flex:1" id="routeList"></div>
+    <button class="btn-sec" onclick="closeOverlay('routeOverlay')" style="width:100%;margin-top:12px;flex-shrink:0">Cerrar ruta</button>
+  </div>
+</div>
+
+<!-- OVERLAY: CONFIRMAR ENTREGA -->
+<div class="overlay" id="deliveryOverlay">
+  <div class="sheet" style="max-height:92vh;overflow-y:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📦 Confirmar entrega</div>
+    <div style="background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:14px">
+      <div style="font-weight:700;font-size:14px;color:var(--text)" id="deliveryClientName"></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px" id="deliveryClientAddr"></div>
+    </div>
+    <div class="fg"><label class="fl">Recibido por *</label><input class="fi" id="deliveryReceivedBy" placeholder="Nombre de quien recibe"></div>
+    <div style="margin-bottom:14px">
+      <label class="fl">Foto de la entrega</label>
+      <input type="file" id="deliveryPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="onDeliveryPhoto(this)">
+      <div id="deliveryPhotoPrev" style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <button class="btn-sec" onclick="$('deliveryPhotoInput').click()" style="flex:1">📷 Tomar foto</button>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label class="fl" style="margin:0">Firma del cliente</label>
+        <button onclick="clearSig()" style="font-size:11px;background:none;border:none;color:var(--text2);cursor:pointer;padding:4px 8px">🗑️ Limpiar</button>
+      </div>
+      <div class="sig-wrap">
+        <canvas id="sigCanvas" height="150"></canvas>
+      </div>
+      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:5px">Deslizá el dedo para firmar</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sec" onclick="closeOverlay('deliveryOverlay')" style="flex:1">Cancelar</button>
+      <button class="btn-pri" onclick="confirmDelivery()" style="flex:2">✅ Confirmar entrega</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js?v=20260518g"></script>
 <script src="app.js?v=20260519a"></script>
