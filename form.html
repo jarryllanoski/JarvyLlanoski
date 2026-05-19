@@ -658,9 +658,8 @@ function renderStep1(back){
 
 /* ─── STEP 1 VALIDATION → GO STEP 2 ────────────────────────────── */
 function goStep2(){
-  const name    = ($('f_name')||{value:''}).value.trim();
-  const phone   = ($('f_phone')||{value:''}).value.trim();
-  const address = ($('f_address')||{value:''}).value.trim();
+  const name  = ($('f_name')||{value:''}).value.trim();
+  const phone = ($('f_phone')||{value:''}).value.trim();
 
   let ok = true;
   function chk(fid,eid,bad){
@@ -668,9 +667,8 @@ function goStep2(){
     if(bad){ fe&&fe.classList.add('err'); ee&&ee.classList.add('show'); ok=false; }
     else    { fe&&fe.classList.remove('err'); ee&&ee.classList.remove('show'); }
   }
-  chk('f_name',   'err_name',   !name);
-  chk('f_phone',  'err_phone',  !/^\d{9}$/.test(phone));
-  chk('f_address','err_address',!address);
+  chk('f_name',  'err_name',  !name);
+  chk('f_phone', 'err_phone', !/^\d{9}$/.test(phone));
 
   const extraF = ((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
   extraF.forEach(f=>{
@@ -693,7 +691,7 @@ function goStep2(){
 
   /* Stash step1 values */
   window._s1 = {
-    name, phone, address,
+    name, phone,
     notes: ($('f_notes')||{value:''}).value.trim(),
     extra: collectExtra(),
   };
