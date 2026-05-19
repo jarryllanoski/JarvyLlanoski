@@ -154,6 +154,21 @@ textarea.fi{resize:vertical;line-height:1.5}
 
 /* Section divider */
 .section-ttl{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.7px;text-transform:uppercase;margin-bottom:10px}
+
+/* DELIVERY ADDRESS OPTIONS */
+.addr-opts{display:flex;gap:8px;margin-bottom:10px}
+.addr-opt{flex:1;background:var(--card);border:1.5px solid var(--bd);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+.addr-opt.active{border-color:var(--blue);background:#12203d}
+.addr-opt-icon{font-size:20px;margin-bottom:3px}
+.addr-opt-lbl{font-size:11px;font-weight:600;color:var(--text2)}
+.addr-opt.active .addr-opt-lbl{color:var(--text)}
+.addr-result{background:var(--card2);border:1px solid var(--blue);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text);margin-bottom:8px;display:none;line-height:1.5}
+.addr-result.show{display:block}
+.addr-suggestions{background:var(--card2);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:8px;display:none;max-height:200px;overflow-y:auto}
+.addr-suggestions.show{display:block}
+.addr-sug-item{padding:10px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--bd);line-height:1.4}
+.addr-sug-item:last-child{border-bottom:none}
+.addr-sug-item:hover,.addr-sug-item:active{background:#12203d}
 </style>
 </head>
 <body>
