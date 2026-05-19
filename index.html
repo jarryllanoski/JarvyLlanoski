@@ -60,6 +60,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 .tb-btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
 .tb-btn.danger{background:#2d1b1b;border-color:var(--red);color:var(--red)}
 .qr-scan-btn{background:var(--bg2);border:1px solid var(--blue);border-radius:7px;width:36px;height:36px;cursor:pointer;color:var(--blue);font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.route-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--bd)}
+.route-item:last-child{border:none}
+.route-item.route-done{opacity:.5}
+.route-num{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px}
+.route-info{flex:1;min-width:0}
+.route-name{font-size:14px;font-weight:600;color:var(--text)}
+.route-addr{font-size:11px;color:var(--text2);margin-top:2px}
+.route-btn{font-size:12px;padding:7px 12px;border-radius:8px;border:1px solid rgba(46,160,67,.5);background:rgba(46,160,67,.1);color:var(--green);cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;flex-shrink:0;font-family:inherit}
+.sig-wrap{border:1.5px solid var(--bd);border-radius:10px;background:var(--bg2);overflow:hidden;position:relative}
+.sig-wrap canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
 
 /* CHIPS */
 .chips-wrap{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px;scrollbar-width:none}
