@@ -366,7 +366,7 @@ function render() {
   }
   area.innerHTML = Object.entries(groups).map(([courier, items]) => `
     <div class="cgroup">
-      <div class="cgroup-hdr"><div class="cgroup-bar"></div><span>🚚</span><div class="cgroup-name">${courier}</div><div class="cgroup-cnt">${items.length}</div></div>
+      <div class="cgroup-hdr" onclick="onCourierHdrTap('${courier.replace(/'/g,"\\'")}')"><div class="cgroup-bar"></div><span>🚚</span><div class="cgroup-name">${courier}</div><div class="cgroup-cnt">${items.length}</div><span style="font-size:10px;color:var(--text2);margin-left:auto;opacity:.5">···</span></div>
       ${items.map(s => cardHTML(s)).join('')}
     </div>`).join('');
 }
