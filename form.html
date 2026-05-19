@@ -815,14 +815,19 @@ function selCourier(name, type){
   if(el) el.classList.add('active');
   $('err_courier')&&$('err_courier').classList.remove('show');
 
-  const agBox = $('agencyBox');
-  if(!agBox) return;
+  const agBox   = $('agencyBox');
+  const addrBox = $('deliveryAddrBox');
   if(type==='agencia'){
-    agBox.style.display='block';
-    renderAgencyBox(name);
+    if(agBox)   { agBox.style.display='block'; renderAgencyBox(name); }
+    if(addrBox) addrBox.style.display='none';
+    _deliveryAddr=''; _addrMode='';
+  } else if(type==='delivery'){
+    if(agBox)   { agBox.style.display='none'; resetAgency(); }
+    if(addrBox) addrBox.style.display='block';
   } else {
-    agBox.style.display='none';
-    resetAgency();
+    if(agBox)   { agBox.style.display='none'; resetAgency(); }
+    if(addrBox) addrBox.style.display='none';
+    _deliveryAddr=''; _addrMode='';
   }
 }
 
