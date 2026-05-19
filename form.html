@@ -746,6 +746,10 @@ function renderForm(){
     const el=$('dopt_'+selDateIso);
     if(el) el.classList.add('active');
   }
+
+  /* Pre-fill from token */
+  if(_prefillName){ const el=$('f_name'); if(el) el.value=_prefillName; }
+  if(_prefillPhone){ const el=$('f_phone'); if(el){ el.value=_prefillPhone; onPhoneInput(_prefillPhone); } }
 }
 
 /* ─── PHONE DETECTION ────────────────────────────────────────────── */
