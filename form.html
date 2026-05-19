@@ -1162,6 +1162,23 @@ async function submitOrder(){
   if(!selDateIso)    { $('err_date')&&$('err_date').classList.add('show'); ok=false; }
   else               { $('err_date')&&$('err_date').classList.remove('show'); }
 
+  // Agencia: validate DNI para recoger
+  if(selCourierType==='agencia'){
+    const dni=($('f_dni_recoger')||{value:''}).value.trim();
+    if(!/^\d{8}$/.test(dni)){ $('err_dni_recoger')&&$('err_dni_recoger').classList.add('show'); ok=false; }
+    else                    { $('err_dni_recoger')&&$('err_dni_recoger').classList.remove('show'); }
+  }
+
+  // Encomienda: validate ciudad + DNI destinatario
+  if(selCourierType==='encomienda'){
+    const ciudad=($('f_ciudad')||{value:''}).value.trim();
+    const dniDest=($('f_dni_dest')||{value:''}).value.trim();
+    if(!ciudad){ $('err_ciudad')&&$('err_ciudad').classList.add('show'); ok=false; }
+    else       { $('err_ciudad')&&$('err_ciudad').classList.remove('show'); }
+    if(!/^\d{8}$/.test(dniDest)){ $('err_dni_dest')&&$('err_dni_dest').classList.add('show'); ok=false; }
+    else                        { $('err_dni_dest')&&$('err_dni_dest').classList.remove('show'); }
+  }
+
   const extraF=((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
   extraF.forEach(f=>{
     const fname=typeof f==='string'?f:(f.name||'');
