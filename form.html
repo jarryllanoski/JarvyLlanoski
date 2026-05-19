@@ -767,23 +767,37 @@ function _showKnownBadge(){
 /* ─── COURIER SELECTION ─────────────────────────────────────────── */
 function onCourierChange(name){
   const cTypes=(CFG&&CFG.courierTypes)||{};
-  const type=name?(cTypes[name]||'delivery'):'';
+  const baseType=name?(cTypes[name]||'delivery'):'';
+  const u=(name||'').toUpperCase();
+  const isEncomienda=u.includes('ENCOMIENDA');
+  const isRetiro=!isEncomienda&&u.includes('RETIRO');
+  selCourierType = baseType==='agencia' ? 'agencia'
+                 : isEncomienda          ? 'encomienda'
+                 : isRetiro              ? 'retiro'
+                 :                        'delivery';
   selCourierName=name;
-  selCourierType=type;
   $('err_courier')&&$('err_courier').classList.remove('show');
   _deliveryAddr=''; _addrMode='';
   const agBox=$('agencyBox');
   const addrBox=$('deliveryAddrBox');
-  if(type==='agencia'){
+  const encBox=$('encomiendaBox');
+  if(selCourierType==='agencia'){
     if(agBox){agBox.style.display='block';renderAgencyBox(name);}
     if(addrBox) addrBox.style.display='none';
-  } else if(type==='delivery'){
-    if(agBox){agBox.style.display='none';resetAgency();}
-    if(addrBox) addrBox.style.display='block';
-    _updateKnownAddrShortcut();
-  } else {
+    if(encBox) encBox.style.display='none';
+  } else if(selCourierType==='encomienda'){
     if(agBox){agBox.style.display='none';resetAgency();}
     if(addrBox) addrBox.style.display='none';
+    if(encBox) encBox.style.display='block';
+  } else if(selCourierType==='retiro'){
+    if(agBox){agBox.style.display='none';resetAgency();}
+    if(addrBox) addrBox.style.display='none';
+    if(encBox) encBox.style.display='none';
+  } else {
+    if(agBox){agBox.style.display='none';resetAgency();}
+    if(addrBox) addrBox.style.display='block';
+    if(encBox) encBox.style.display='none';
+    _updateKnownAddrShortcut();
   }
 }
 
