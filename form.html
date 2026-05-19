@@ -668,6 +668,18 @@ function renderForm(){
 
       <div id="agencyBox" style="display:none"></div>
 
+      <div id="encomiendaBox" style="display:none;margin-top:4px">
+        <div class="section-ttl">📦 Datos de envío</div>
+        <div class="fg">
+          <input class="fi" id="f_ciudad" type="text" placeholder="Ciudad de destino *" autocomplete="off">
+          <div class="ferr" id="err_ciudad">Ingresa la ciudad de destino</div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <input class="fi" id="f_dni_dest" type="text" inputmode="numeric" placeholder="DNI del destinatario *" maxlength="8" pattern="[0-9]*">
+          <div class="ferr" id="err_dni_dest">Ingresa el DNI (8 dígitos)</div>
+        </div>
+      </div>
+
       <div id="deliveryAddrBox" style="display:none;margin-top:4px">
         <div class="section-ttl">📍 Dirección de entrega *</div>
         <div id="addrShortcut" style="display:none"></div>
