@@ -69,8 +69,14 @@ function save() {
 function statusPrio(st)  { return FIXED_LABELS.indexOf(st); }
 function allStatuses()   { return S.labels; }
 function stIcon(st)      { return FIXED_LABEL_ICONS[st] || '🏷️'; }
+function _isDeliveryCourier(name) {
+  const u = (name||'').toUpperCase();
+  if (['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n => u.includes(n))) return false;
+  if (u.includes('ENCOMIENDA') || u.includes('RETIRO')) return false;
+  return ((S.courierTypes||{})[name]||'') !== 'agencia';
+}
 function mapsLink(addr, gpsCoords) {
-  if (!addr) return '';
+  if (!addr) return addr||'';
   const url = gpsCoords
     ? `https://maps.google.com/?q=${gpsCoords}`
     : `https://maps.google.com/?q=${encodeURIComponent(addr)}`;
