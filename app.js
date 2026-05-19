@@ -1027,28 +1027,42 @@ async function renderTokenList(){
   }
 }
 
-function generateToken(){
+function generateAndCopy()  { _doGenerate('copy');  }
+function generateAndShare() { _doGenerate('share'); }
+function generateAndOpen()  { _doGenerate('open');  }
+
+async function _doGenerate(action) {
   const {db, wsId} = _tokenBase();
   if (!db || !wsId) { toast('⚠️ Conectate a la nube primero'); return; }
-  const label   = ($('tokenLabel')  ||{value:''}).value.trim();
-  const expDays = ($('tokenExpiry') ||{value:''}).value;
+  const label    = ($('tokenLabel') ||{value:''}).value.trim();
+  const phone    = ($('tokenPhone') ||{value:''}).value.trim().replace(/\D/g,'');
+  const expDays  = ($('tokenExpiry')||{value:''}).value;
   const tok = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const data = {
-    label:      label || '',
+    label,
+    prefillName:  label || null,
+    prefillPhone: phone || null,
     singleUse:  true,
     used:       false,
     createdAt:  new Date().toISOString(),
     expiresAt:  expDays ? new Date(Date.now() + Number(expDays)*86400000).toISOString() : null,
     clientName: null, orderId: null, trackCode: null,
   };
-  db.collection('ws').doc(wsId).collection('tokens').doc(tok).set(data)
-    .then(async () => {
-      const url = _tokenUrl(tok);
-      const lbl = $('tokenLabel'); if (lbl) lbl.value = '';
-      renderTokenList();
+  try {
+    await db.collection('ws').doc(wsId).collection('tokens').doc(tok).set(data);
+    const url = _tokenUrl(tok);
+    const lbl = $('tokenLabel'); if(lbl) lbl.value = '';
+    const phn = $('tokenPhone'); if(phn) phn.value = '';
+    renderTokenList();
+    if (action === 'copy') {
+      try { await navigator.clipboard.writeText(url); } catch(e) {}
+      toast('📋 Link copiado');
+    } else if (action === 'share') {
       await _shareLink(url, label ? `Link de pedido — ${label}` : 'Link de pedido');
-    })
-    .catch(e => toast('⚠️ Error: ' + e.message));
+    } else if (action === 'open') {
+      window.open(url, '_blank');
+    }
+  } catch(e) { toast('⚠️ Error: ' + e.message); }
 }
 
 async function _shareLink(url, title) {
