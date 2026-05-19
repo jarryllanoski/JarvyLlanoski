@@ -69,9 +69,11 @@ function save() {
 function statusPrio(st)  { return FIXED_LABELS.indexOf(st); }
 function allStatuses()   { return S.labels; }
 function stIcon(st)      { return FIXED_LABEL_ICONS[st] || '🏷️'; }
-function mapsLink(addr) {
+function mapsLink(addr, gpsCoords) {
   if (!addr) return '';
-  const url = 'https://maps.google.com/?q=' + encodeURIComponent(addr);
+  const url = gpsCoords
+    ? `https://maps.google.com/?q=${gpsCoords}`
+    : `https://maps.google.com/?q=${encodeURIComponent(addr)}`;
   return `<a href="${url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" title="Abrir en Google Maps">${addr} 🗺️</a>`;
 }
 function stClass(st) {
