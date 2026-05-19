@@ -694,23 +694,13 @@ function renderForm(){
             <div class="addr-opt-icon">📍</div>
             <div class="addr-opt-lbl">Mi ubicación</div>
           </div>
-          <div class="addr-opt" id="addrOptSearch" onclick="setAddrMode('search')">
-            <div class="addr-opt-icon">🔍</div>
-            <div class="addr-opt-lbl">Buscar</div>
-          </div>
           <div class="addr-opt" id="addrOptManual" onclick="setAddrMode('manual')">
             <div class="addr-opt-icon">✏️</div>
             <div class="addr-opt-lbl">Manual</div>
           </div>
         </div>
         <div id="addrGpsPanel" style="display:none">
-          <button class="btn-sec" style="margin-top:0;margin-bottom:8px;padding:11px" onclick="getGPS()">📍 Obtener ubicación actual</button>
           <div id="addrGpsResult" class="addr-result"></div>
-        </div>
-        <div id="addrSearchPanel" style="display:none">
-          <input class="fi" id="addrSearchInput" type="text" placeholder="Buscar dirección en Perú..."
-            autocomplete="off" oninput="onAddrSearch(this.value)" style="margin-bottom:6px">
-          <div id="addrSuggestions" class="addr-suggestions"></div>
         </div>
         <div id="addrManualPanel" style="display:none">
           <textarea class="fi" id="addrManualInput" rows="2"
