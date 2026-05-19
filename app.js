@@ -1557,6 +1557,7 @@ function _scanTick() {
 function handleQR(data){
   closeQR();
   if (typeof goPage === 'function') goPage('envios');
+  _filt = ''; renderChips();
   const el = $('fSearch');
   if (!el) return;
   el.value = data;
