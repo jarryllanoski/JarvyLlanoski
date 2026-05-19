@@ -1118,6 +1118,21 @@ async function submitOrder(){
   else                { $('err_agency')&&$('err_agency').classList.remove('show'); }
   if(!selDateIso)     { $('err_date')&&$('err_date').classList.add('show'); ok=false; }
   else                { $('err_date')&&$('err_date').classList.remove('show'); }
+
+  /* Delivery address validation */
+  let deliveryAddress='';
+  let referencia='';
+  if(selCourierType==='delivery'){
+    if(_addrMode==='manual'){
+      deliveryAddress=($('addrManualInput')||{value:''}).value.trim();
+    } else {
+      deliveryAddress=_deliveryAddr;
+    }
+    referencia=($('f_ref')||{value:''}).value.trim();
+    if(!deliveryAddress){ $('err_deliveryAddr')&&$('err_deliveryAddr').classList.add('show'); ok=false; }
+    else                { $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show'); }
+  }
+
   if(!ok) return;
 
   let fullNotes = s1.notes||'';
@@ -1134,7 +1149,8 @@ async function submitOrder(){
     id:             orderId,
     name:           s1.name||'',
     phone:          s1.phone||'',
-    address:        s1.address||'',
+    address:        deliveryAddress,
+    referencia:     referencia,
     courier:        selCourierName,
     date:           selDateIso,
     status:         'Nuevo pedido',
