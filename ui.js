@@ -103,7 +103,7 @@ function loadCfgUI() {
       </div>
       <span class="cfl-icon">🚚</span>
       <span class="cfl-name" style="${isActive ? '' : 'opacity:.35'}">${c}</span>
-      <span onclick="toggleCourierType('${c.replace(/'/g, "\\'")}',${i})" title="Tipo: ${ctype === 'agencia' ? 'Agencia (retiro)' : 'Delivery (domicilio)'}" style="font-size:9px;font-weight:700;cursor:pointer;padding:1px 6px;border-radius:4px;border:1px solid ${ctype === 'agencia' ? 'rgba(163,113,247,.5)' : 'rgba(56,139,253,.4)'};color:${ctype === 'agencia' ? 'var(--purple)' : 'var(--blue)'};background:${ctype === 'agencia' ? 'rgba(163,113,247,.08)' : 'rgba(56,139,253,.08)'};flex-shrink:0">${ctype === 'agencia' ? '🏢 AGENCIA' : '🏠 DELIVERY'}</span>
+      ${!isFixed ? `<span onclick="toggleCourierType('${c.replace(/'/g, "\\'")}',${i})" title="Tipo: ${ctype === 'agencia' ? 'Agencia (retiro)' : 'Delivery (domicilio)'}" style="font-size:9px;font-weight:700;cursor:pointer;padding:1px 6px;border-radius:4px;border:1px solid ${ctype === 'agencia' ? 'rgba(163,113,247,.5)' : 'rgba(56,139,253,.4)'};color:${ctype === 'agencia' ? 'var(--purple)' : 'var(--blue)'};background:${ctype === 'agencia' ? 'rgba(163,113,247,.08)' : 'rgba(56,139,253,.08)'};flex-shrink:0">${ctype === 'agencia' ? '🏢 AGENCIA' : '🏠 DELIVERY'}</span>` : ''}
       ${isFixed ? `<span class="cfl-fixed-badge">Fijo</span>` : ''}
       ${!isActive ? `<span style="font-size:9px;color:var(--text2);background:var(--bg2);padding:1px 6px;border-radius:8px;border:1px solid var(--bd)">Oculto</span>` : ''}
       <div class="cfl-actions">
