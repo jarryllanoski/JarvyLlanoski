@@ -580,7 +580,7 @@ async function loadCfg(){
   try{
     const doc = await fsGet(`ws/${wsId}`);
     CFG       = fsDocToObj(doc);
-    renderStep1();
+    renderForm();
   }catch(e){
     setApp(`<div class="unconf"><div class="unconf-icon">❌</div><div class="unconf-ttl">Error al cargar</div><div class="unconf-sub">${esc(e.message)}</div><button class="btn-sec" onclick="loadCfg()" style="margin-top:16px">🔄 Reintentar</button></div>`);
   }
