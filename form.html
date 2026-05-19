@@ -1302,8 +1302,11 @@ function renderSuccessStep(order, trackCode){
         <div class="summary-rows">
           <div class="sum-row"><span class="sum-lbl">Cliente</span><span class="sum-val">${esc(order.name)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Teléfono</span><span class="sum-val">+51 ${esc(order.phone)}</span></div>
-          <div class="sum-row"><span class="sum-lbl">Dirección</span><span class="sum-val">${esc(order.address)}</span></div>
+          ${order.address?`<div class="sum-row"><span class="sum-lbl">Dirección</span><span class="sum-val">${esc(order.address)}</span></div>`:''}
           ${order.referencia?`<div class="sum-row"><span class="sum-lbl">Referencia</span><span class="sum-val">${esc(order.referencia)}</span></div>`:''}
+          ${order.ciudadDestino?`<div class="sum-row"><span class="sum-lbl">Ciudad destino</span><span class="sum-val">${esc(order.ciudadDestino)}</span></div>`:''}
+          ${order.dniDestinatario?`<div class="sum-row"><span class="sum-lbl">DNI destinatario</span><span class="sum-val">${esc(order.dniDestinatario)}</span></div>`:''}
+          ${order.dniRecoger?`<div class="sum-row"><span class="sum-lbl">DNI para recoger</span><span class="sum-val">${esc(order.dniRecoger)}</span></div>`:''}
           <div class="sum-row"><span class="sum-lbl">Courier</span><span class="sum-val">${esc(order.courier)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Fecha</span><span class="sum-val">${esc(dateLabel)}</span></div>
           ${order.notes?`<div class="sum-row"><span class="sum-lbl">Notas</span><span class="sum-val">${esc(order.notes)}</span></div>`:''}
