@@ -1004,7 +1004,7 @@ function resetAgency(){
 function setAddrMode(mode){
   _addrMode=mode;
   _deliveryAddr='';
-  ['Gps','Search','Manual'].forEach(m=>{
+  ['Gps','Manual'].forEach(m=>{
     const k=m.toLowerCase();
     const opt=$('addrOpt'+m);
     const panel=$('addr'+m+'Panel');
@@ -1012,14 +1012,11 @@ function setAddrMode(mode){
     if(panel) panel.style.display=k===mode?'block':'none';
   });
   const result=$('addrGpsResult');
-  if(result){ result.classList.remove('show'); result.textContent=''; }
-  const sugg=$('addrSuggestions');
-  if(sugg){ sugg.classList.remove('show'); sugg.innerHTML=''; }
-  const inp=$('addrSearchInput');
-  if(inp) inp.value='';
+  if(result){ result.classList.remove('show'); result.innerHTML=''; }
   const ta=$('addrManualInput');
   if(ta) ta.value='';
   $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show');
+  if(mode==='gps') getGPS();
 }
 
 function getGPS(){
