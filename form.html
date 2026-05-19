@@ -1229,6 +1229,7 @@ function renderSuccessStep(order, trackCode){
           <div class="sum-row"><span class="sum-lbl">Cliente</span><span class="sum-val">${esc(order.name)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Teléfono</span><span class="sum-val">+51 ${esc(order.phone)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Dirección</span><span class="sum-val">${esc(order.address)}</span></div>
+          ${order.referencia?`<div class="sum-row"><span class="sum-lbl">Referencia</span><span class="sum-val">${esc(order.referencia)}</span></div>`:''}
           <div class="sum-row"><span class="sum-lbl">Courier</span><span class="sum-val">${esc(order.courier)}</span></div>
           <div class="sum-row"><span class="sum-lbl">Fecha</span><span class="sum-val">${esc(dateLabel)}</span></div>
           ${order.notes?`<div class="sum-row"><span class="sum-lbl">Notas</span><span class="sum-val">${esc(order.notes)}</span></div>`:''}
