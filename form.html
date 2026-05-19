@@ -1207,8 +1207,9 @@ function renderSuccessStep(order, trackCode){
   const trackUrl = `${location.origin}${location.pathname}?ws=${wsId}&tracking=${trackCode}`;
 
   const agLine   = (selCourierType==='agencia'&&agState.addr) ? `\n🏢 Agencia: ${agState.addr}` : '';
+  const refLine  = order.referencia ? `\n📌 Referencia: ${order.referencia}` : '';
   const notesLine= order.notes ? `\n📝 Notas: ${order.notes}` : '';
-  const waMsg    = `📦 NUEVO PEDIDO — ${bizName}\n\n👤 Cliente: ${order.name}\n📞 WhatsApp: +51${order.phone}\n🏠 Dirección: ${order.address}\n🚚 Courier: ${order.courier}\n📅 Fecha: ${dateLabel}${agLine}${notesLine}\n\n🔑 Código: #${trackCode}\n🔗 Ver estado: ${trackUrl}`;
+  const waMsg    = `📦 NUEVO PEDIDO — ${bizName}\n\n👤 Cliente: ${order.name}\n📞 WhatsApp: +51${order.phone}\n🏠 Dirección: ${order.address}${refLine}\n🚚 Courier: ${order.courier}\n📅 Fecha: ${dateLabel}${agLine}${notesLine}\n\n🔑 Código: #${trackCode}\n🔗 Ver estado: ${trackUrl}`;
   const waHref   = bizPhone ? `https://wa.me/51${bizPhone}?text=${encodeURIComponent(waMsg)}` : null;
 
   const extraRows = Object.entries(order.extra||{})
