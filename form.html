@@ -1364,6 +1364,7 @@ function renderTrackResult(ship, code){
         <div class="tk-row"><span class="tk-row-lbl">Courier</span><span class="tk-row-val">${esc(ship.courier||'—')}</span></div>
         <div class="tk-row"><span class="tk-row-lbl">Fecha</span><span class="tk-row-val">${dateLabel}</span></div>
         <div class="tk-row"><span class="tk-row-lbl">Dirección</span><span class="tk-row-val">${esc(ship.address||'—')}</span></div>
+        ${ship.referencia?`<div class="tk-row"><span class="tk-row-lbl">Referencia</span><span class="tk-row-val">${esc(ship.referencia)}</span></div>`:''}
         ${ship.notes?`<div class="tk-row"><span class="tk-row-lbl">Notas</span><span class="tk-row-val">${esc(ship.notes)}</span></div>`:''}
         ${extraRows}
       </div>
