@@ -592,9 +592,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 
   <!-- Generator -->
   <div class="cfg-sec">
-    <div class="cfg-ttl">✨ Nuevo link</div>
+    <div class="cfg-ttl">✨ Link personalizado</div>
     <div class="fg">
-      <input class="fi" id="tokenLabel" placeholder="Nombre del cliente (ej. Juan Pérez)" maxlength="40" onkeydown="if(event.key==='Enter')generateToken()">
+      <input class="fi" id="tokenLabel" placeholder="Nombre del cliente (ej. Juan Pérez)" maxlength="40" autocomplete="off">
+    </div>
+    <div class="fg">
+      <input class="fi" id="tokenPhone" type="tel" inputmode="numeric" placeholder="Teléfono del cliente (opcional)" maxlength="9" pattern="[0-9]*" autocomplete="off">
     </div>
     <select class="fs" id="tokenExpiry" style="width:100%;margin-bottom:14px">
       <option value="">Sin vencimiento</option>
@@ -603,7 +606,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       <option value="7">Vence en 7 días</option>
       <option value="30">Vence en 30 días</option>
     </select>
-    <button onclick="generateToken()" style="width:100%;padding:15px;background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">🔑 Generar y compartir link</button>
+    <button onclick="generateAndCopy()" style="width:100%;padding:13px;background:var(--card2);border:1.5px solid var(--bd);border-radius:12px;color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px">📋 Solo copiar link</button>
+    <button onclick="generateAndShare()" style="width:100%;padding:15px;background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:8px">🔑 Generar y compartir link</button>
+    <button onclick="generateAndOpen()" style="width:100%;padding:13px;background:var(--card2);border:1.5px solid var(--bd);border-radius:12px;color:var(--text2);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit">↗ Abrir formulario en nueva pestaña</button>
   </div>
 
   <!-- Token list -->
