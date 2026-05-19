@@ -9,7 +9,7 @@ const FIXED_LABEL_ICONS = {'Nuevo pedido':'🆕','Faltante / pedir proveedor':'�
 
 const STATUS_MIGRATE = {'NUEVO PEDIDO':'Nuevo pedido','EN PROCESO':'Faltante / pedir proveedor','POR ALISTAR':'Por alistar','ENVIADO':'Enviado','FINALIZADO':'Finalizado','ENTREGADO':'Finalizado','PENDIENTE':'Nuevo pedido'};
 
-const FIXED_COURIERS = ['SHALOM','OLVA COURIER','MARVISUR','DINSIDES','DELIVERY','RETIRO EN TIENDA','ENCOMIENDA'];
+const FIXED_COURIERS = ['SHALOM','OLVA COURIER','MARVISUR','DELIVERY','RETIRO EN TIENDA','ENCOMIENDA'];
 
 const PERMISOS_DEF = [
   { key:'verPedidos',     label:'👁️ Ver pedidos de clientes',  desc:'Ver tarjetas y detalles' },
