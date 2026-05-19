@@ -402,7 +402,7 @@ function cardHTML(s) {
       <span class="meta">📅 ${s.date||'—'}</span>
       ${s.cost?`<span class="meta">💰 S/ ${s.cost}</span>`:''}
     </div>
-    <div class="card-addr">🏠 ${s.address}</div>
+    <div class="card-addr">🏠 ${mapsLink(s.address)}</div>
     ${s.notes?`<div class="card-note">📝 ${s.notes}</div>`:''}
     ${cardDocs(s, gChk, eChk, cChk)}
     ${(m1||m2)?`<div class="card-msgs">
