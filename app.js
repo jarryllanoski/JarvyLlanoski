@@ -410,7 +410,7 @@ function cardHTML(s) {
       <span class="meta">📅 ${s.date||'—'}</span>
       ${s.cost?`<span class="meta">💰 S/ ${s.cost}</span>`:''}
     </div>
-    <div class="card-addr">🏠 ${mapsLink(s.address, s.gpsCoords)}</div>
+    <div class="card-addr">🏠 ${_isDeliveryCourier(s.courier) ? mapsLink(s.address, s.gpsCoords) : (s.address||'')}</div>
     ${s.notes?`<div class="card-note">📝 ${s.notes}</div>`:''}
     ${cardDocs(s, gChk, eChk, cChk)}
     ${(m1||m2)?`<div class="card-msgs">
