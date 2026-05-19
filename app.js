@@ -1565,7 +1565,7 @@ function handleQR(data){
   const match = S.shipments.find(x => x.phone.replace(/\D/g,'').includes(phone) || phone.includes(x.phone.replace(/\D/g,'')));
   if (match) {
     setTimeout(() => {
-      const card = document.querySelector('#shipArea .card');
+      const card = document.querySelector('#cardsArea .card');
       if (card) card.scrollIntoView({ behavior:'smooth', block:'center' });
     }, 150);
     toast(`✅ Cliente encontrado: ${match.name}`);
