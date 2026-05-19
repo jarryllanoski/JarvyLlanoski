@@ -604,24 +604,28 @@ function headerHtml(){
   return `<div class="biz-header"><div class="biz-name">${esc(bizName)}</div>${bizCity?`<div class="biz-city">📍 ${esc(bizCity)}</div>`:''}</div>`;
 }
 
-/* ─── DOTS HTML ─────────────────────────────────────────────────── */
-function dotsHtml(step){
-  return `<div class="prog-dots">
-    <div class="pdot ${step>=1?(step>1?'done':'active'):''}"></div>
-    <div class="pdot ${step>=2?(step>2?'done':'active'):''}"></div>
-  </div>`;
+/* ─── FORM (single step) ─────────────────────────────────────────── */
+function _courierLabel(name, type){
+  if(type==='agencia') return `Retiro en agencia ${name}`;
+  const u=(name||'').toUpperCase();
+  if(u.includes('RETIRO')) return 'Retiro en tienda';
+  return name;
 }
 
-/* ─── STEP 1: TUS DATOS ─────────────────────────────────────────── */
-function renderStep1(back){
+function renderForm(){
   clearTrackRefresh();
-  curStep = 1;
-  const extraF = ((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
+  _knownClient=null; _deliveryAddr=''; _addrMode='';
+  const extraF   = ((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
+  const couriers = (CFG.couriers||[]);
+  const cAct     = CFG.courierActive||{};
+  const cTypes   = CFG.courierTypes||{};
+  const dispatch = CFG.dispatch||{};
+  const active   = couriers.filter(c=>cAct[c]!==false);
 
   const extraHtml = extraF.map(f=>{
-    const fname = typeof f==='string' ? f : (f.name||'');
-    const isReq = typeof f==='object' && !!f.required;
-    const eid   = 'ex_'+fname.replace(/\W/g,'_');
+    const fname=typeof f==='string'?f:(f.name||'');
+    const isReq=typeof f==='object'&&!!f.required;
+    const eid='ex_'+fname.replace(/\W/g,'_');
     return `<div class="fg">
       <input class="fi" id="${esc(eid)}" data-extra="${esc(fname)}" data-req="${isReq?'1':'0'}"
         placeholder="${esc(fname)}${isReq?' *':''}" autocomplete="off">
@@ -629,213 +633,209 @@ function renderStep1(back){
     </div>`;
   }).join('');
 
+  const courierOpts = active.length
+    ? '<option value="">— ¿Cómo quieres recibir? —</option>'+active.map(c=>{
+        const t=cTypes[c]||'delivery';
+        return `<option value="${esc(c)}">${esc(_courierLabel(c,t))}</option>`;
+      }).join('')
+    : '<option value="">Sin couriers configurados</option>';
+
+  const datesChips=buildDatesChips(dispatch);
+
   setApp(`
     ${headerHtml()}
-    ${dotsHtml(1)}
-    <div class="wizard">
-      <div class="wstep active${back?' back':''}">
-        <div class="step-head">
-          <div class="step-ttl">Tus datos</div>
-          <div class="step-sub">Cuéntanos dónde enviar tu pedido</div>
-        </div>
-        <div class="fg">
-          <input class="fi" id="f_name" type="text" placeholder="Nombre completo *" autocomplete="name">
-          <div class="ferr" id="err_name">Ingresa tu nombre completo</div>
-        </div>
-        <div class="fg">
-          <input class="fi" id="f_phone" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Número WhatsApp *" maxlength="9" autocomplete="tel">
-          <div class="ferr" id="err_phone">Ingresa un número de 9 dígitos</div>
-        </div>
-        ${extraHtml}
-        <div class="fg">
-          <textarea class="fi" id="f_notes" rows="2" placeholder="Notas u observaciones (opcional)"></textarea>
-        </div>
-        <button class="btn-main" onclick="goStep2()">Continuar →</button>
+    <div style="padding-bottom:12px">
+      <div class="fg">
+        <input class="fi" id="f_name" type="text" placeholder="Nombre completo *" autocomplete="name">
+        <div class="ferr" id="err_name">Ingresa tu nombre completo</div>
       </div>
+      <div class="fg">
+        <input class="fi" id="f_phone" type="tel" inputmode="numeric" pattern="[0-9]*"
+          placeholder="Número WhatsApp *" maxlength="9" autocomplete="tel"
+          oninput="onPhoneInput(this.value)">
+        <div class="ferr" id="err_phone">Ingresa un número de 9 dígitos</div>
+        <div id="knownBadge" style="display:none;margin-top:8px"></div>
+      </div>
+      ${extraHtml}
+
+      <div class="section-ttl" style="margin-top:4px">¿Cómo quieres recibir tu pedido? *</div>
+      <div class="fg">
+        <select class="fi sel" id="f_courier" onchange="onCourierChange(this.value)">
+          ${courierOpts}
+        </select>
+        <div class="ferr" id="err_courier">Selecciona cómo recibir tu pedido</div>
+      </div>
+
+      <div id="agencyBox" style="display:none"></div>
+
+      <div id="deliveryAddrBox" style="display:none;margin-top:4px">
+        <div class="section-ttl">📍 Dirección de entrega *</div>
+        <div id="addrShortcut" style="display:none"></div>
+        <div id="addrOpts" class="addr-opts">
+          <div class="addr-opt" id="addrOptGps" onclick="setAddrMode('gps')">
+            <div class="addr-opt-icon">📍</div>
+            <div class="addr-opt-lbl">Mi ubicación</div>
+          </div>
+          <div class="addr-opt" id="addrOptSearch" onclick="setAddrMode('search')">
+            <div class="addr-opt-icon">🔍</div>
+            <div class="addr-opt-lbl">Buscar</div>
+          </div>
+          <div class="addr-opt" id="addrOptManual" onclick="setAddrMode('manual')">
+            <div class="addr-opt-icon">✏️</div>
+            <div class="addr-opt-lbl">Manual</div>
+          </div>
+        </div>
+        <div id="addrGpsPanel" style="display:none">
+          <button class="btn-sec" style="margin-top:0;margin-bottom:8px;padding:11px" onclick="getGPS()">📍 Obtener ubicación actual</button>
+          <div id="addrGpsResult" class="addr-result"></div>
+        </div>
+        <div id="addrSearchPanel" style="display:none">
+          <input class="fi" id="addrSearchInput" type="text" placeholder="Buscar dirección en Perú..."
+            autocomplete="off" oninput="onAddrSearch(this.value)" style="margin-bottom:6px">
+          <div id="addrSuggestions" class="addr-suggestions"></div>
+        </div>
+        <div id="addrManualPanel" style="display:none">
+          <textarea class="fi" id="addrManualInput" rows="2"
+            placeholder="Escribe la dirección completa *" autocomplete="street-address"></textarea>
+        </div>
+        <div class="ferr" id="err_deliveryAddr" style="margin-top:4px">Ingresa la dirección de entrega</div>
+        <div class="fg" style="margin-top:10px;margin-bottom:0">
+          <input class="fi" id="f_ref" type="text"
+            placeholder="Referencia (ej: frente al mercado, casa azul...)">
+        </div>
+      </div>
+
+      <div style="margin-top:18px">
+        <div class="section-ttl">Fecha de envío *</div>
+        <div class="dates-scroll" id="datesGrid">${datesChips}</div>
+        <div class="ferr" id="err_date" style="margin-top:6px">Selecciona una fecha</div>
+      </div>
+
+      <div class="fg" style="margin-top:16px">
+        <textarea class="fi" id="f_notes" rows="2" placeholder="Notas u observaciones (opcional)"></textarea>
+      </div>
+
+      <div id="submitErrBox" class="error-box" style="display:none;margin-top:4px"></div>
+      <button class="btn-main" id="confirmBtn" onclick="submitOrder()" style="margin-top:8px">Confirmar pedido →</button>
     </div>
     <div class="footer">Panel de Entregas · Formulario público</div>
   `);
+
+  if(!selDateIso){
+    const first=document.querySelector('.date-opt');
+    if(first) first.click();
+  } else {
+    const el=$('dopt_'+selDateIso);
+    if(el) el.classList.add('active');
+  }
 }
 
-/* ─── STEP 1 VALIDATION → GO STEP 2 ────────────────────────────── */
-function goStep2(){
-  const name  = ($('f_name')||{value:''}).value.trim();
-  const phone = ($('f_phone')||{value:''}).value.trim();
-
-  let ok = true;
-  function chk(fid,eid,bad){
-    const fe=$(fid),ee=$(eid);
-    if(bad){ fe&&fe.classList.add('err'); ee&&ee.classList.add('show'); ok=false; }
-    else    { fe&&fe.classList.remove('err'); ee&&ee.classList.remove('show'); }
+/* ─── PHONE DETECTION ────────────────────────────────────────────── */
+function onPhoneInput(val){
+  clearTimeout(_phoneTimer);
+  const phone=val.replace(/\D/g,'');
+  if(phone.length!==9){
+    _knownClient=null;
+    const b=$('knownBadge'); if(b) b.style.display='none';
+    return;
   }
-  chk('f_name',  'err_name',  !name);
-  chk('f_phone', 'err_phone', !/^\d{9}$/.test(phone));
-
-  const extraF = ((CFG&&CFG.extraFields)||[]).filter(f=>f&&f.visible!==false);
-  extraF.forEach(f=>{
-    const fname = typeof f==='string' ? f : (f.name||'');
-    const isReq = typeof f==='object' && !!f.required;
-    if(!isReq) return;
-    const eid_el = $('ex_'+fname.replace(/\W/g,'_'));
-    const eid_err = $('exerr_'+fname.replace(/\W/g,'_'));
-    if(eid_el && !eid_el.value.trim()){
-      eid_el.classList.add('err');
-      eid_err&&eid_err.classList.add('show');
-      ok=false;
-    } else if(eid_el){
-      eid_el.classList.remove('err');
-      eid_err&&eid_err.classList.remove('show');
+  _phoneTimer=setTimeout(()=>{
+    const all=(CFG&&CFG.s)||[];
+    const matches=all.filter(x=>x.phone&&x.phone.replace(/\D/g,'')===phone);
+    if(matches.length){
+      matches.sort((a,b)=>((b.createdAt||'')>(a.createdAt||'')?1:-1));
+      _knownClient=matches[0];
+      _showKnownBadge();
+    } else {
+      _knownClient=null;
+      const b=$('knownBadge'); if(b) b.style.display='none';
     }
-  });
+  },500);
+}
 
-  if(!ok) return;
+function _showKnownBadge(){
+  const badge=$('knownBadge');
+  if(!badge||!_knownClient) return;
+  const first=(_knownClient.name||'').split(' ')[0];
+  badge.style.display='block';
+  badge.innerHTML=`<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--green)">🌟 ¡Te conocemos, ${esc(first)}!</div>`;
+  const nameEl=$('f_name');
+  if(nameEl&&!nameEl.value.trim()) nameEl.value=_knownClient.name||'';
+  _updateKnownAddrShortcut();
+}
 
-  /* Stash step1 values */
-  window._s1 = {
-    name, phone,
-    notes: ($('f_notes')||{value:''}).value.trim(),
-    extra: collectExtra(),
-  };
-  renderStep2();
+/* ─── COURIER SELECTION ─────────────────────────────────────────── */
+function onCourierChange(name){
+  const cTypes=(CFG&&CFG.courierTypes)||{};
+  const type=name?(cTypes[name]||'delivery'):'';
+  selCourierName=name;
+  selCourierType=type;
+  $('err_courier')&&$('err_courier').classList.remove('show');
+  _deliveryAddr=''; _addrMode='';
+  const agBox=$('agencyBox');
+  const addrBox=$('deliveryAddrBox');
+  if(type==='agencia'){
+    if(agBox){agBox.style.display='block';renderAgencyBox(name);}
+    if(addrBox) addrBox.style.display='none';
+  } else if(type==='delivery'){
+    if(agBox){agBox.style.display='none';resetAgency();}
+    if(addrBox) addrBox.style.display='block';
+    _updateKnownAddrShortcut();
+  } else {
+    if(agBox){agBox.style.display='none';resetAgency();}
+    if(addrBox) addrBox.style.display='none';
+  }
+}
+
+function _updateKnownAddrShortcut(){
+  const shortcut=$('addrShortcut');
+  const opts=$('addrOpts');
+  if(!shortcut) return;
+  if(_knownClient&&_knownClient.address&&selCourierType==='delivery'){
+    shortcut.style.display='block';
+    shortcut.innerHTML=`<button class="btn-sec" style="margin-top:0;margin-bottom:10px;text-align:left;padding:12px 14px;font-size:13px;line-height:1.5" onclick="useKnownAddress()">✅ Usar mi dirección anterior:<br><span style="color:var(--text2);font-weight:400">${esc(_knownClient.address)}</span></button>
+    <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">O elige otra</div>`;
+    if(opts) opts.style.display='';
+  } else {
+    shortcut.style.display='none';
+    if(opts) opts.style.display='';
+  }
+}
+
+function useKnownAddress(){
+  if(!_knownClient||!_knownClient.address) return;
+  _deliveryAddr=_knownClient.address;
+  _addrMode='known';
+  const shortcut=$('addrShortcut');
+  if(shortcut) shortcut.style.display='none';
+  const opts=$('addrOpts');
+  if(opts) opts.style.display='none';
+  ['addrGpsPanel','addrSearchPanel','addrManualPanel'].forEach(id=>{const e=$(id);if(e)e.style.display='none';});
+  let confirmed=$('addrConfirmed');
+  if(!confirmed){
+    confirmed=document.createElement('div');
+    confirmed.id='addrConfirmed';
+    const errDiv=$('err_deliveryAddr');
+    const addrBox=$('deliveryAddrBox');
+    if(addrBox&&errDiv) addrBox.insertBefore(confirmed,errDiv);
+  }
+  confirmed.innerHTML=`<div class="addr-result show" style="display:block">📍 ${esc(_deliveryAddr)}</div><button class="btn-sec" style="margin-top:6px;padding:10px;font-size:13px" onclick="changeAddress()">✏️ Cambiar dirección</button>`;
+  $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show');
+}
+
+function changeAddress(){
+  _deliveryAddr=''; _addrMode='';
+  const confirmed=$('addrConfirmed');
+  if(confirmed) confirmed.innerHTML='';
+  const opts=$('addrOpts');
+  if(opts) opts.style.display='';
+  _updateKnownAddrShortcut();
 }
 
 function collectExtra(){
   const extra={};
-  document.querySelectorAll('[data-extra]').forEach(el=>{ extra[el.dataset.extra]=el.value.trim(); });
+  document.querySelectorAll('[data-extra]').forEach(el=>{extra[el.dataset.extra]=el.value.trim();});
   return extra;
-}
-
-/* ─── STEP 2: COURIER + DATE ────────────────────────────────────── */
-function renderStep2(){
-  curStep = 2;
-  const couriers  = (CFG.couriers||[]);
-  const cAct      = CFG.courierActive||{};
-  const cTypes    = CFG.courierTypes||{};
-  const dispatch  = CFG.dispatch||{};
-  const active    = couriers.filter(c=>cAct[c]!==false);
-
-  const courierGrid = active.length
-    ? active.map(c=>{
-        const t  = cTypes[c]||'delivery';
-        const em = courierEmoji(c,t);
-        return `<div class="c-opt" id="copt_${esc(c)}" onclick="selCourier('${c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}','${t}')">
-          <div class="c-icon">${em}</div>
-          <div class="c-name">${esc(c)}</div>
-        </div>`;
-      }).join('')
-    : '<div style="color:var(--text2);font-size:13px;grid-column:1/-1">No hay couriers configurados</div>';
-
-  const datesChips = buildDatesChips(dispatch);
-
-  setApp(`
-    ${headerHtml()}
-    ${dotsHtml(2)}
-    <div class="wizard">
-      <div class="wstep active">
-        <div class="step-head">
-          <div class="step-ttl">¿Cómo enviamos?</div>
-          <div class="step-sub">Elige courier y fecha de envío</div>
-        </div>
-
-        <div class="section-ttl">Courier</div>
-        <div class="courier-grid">${courierGrid}</div>
-        <div class="ferr" id="err_courier" style="margin-bottom:8px">Selecciona un courier</div>
-
-        <div id="agencyBox" style="display:none"></div>
-
-        <div id="deliveryAddrBox" style="display:none;margin-top:14px">
-          <div class="section-ttl">📍 Dirección de entrega</div>
-          <div class="addr-opts">
-            <div class="addr-opt" id="addrOptGps" onclick="setAddrMode('gps')">
-              <div class="addr-opt-icon">📍</div>
-              <div class="addr-opt-lbl">Mi ubicación</div>
-            </div>
-            <div class="addr-opt" id="addrOptSearch" onclick="setAddrMode('search')">
-              <div class="addr-opt-icon">🔍</div>
-              <div class="addr-opt-lbl">Buscar</div>
-            </div>
-            <div class="addr-opt" id="addrOptManual" onclick="setAddrMode('manual')">
-              <div class="addr-opt-icon">✏️</div>
-              <div class="addr-opt-lbl">Manual</div>
-            </div>
-          </div>
-          <div id="addrGpsPanel" style="display:none">
-            <button class="btn-sec" style="margin-top:0;margin-bottom:8px;padding:11px" onclick="getGPS()">📍 Obtener ubicación actual</button>
-            <div id="addrGpsResult" class="addr-result"></div>
-          </div>
-          <div id="addrSearchPanel" style="display:none">
-            <input class="fi" id="addrSearchInput" type="text" placeholder="Buscar dirección en Perú..." autocomplete="off" oninput="onAddrSearch(this.value)" style="margin-bottom:6px">
-            <div id="addrSuggestions" class="addr-suggestions"></div>
-          </div>
-          <div id="addrManualPanel" style="display:none">
-            <textarea class="fi" id="addrManualInput" rows="2" placeholder="Escribe la dirección completa *" autocomplete="street-address"></textarea>
-          </div>
-          <div class="ferr" id="err_deliveryAddr" style="margin-top:4px">Ingresa la dirección de entrega</div>
-          <div class="fg" style="margin-top:10px;margin-bottom:0">
-            <input class="fi" id="f_ref" type="text" placeholder="Referencia (ej: frente al mercado, casa azul...)">
-          </div>
-        </div>
-
-        <div style="margin-top:18px">
-          <div class="section-ttl">Fecha de envío</div>
-          <div class="dates-scroll" id="datesGrid">${datesChips}</div>
-          <div class="ferr" id="err_date" style="margin-top:6px">Selecciona una fecha</div>
-        </div>
-
-        <div id="submitErrBox" class="error-box" style="display:none;margin-top:14px"></div>
-        <button class="btn-main" id="confirmBtn" onclick="submitOrder()" style="margin-top:20px">Confirmar pedido →</button>
-        <button class="btn-sec" onclick="renderStep1(true)">← Atrás</button>
-      </div>
-    </div>
-    <div class="footer">Panel de Entregas · Formulario público</div>
-  `);
-
-  /* Restore prior selection */
-  if(selCourierName){
-    const el = $('copt_'+selCourierName);
-    if(el) el.classList.add('active');
-    if(selCourierType==='agencia'){
-      renderAgencyBox(selCourierName);
-    } else if(selCourierType==='delivery'){
-      const addrBox = $('deliveryAddrBox');
-      if(addrBox) addrBox.style.display='block';
-      if(_addrMode) setAddrMode(_addrMode);
-    }
-  }
-
-  /* Auto-select first date if none selected */
-  if(!selDateIso){
-    const first = document.querySelector('.date-opt');
-    if(first) first.click();
-  } else {
-    const el = $('dopt_'+selDateIso);
-    if(el) el.classList.add('active');
-  }
-}
-
-/* ─── COURIER SELECTION ─────────────────────────────────────────── */
-function selCourier(name, type){
-  selCourierName = name;
-  selCourierType = type;
-  document.querySelectorAll('.c-opt').forEach(el=>el.classList.remove('active'));
-  const el = $('copt_'+name);
-  if(el) el.classList.add('active');
-  $('err_courier')&&$('err_courier').classList.remove('show');
-
-  const agBox   = $('agencyBox');
-  const addrBox = $('deliveryAddrBox');
-  if(type==='agencia'){
-    if(agBox)   { agBox.style.display='block'; renderAgencyBox(name); }
-    if(addrBox) addrBox.style.display='none';
-    _deliveryAddr=''; _addrMode='';
-  } else if(type==='delivery'){
-    if(agBox)   { agBox.style.display='none'; resetAgency(); }
-    if(addrBox) addrBox.style.display='block';
-  } else {
-    if(agBox)   { agBox.style.display='none'; resetAgency(); }
-    if(addrBox) addrBox.style.display='none';
-    _deliveryAddr=''; _addrMode='';
-  }
 }
 
 function renderAgencyBox(courierName){
