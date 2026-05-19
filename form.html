@@ -904,6 +904,11 @@ function renderAgencyBox(courierName){
       ${agState.addr?`<div class="sel-badge">🏢 <span>${esc(agState.addr)}</span><button class="clr-btn" onclick="resetAgencySelection()">✕</button></div>`:''}
     </div>
     <div class="ferr" id="err_agency" style="margin-top:6px">Selecciona una agencia</div>
+    <div class="fg" style="margin-top:14px;margin-bottom:0">
+      <input class="fi" id="f_dni_recoger" type="text" inputmode="numeric"
+        placeholder="🪪 DNI para recoger *" maxlength="8" pattern="[0-9]*">
+      <div class="ferr" id="err_dni_recoger">Ingresa el DNI (8 dígitos)</div>
+    </div>
   </div>`;
 }
 
