@@ -606,8 +606,10 @@ function headerHtml(){
 
 /* ─── FORM (single step) ─────────────────────────────────────────── */
 function _courierLabel(name, type){
-  if(type==='agencia') return `Retiro en agencia ${name}`;
   const u=(name||'').toUpperCase();
+  const isKnownAgency=['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n));
+  if(type==='agencia'||isKnownAgency) return `Retiro en agencia ${name}`;
+  if(u.includes('ENCOMIENDA')) return `Encomienda – ${name}`;
   if(u.includes('RETIRO')) return 'Retiro en tienda';
   return name;
 }
