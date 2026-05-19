@@ -404,7 +404,7 @@ function cardHTML(s) {
       <span class="meta">📅 ${s.date||'—'}</span>
       ${s.cost?`<span class="meta">💰 S/ ${s.cost}</span>`:''}
     </div>
-    <div class="card-addr">🏠 ${mapsLink(s.address)}</div>
+    <div class="card-addr">🏠 ${mapsLink(s.address, s.gpsCoords)}</div>
     ${s.notes?`<div class="card-note">📝 ${s.notes}</div>`:''}
     ${cardDocs(s, gChk, eChk, cChk)}
     ${(m1||m2)?`<div class="card-msgs">
@@ -2277,7 +2277,7 @@ function renderRouteList() {
       <div class="route-num" style="${done ? 'background:var(--green)' : ''}">${done ? '✓' : i + 1}</div>
       <div class="route-info">
         <div class="route-name">${s.name}</div>
-        <div class="route-addr">🏠 ${mapsLink(s.address)}</div>
+        <div class="route-addr">🏠 ${mapsLink(s.address, s.gpsCoords)}</div>
         <div style="font-size:11px;color:var(--text2)">📞 ${s.phone}</div>
         ${done ? `<div style="font-size:11px;color:var(--green);margin-top:3px">✅ Recibió: ${proof.receivedBy || '—'}</div>` : ''}
       </div>
@@ -2290,7 +2290,7 @@ function startDelivery(id) {
   _routeDelivId = id;
   const s = S.shipments.find(x => x.id === id); if (!s) return;
   $('deliveryClientName').textContent = s.name;
-  $('deliveryClientAddr').innerHTML = '🏠 ' + mapsLink(s.address);
+  $('deliveryClientAddr').innerHTML = '🏠 ' + mapsLink(s.address, s.gpsCoords);
   $('deliveryReceivedBy').value = '';
   const prev = $('deliveryPhotoPrev');
   if (prev) { prev.innerHTML = `<button class="btn-sec" onclick="$('deliveryPhotoInput').click()" style="flex:1">📷 Tomar foto</button>`; delete prev.dataset.photo; }
