@@ -1019,38 +1019,64 @@ function setAddrMode(mode){
   if(mode==='gps') getGPS();
 }
 
+function _parseNominatimAddr(d){
+  const a=d.address||{};
+  const parts=[];
+  const road=a.road||a.pedestrian||a.footway||a.path||'';
+  const num=a.house_number||'';
+  if(road) parts.push(road+(num?' '+num:''));
+  const neigh=a.suburb||a.neighbourhood||a.city_district||a.quarter||'';
+  if(neigh) parts.push(neigh);
+  const city=a.city||a.town||a.village||a.municipality||'';
+  if(city&&city!==neigh) parts.push(city);
+  return parts.join(', ')||d.display_name||'';
+}
+
 function getGPS(){
-  const panel=$('addrGpsPanel');
-  const btn=panel&&panel.querySelector('.btn-sec');
   const result=$('addrGpsResult');
-  if(btn){ btn.disabled=true; btn.textContent='Localizando...'; }
-  if(result){ result.classList.remove('show'); result.textContent=''; }
+  if(result){ result.classList.add('show'); result.innerHTML='<span style="color:var(--text2)">📡 Obteniendo ubicación...</span>'; }
   if(!navigator.geolocation){
-    if(btn){ btn.disabled=false; btn.textContent='📍 Obtener ubicación actual'; }
-    if(result){ result.classList.add('show'); result.textContent='⚠️ Tu navegador no soporta GPS'; }
+    if(result) result.innerHTML='⚠️ Tu navegador no soporta GPS. Usa el modo Manual.';
     return;
   }
   navigator.geolocation.getCurrentPosition(
     async pos=>{
       const {latitude:lat,longitude:lon}=pos.coords;
+      let addrText='';
       try{
         const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`);
         const d=await r.json();
-        _deliveryAddr=d.display_name||`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        addrText=_parseNominatimAddr(d)||`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
       }catch(e){
-        _deliveryAddr=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        addrText=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
       }
-      if(result){ result.classList.add('show'); result.textContent='📍 '+_deliveryAddr; }
-      if(btn){ btn.disabled=false; btn.textContent='📍 Obtener ubicación actual'; }
+      _deliveryAddr=addrText;
+      _addrMode='gps';
+      const mapsUrl=`https://maps.google.com/?q=${lat},${lon}`;
+      if(result){
+        result.classList.add('show');
+        result.innerHTML=`📍 ${esc(addrText)}<div style="margin-top:8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <a href="${mapsUrl}" target="_blank" rel="noopener" style="font-size:12px;color:var(--blue);text-decoration:none">🗺️ Ver en Google Maps</a>
+          <button onclick="editGpsAddr()" style="background:none;border:none;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;padding:0;text-decoration:underline">✏️ Editar dirección</button>
+        </div>`;
+      }
       $('err_deliveryAddr')&&$('err_deliveryAddr').classList.remove('show');
     },
     err=>{
-      if(btn){ btn.disabled=false; btn.textContent='📍 Obtener ubicación actual'; }
-      const msg=err.code===1?'⚠️ Permiso denegado. Activa la ubicación en tu navegador.':'⚠️ No se pudo obtener la ubicación.';
-      if(result){ result.classList.add('show'); result.textContent=msg; }
+      const msg=err.code===1
+        ?'⚠️ Permiso denegado. Activa la ubicación en tu navegador, luego vuelve a intentar.'
+        :'⚠️ No se pudo obtener la ubicación. Intenta con modo Manual.';
+      if(result) result.innerHTML=msg+`<br><button onclick="setAddrMode('manual')" style="background:none;border:none;font-size:12px;color:var(--blue);cursor:pointer;font-family:inherit;padding:0;margin-top:6px;text-decoration:underline">Ir a modo manual →</button>`;
     },
-    {enableHighAccuracy:true,timeout:10000}
+    {enableHighAccuracy:true,timeout:15000}
   );
+}
+
+function editGpsAddr(){
+  const ta=$('addrManualInput');
+  if(ta) ta.value=_deliveryAddr;
+  _deliveryAddr='';
+  setAddrMode('manual');
 }
 
 function onAddrSearch(val){
