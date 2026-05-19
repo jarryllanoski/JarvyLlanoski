@@ -793,7 +793,13 @@ function renderStep2(){
   if(selCourierName){
     const el = $('copt_'+selCourierName);
     if(el) el.classList.add('active');
-    if(selCourierType==='agencia') renderAgencyBox(selCourierName);
+    if(selCourierType==='agencia'){
+      renderAgencyBox(selCourierName);
+    } else if(selCourierType==='delivery'){
+      const addrBox = $('deliveryAddrBox');
+      if(addrBox) addrBox.style.display='block';
+      if(_addrMode) setAddrMode(_addrMode);
+    }
   }
 
   /* Auto-select first date if none selected */
