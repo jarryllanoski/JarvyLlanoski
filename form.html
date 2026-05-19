@@ -1489,7 +1489,7 @@ function clearOrderAndReset(){
   history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
   selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
   agState={dept:'',prov:'',dist:'',addr:''};
-  _deliveryAddr=''; _addrMode=''; _knownClient=null;
+  _deliveryAddr=''; _addrMode=''; _knownClient=null; _gpsLat=null; _gpsLon=null;
   renderForm();
 }
 
@@ -1499,7 +1499,7 @@ function nuevoRegistro(){
   history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
   selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
   agState={dept:'',prov:'',dist:'',addr:''};
-  _deliveryAddr=''; _addrMode=''; _knownClient=null;
+  _deliveryAddr=''; _addrMode=''; _knownClient=null; _gpsLat=null; _gpsLon=null;
   renderForm();
 }
 
