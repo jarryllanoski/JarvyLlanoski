@@ -69,6 +69,11 @@ function save() {
 function statusPrio(st)  { return FIXED_LABELS.indexOf(st); }
 function allStatuses()   { return S.labels; }
 function stIcon(st)      { return FIXED_LABEL_ICONS[st] || '🏷️'; }
+function mapsLink(addr) {
+  if (!addr) return '';
+  const url = 'https://maps.google.com/?q=' + encodeURIComponent(addr);
+  return `<a href="${url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" title="Abrir en Google Maps">${addr} 🗺️</a>`;
+}
 function stClass(st) {
   if (st==='Nuevo pedido'||st==='Faltante / pedir proveedor'||st==='Pendiente de pago') return 'st-pend';
   if (st==='Por alistar'||st==='Alistado'||st==='Enviado') return 'st-env';
