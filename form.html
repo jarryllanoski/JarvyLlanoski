@@ -558,6 +558,8 @@ async function checkToken(tok){
     }
     /* Valid — show form */
     currentToken = tok;
+    if(data.prefillName)  _prefillName  = data.prefillName;
+    if(data.prefillPhone) _prefillPhone = data.prefillPhone;
     loadCfg();
   }catch(e){
     /* 404 or network error */
