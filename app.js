@@ -42,6 +42,10 @@ S.labels = S.labels.filter(l => !OLD_FIXED.includes(l) && !FIXED_LABELS.includes
 const _initCustom = S.labels.slice();
 S.labels = [...FIXED_LABELS, ..._initCustom];
 FIXED_COURIERS.forEach(c => { if (!S.couriers.includes(c)) S.couriers.unshift(c); });
+// Remove DINSIDES permanently
+S.couriers = S.couriers.filter(c => c !== 'DINSIDES');
+delete (S.courierActive || {})['DINSIDES'];
+delete (S.courierTypes  || {})['DINSIDES'];
 
 // Migrate employees from string[] to object[]
 if (S.employees.length && typeof S.employees[0] === 'string') {
