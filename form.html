@@ -1078,7 +1078,7 @@ function getGPS(){
 function editGpsAddr(){
   const ta=$('addrManualInput');
   if(ta) ta.value=_deliveryAddr;
-  _deliveryAddr='';
+  _deliveryAddr=''; _gpsLat=null; _gpsLon=null;
   setAddrMode('manual');
 }
 
