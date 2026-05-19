@@ -1042,19 +1042,27 @@ function generateToken(){
     clientName: null, orderId: null, trackCode: null,
   };
   db.collection('ws').doc(wsId).collection('tokens').doc(tok).set(data)
-    .then(() => {
+    .then(async () => {
       const url = _tokenUrl(tok);
-      navigator.clipboard.writeText(url).then(()=>{}).catch(()=>{});
-      toast(label ? `✅ Link para ${label} — copiado` : '✅ Link generado y copiado');
       const lbl = $('tokenLabel'); if (lbl) lbl.value = '';
       renderTokenList();
+      await _shareLink(url, label ? `Link de pedido — ${label}` : 'Link de pedido');
     })
     .catch(e => toast('⚠️ Error: ' + e.message));
 }
 
-function copyToken(tokenId){
+async function _shareLink(url, title) {
+  if (navigator.share) {
+    try { await navigator.share({ title: title || 'Link de pedido', url }); return; }
+    catch(e) { if (e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); } catch(e) {}
+  toast('📋 Link copiado');
+}
+
+async function copyToken(tokenId, label){
   const url = _tokenUrl(tokenId);
-  navigator.clipboard.writeText(url).then(()=>toast('📋 Link copiado')).catch(()=>{});
+  await _shareLink(url, label ? `Link para ${label}` : 'Link de pedido');
 }
 
 function shareTokenWA(tokenId, label){
