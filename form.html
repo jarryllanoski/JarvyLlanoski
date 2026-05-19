@@ -1398,9 +1398,8 @@ function clearOrderAndReset(){
   history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
   selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
   agState={dept:'',prov:'',dist:'',addr:''};
-  _deliveryAddr=''; _addrMode='';
-  window._s1=null;
-  renderStep1();
+  _deliveryAddr=''; _addrMode=''; _knownClient=null;
+  renderForm();
 }
 
 function nuevoRegistro(){
@@ -1409,9 +1408,8 @@ function nuevoRegistro(){
   history.replaceState(null,'',`${location.pathname}?ws=${wsId}`);
   selCourierName=''; selCourierType=''; selDateIso=''; selDateLbl='';
   agState={dept:'',prov:'',dist:'',addr:''};
-  _deliveryAddr=''; _addrMode='';
-  window._s1=null;
-  renderStep1();
+  _deliveryAddr=''; _addrMode=''; _knownClient=null;
+  renderForm();
 }
 
 /* ─── EXPOSE GLOBALS ────────────────────────────────────────────── */
