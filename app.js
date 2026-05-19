@@ -2296,7 +2296,7 @@ function startDelivery(id) {
   _routeDelivId = id;
   const s = S.shipments.find(x => x.id === id); if (!s) return;
   $('deliveryClientName').textContent = s.name;
-  $('deliveryClientAddr').innerHTML = '🏠 ' + mapsLink(s.address, s.gpsCoords);
+  $('deliveryClientAddr').innerHTML = '🏠 ' + (_isDeliveryCourier(s.courier) ? mapsLink(s.address, s.gpsCoords) : (s.address||''));
   $('deliveryReceivedBy').value = '';
   const prev = $('deliveryPhotoPrev');
   if (prev) { prev.innerHTML = `<button class="btn-sec" onclick="$('deliveryPhotoInput').click()" style="flex:1">📷 Tomar foto</button>`; delete prev.dataset.photo; }
