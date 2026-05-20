@@ -13,6 +13,7 @@ let _db     = null;
 let _wsId   = null;
 let _unsubs = [];
 let _timer  = null;
+let _lastConnErr = '';  /* último error de conexión, para mostrarlo en el banner */
 
 /* ── Init ─────────────────────────────────────────────── */
 function _initDb() {
