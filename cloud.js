@@ -165,16 +165,62 @@ function cloudSync() {
 function connectCloud(wsId) {
   wsId = (wsId || '').trim().toLowerCase().replace(/\s+/g, '-');
   if (!wsId) { toast('⚠️ Ingresa un código de equipo'); return; }
-  toast('⏳ Conectando...');
-  try { _initDb(); } catch(e) { toast('⚠️ Error: ' + e.message); return; }
-  if (!_db) return;
-  _wsId = wsId;
-  S.wsId = wsId;
-  lsSet('dpanel', JSON.stringify(S));
-  try { _listen(); } catch(e) { toast('⚠️ Listener error: ' + e.message); return; }
-  _badge(true);
-  toast('☁️ Conectado: ' + wsId);
-  if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
+
+  /* Disable button to prevent double-tap */
+  const btn = document.querySelector('#cloudDisconnectedView button');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Conectando...'; }
+
+  const restore = () => { if (btn) { btn.disabled = false; btn.textContent = '☁️ Conectar'; } };
+
+  /* Init Firebase SDK */
+  try { _initDb(); } catch(e) {
+    restore();
+    toast('⚠️ Firebase error: ' + e.message);
+    return;
+  }
+  if (!_db) {
+    restore();
+    toast('⚠️ Firebase no disponible — recargá la página');
+    return;
+  }
+
+  /* Verify connection with a real Firestore read (timeout 8s) */
+  let done = false;
+  const timer = setTimeout(() => {
+    if (done) return;
+    done = true;
+    restore();
+    toast('⚠️ Tiempo agotado — revisa tu internet o el código de equipo');
+  }, 8000);
+
+  _db.collection('ws').doc(wsId).get()
+    .then(() => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      restore();
+      /* Actually connect */
+      _wsId = wsId;
+      S.wsId = wsId;
+      lsSet('dpanel', JSON.stringify(S));
+      try { _listen(); } catch(e) { toast('⚠️ Listener error: ' + e.message); return; }
+      _badge(true);
+      toast('☁️ Conectado: ' + wsId);
+      if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
+    })
+    .catch(e => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      restore();
+      const msg = e.code === 'permission-denied'
+        ? '⚠️ Sin permiso de acceso — revisa las reglas de Firestore'
+        : e.code === 'unavailable'
+        ? '⚠️ Sin internet — conéctate y vuelve a intentarlo'
+        : '⚠️ Error: ' + e.message;
+      toast(msg);
+      console.error('connectCloud failed:', e);
+    });
 }
 
 function disconnectCloud() {
