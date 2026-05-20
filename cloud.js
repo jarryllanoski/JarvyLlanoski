@@ -13,32 +13,19 @@ let _db     = null;
 let _wsId   = null;
 let _unsubs = [];
 let _timer  = null;
-let _lastConnErr = '';  /* último error de conexión, para mostrarlo en el banner */
 
 /* ── Init ─────────────────────────────────────────────── */
 function _initDb() {
   if (_db) return;
-  if (typeof firebase === 'undefined') {
-    _lastConnErr = 'SDK no cargó (firebase undefined)';
-    toast('⚠️ ' + _lastConnErr);
-    return;
-  }
-  if (typeof firebase.firestore === 'undefined') {
-    _lastConnErr = 'Firestore no disponible (firebase.firestore undefined)';
-    toast('⚠️ ' + _lastConnErr);
-    return;
-  }
+  if (typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') return;
   try {
     if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     _db = firebase.firestore();
     _db.settings({ experimentalForceLongPolling: true, merge: true });
-  } catch(e) {
-    toast('⚠️ Firebase error: ' + e.message);
-    _db = null;
-  }
+  } catch(e) { _db = null; }
 }
 
-/* ── Strip base64 images (too large for Firestore) ────── */
+/* ── Strip base64 images ──────────────────────────────── */
 function _clean(v) {
   if (typeof v === 'string') return v.startsWith('data:') ? null : v;
   if (Array.isArray(v))      return v.map(_clean);
@@ -78,7 +65,6 @@ function _listen() {
     if (snap.metadata.hasPendingWrites) return;
     const d = snap.data();
     if (!d) return;
-
     if (d.s) {
       d.s.forEach(cs => {
         const local = S.shipments.find(x => x.id === cs.id);
@@ -103,17 +89,12 @@ function _listen() {
     if (d.dispatch)      S.dispatch      = d.dispatch;
     if (d.trash)             S.trash             = d.trash;
     if (d.deletedPedidoIds) S.deletedPedidoIds  = d.deletedPedidoIds;
-
     lsSet('dpanel', JSON.stringify(S));
     if (typeof render      === 'function') render();
     if (typeof renderChips === 'function') renderChips();
     if (typeof renderTasks === 'function') renderTasks();
-  }, err => {
-    console.warn('Cloud sync error:', err);
-    toast('⚠️ Nube: ' + err.message);
-  }));
+  }, () => {}));
 
-  // Listen for new form submissions
   _unsubs.push(
     _db.collection('ws').doc(_wsId).collection('pedidos').onSnapshot(snap => {
       let added = 0;
@@ -131,11 +112,10 @@ function _listen() {
         lsSet('dpanel', JSON.stringify(S));
         if (typeof render === 'function') render();
         if (typeof renderChips === 'function') renderChips();
-        const msg = '📥 ' + added + ' nuevo' + (added > 1 ? 's' : '') + ' pedido' + (added > 1 ? 's' : '') + ' del formulario';
-        toast(msg);
+        toast('📥 ' + added + ' nuevo' + (added > 1 ? 's' : '') + ' pedido' + (added > 1 ? 's' : '') + ' del formulario');
         _alertNewOrder(added);
       }
-    })
+    }, () => {})
   );
 }
 
@@ -160,91 +140,63 @@ function cloudSync() {
       trash:            _clean(S.trash) || [],
       deletedPedidoIds: S.deletedPedidoIds || [],
       t: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true }).catch(e => toast('⚠️ Error sync: ' + e.message));
+    }, { merge: true }).catch(() => {});
   }, 800);
 }
 
-/* ── Public ───────────────────────────────────────────── */
+/* ── Connect ──────────────────────────────────────────── */
 function connectCloud(wsId) {
   wsId = (wsId || '').trim().toLowerCase().replace(/\s+/g, '-');
   const errDiv = document.getElementById('cloudError');
+  const btn    = document.getElementById('cloudConnectBtn');
   const showErr = msg => {
-    _lastConnErr = msg;
     if (errDiv) { errDiv.textContent = msg; errDiv.style.display = 'block'; }
-    const b = document.getElementById('_cloudErrBanner');
-    if (b) b.innerHTML = '⚠️ ' + msg + ' — toca para reintentar';
-    toast(msg);
-    console.error('connectCloud:', msg);
+    if (btn)    { btn.disabled = false; btn.textContent = '☁️ Conectar'; }
+    console.error(msg);
   };
-  const hideErr = () => { if (errDiv) errDiv.style.display = 'none'; };
 
   if (!wsId) { showErr('⚠️ Ingresa un código de equipo'); return; }
-  hideErr();
+  if (errDiv) errDiv.style.display = 'none';
+  if (btn)    { btn.disabled = true; btn.textContent = '⏳ Conectando...'; }
 
-  const btn = document.getElementById('cloudConnectBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Conectando...'; }
-  const restore = () => { if (btn) { btn.disabled = false; btn.textContent = '☁️ Conectar'; } };
+  _initDb();
+  if (!_db) { showErr('⚠️ Firebase no disponible — recargá la página'); return; }
 
-  /* Init Firebase SDK */
-  try { _initDb(); } catch(e) {
-    restore();
-    showErr('⚠️ Firebase error: ' + e.message);
-    return;
-  }
-  if (!_db) {
-    restore();
-    showErr('⚠️ Firebase SDK no disponible — recargá la página completamente');
-    return;
-  }
-
-  /* Prueba REST directa antes de usar SDK — detecta bloqueos de red */
-  const _restUrl = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents/ws/${wsId}?key=${FB_CONFIG.apiKey}`;
-  let done = false;
-
+  const done  = { v: false };
   const timer = setTimeout(() => {
-    if (done) return;
-    done = true;
-    restore();
-    showErr('⚠️ Sin respuesta (10s) — red bloqueando Firebase o SDK colgado');
-  }, 10000);
+    if (done.v) return;
+    done.v = true;
+    showErr('⚠️ Sin respuesta de Firebase — probá con WiFi o recargá');
+  }, 12000);
 
-  fetch(_restUrl)
-    .then(r => r.json())
-    .then(json => {
-      if (done) return;
-      /* Si llega acá, la red funciona — conectar con SDK */
-      if (json.error) {
-        done = true; clearTimeout(timer); restore();
-        showErr('⚠️ Firebase error ' + json.error.code + ': ' + json.error.message);
-        return;
-      }
-      /* REST ok — ahora conectar con SDK */
-      _db.collection('ws').doc(wsId).get()
-        .then(() => {
-          if (done) return;
-          done = true;
-          clearTimeout(timer);
-          restore(); hideErr();
-          _wsId = wsId; S.wsId = wsId;
-          lsSet('dpanel', JSON.stringify(S));
-          try { _listen(); } catch(e) { showErr('⚠️ Listener error: ' + e.message); return; }
-          _badge(true);
-          toast('☁️ Conectado: ' + wsId);
-          if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
-        })
-        .catch(e => {
-          if (done) return;
-          done = true; clearTimeout(timer); restore();
-          showErr('⚠️ SDK error [' + (e.code||'?') + ']: ' + e.message);
-        });
+  _db.collection('ws').doc(wsId).get()
+    .then(() => {
+      if (done.v) return;
+      done.v = true;
+      clearTimeout(timer);
+      if (btn) { btn.disabled = false; btn.textContent = '☁️ Conectar'; }
+      if (errDiv) errDiv.style.display = 'none';
+      _wsId = wsId; S.wsId = wsId;
+      lsSet('dpanel', JSON.stringify(S));
+      try { _listen(); } catch(e) { showErr('⚠️ Error: ' + e.message); return; }
+      _badge(true);
+      toast('☁️ Conectado: ' + wsId);
+      if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
     })
     .catch(e => {
-      if (done) return;
-      done = true; clearTimeout(timer); restore();
-      showErr('⚠️ Red bloqueada: ' + e.message + ' — intenta con otra conexión');
+      if (done.v) return;
+      done.v = true;
+      clearTimeout(timer);
+      const msg = e.code === 'permission-denied'
+        ? '⚠️ Permiso denegado en Firebase — revisá las reglas de Firestore'
+        : e.code === 'unavailable'
+        ? '⚠️ Firebase no disponible — verificá tu internet'
+        : '⚠️ Error [' + (e.code||'?') + ']: ' + e.message;
+      showErr(msg);
     });
 }
 
+/* ── Disconnect ───────────────────────────────────────── */
 function disconnectCloud() {
   clearTimeout(_timer);
   _unsubs.forEach(u => u()); _unsubs = [];
@@ -256,58 +208,39 @@ function disconnectCloud() {
   if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
 }
 
-/* ── Expose db for other modules ─────────────────────────────── */
-function cloudDb(){ return _db; }
-function cloudWsId(){ return _wsId; }
+/* ── Expose ───────────────────────────────────────────── */
+function cloudDb()   { return _db; }
+function cloudWsId() { return _wsId; }
 
-/* ── New-order alert (sound + browser notification) ──────── */
+/* ── New-order alert ──────────────────────────────────── */
 function _alertNewOrder(count) {
-  /* Sound via Web Audio API */
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     [[0, 660], [0.18, 880], [0.36, 1100]].forEach(([t, freq]) => {
       const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, ctx.currentTime + t);
       gain.gain.setValueAtTime(0.25, ctx.currentTime + t);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.25);
-      osc.start(ctx.currentTime + t);
-      osc.stop(ctx.currentTime + t + 0.3);
+      osc.start(ctx.currentTime + t); osc.stop(ctx.currentTime + t + 0.3);
     });
   } catch(e) {}
-  /* Browser notification — solo si ya tiene permiso (nunca pedir automáticamente) */
   if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     const body = count === 1 ? 'Nuevo pedido desde el formulario' : `${count} nuevos pedidos desde el formulario`;
     new Notification('📦 Pedido recibido', { body, silent: true });
   }
 }
 
-/* Llamar manualmente desde el botón en Config */
 function requestNotifPermission() {
   if (typeof Notification === 'undefined') { toast('⚠️ Tu navegador no soporta notificaciones'); return; }
   if (Notification.permission === 'granted') { toast('✅ Notificaciones ya activadas'); return; }
   Notification.requestPermission().then(p => {
-    if (p === 'granted') toast('🔔 Notificaciones activadas');
-    else toast('❌ Permiso denegado');
+    toast(p === 'granted' ? '🔔 Notificaciones activadas' : '❌ Permiso denegado');
   });
 }
 
-/* ── Auto-reconnect (siempre conecta al workspace por defecto) ── */
+/* ── Auto-connect ─────────────────────────────────────── */
 const DEFAULT_WSID = 'jarry';
-setTimeout(() => connectCloud(S.wsId || DEFAULT_WSID), 800);
-/* Si sigue sin conectar después de 12s, muestra banner con el error exacto */
-setTimeout(() => {
-  if (_wsId) return;
-  let banner = document.getElementById('_cloudErrBanner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = '_cloudErrBanner';
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;font-size:12px;font-weight:700;padding:10px 16px;z-index:9999;text-align:center;cursor:pointer;line-height:1.4';
-    banner.innerHTML = '⚠️ ' + (_lastConnErr || 'Sin respuesta de Firebase') + ' — toca para reintentar';
-    banner.onclick = () => { banner.remove(); if (typeof openOverlay==='function') openOverlay('cloudConnectOverlay'); };
-    document.body.appendChild(banner);
-  }
-}, 12000);
+setTimeout(() => connectCloud(S.wsId || DEFAULT_WSID), 1500);
