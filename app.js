@@ -1076,6 +1076,45 @@ window.addEventListener('load',function(){
   };
 }}
 
+/* ── BACKUP / RESTORE ── */
+function exportBackup(){
+  const data = JSON.stringify(S, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const d    = new Date();
+  const ts   = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  a.href = url;
+  a.download = `backup-jarvy-${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Backup descargado');
+}
+
+function importBackup(){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json';
+  inp.onchange = e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.shipments && !data.config) { toast('⚠️ Archivo no válido'); return; }
+        Object.assign(S, data);
+        lsSet('dpanel', JSON.stringify(S));
+        if (typeof render === 'function') render();
+        if (typeof renderChips === 'function') renderChips();
+        toast('✅ Datos restaurados: ' + (S.shipments||[]).length + ' envíos');
+      } catch(err) { toast('⚠️ Error al leer el archivo: ' + err.message); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
 /* ── SHARE ── */
 function genFormUrl(){
   const base = window.location.href.replace(/\/[^/]*$/, '/');
