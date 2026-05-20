@@ -281,9 +281,6 @@ function requestNotifPermission() {
   });
 }
 
-/* ── Auto-reconnect ───────────────────────────────────── */
-if (S.wsId) {
-  setTimeout(() => connectCloud(S.wsId), 400);
-} else {
-  _badge(false);
-}
+/* ── Auto-reconnect (siempre conecta al workspace por defecto) ── */
+const DEFAULT_WSID = 'jarvyllanoski';
+setTimeout(() => connectCloud(S.wsId || DEFAULT_WSID), 400);
