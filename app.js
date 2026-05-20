@@ -1074,7 +1074,7 @@ window.addEventListener('load',function(){
     w.document.write(html);
     w.document.close();
   };
-}}
+}
 
 /* ── BACKUP / RESTORE ── */
 function exportBackup(){
