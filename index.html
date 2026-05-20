@@ -1121,6 +1121,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       </button>
     </div>
 
+    <!-- Backup & Restore — siempre visible -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--bd)">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px">Respaldo local</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="exportBackup();closeOverlay('cloudConnectOverlay')"
+          style="flex:1;padding:11px 8px;background:rgba(46,160,67,.08);border:1px solid rgba(46,160,67,.25);border-radius:10px;color:var(--green);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">
+          ⬇️ Descargar backup
+        </button>
+        <button onclick="importBackup();closeOverlay('cloudConnectOverlay')"
+          style="flex:1;padding:11px 8px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.25);border-radius:10px;color:var(--blue);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">
+          ⬆️ Restaurar backup
+        </button>
+      </div>
+    </div>
+
     <button class="btn-sec" style="margin-top:10px;width:100%" onclick="closeOverlay('cloudConnectOverlay')">Cerrar</button>
   </div>
 </div>
