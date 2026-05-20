@@ -290,15 +290,15 @@ function requestNotifPermission() {
 /* ── Auto-reconnect (siempre conecta al workspace por defecto) ── */
 const DEFAULT_WSID = 'jarry';
 setTimeout(() => connectCloud(S.wsId || DEFAULT_WSID), 800);
-/* Si sigue sin conectar después de 12s, muestra banner permanente de error */
+/* Si sigue sin conectar después de 12s, muestra banner con el error exacto */
 setTimeout(() => {
   if (_wsId) return;
   let banner = document.getElementById('_cloudErrBanner');
   if (!banner) {
     banner = document.createElement('div');
     banner.id = '_cloudErrBanner';
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;font-size:13px;font-weight:700;padding:10px 16px;z-index:9999;text-align:center;cursor:pointer';
-    banner.innerHTML = '⚠️ Sin conexión a Firebase — toca aquí para ver el error y reintentar';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;font-size:12px;font-weight:700;padding:10px 16px;z-index:9999;text-align:center;cursor:pointer;line-height:1.4';
+    banner.innerHTML = '⚠️ ' + (_lastConnErr || 'Sin respuesta de Firebase') + ' — toca para reintentar';
     banner.onclick = () => { banner.remove(); if (typeof openOverlay==='function') openOverlay('cloudConnectOverlay'); };
     document.body.appendChild(banner);
   }
