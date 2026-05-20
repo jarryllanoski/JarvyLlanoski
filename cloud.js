@@ -282,5 +282,5 @@ function requestNotifPermission() {
 }
 
 /* ── Auto-reconnect (siempre conecta al workspace por defecto) ── */
-const DEFAULT_WSID = 'jarvyllanoski';
+const DEFAULT_WSID = 'jarry';
 setTimeout(() => connectCloud(S.wsId || DEFAULT_WSID), 400);
