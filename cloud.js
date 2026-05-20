@@ -196,43 +196,51 @@ function connectCloud(wsId) {
     return;
   }
 
-  /* Verify with real Firestore read — timeout 10s */
+  /* Prueba REST directa antes de usar SDK — detecta bloqueos de red */
+  const _restUrl = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents/ws/${wsId}?key=${FB_CONFIG.apiKey}`;
   let done = false;
+
   const timer = setTimeout(() => {
     if (done) return;
     done = true;
     restore();
-    showErr('⚠️ Sin respuesta de Firebase (10s) — verifica tu internet');
+    showErr('⚠️ Sin respuesta (10s) — red bloqueando Firebase o SDK colgado');
   }, 10000);
 
-  _db.collection('ws').doc(wsId).get()
-    .then(() => {
+  fetch(_restUrl)
+    .then(r => r.json())
+    .then(json => {
       if (done) return;
-      done = true;
-      clearTimeout(timer);
-      restore();
-      hideErr();
-      _wsId = wsId;
-      S.wsId = wsId;
-      lsSet('dpanel', JSON.stringify(S));
-      try { _listen(); } catch(e) { showErr('⚠️ Listener error: ' + e.message); return; }
-      _badge(true);
-      toast('☁️ Conectado: ' + wsId);
-      if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
+      /* Si llega acá, la red funciona — conectar con SDK */
+      if (json.error) {
+        done = true; clearTimeout(timer); restore();
+        showErr('⚠️ Firebase error ' + json.error.code + ': ' + json.error.message);
+        return;
+      }
+      /* REST ok — ahora conectar con SDK */
+      _db.collection('ws').doc(wsId).get()
+        .then(() => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          restore(); hideErr();
+          _wsId = wsId; S.wsId = wsId;
+          lsSet('dpanel', JSON.stringify(S));
+          try { _listen(); } catch(e) { showErr('⚠️ Listener error: ' + e.message); return; }
+          _badge(true);
+          toast('☁️ Conectado: ' + wsId);
+          if (typeof closeOverlay === 'function') closeOverlay('cloudConnectOverlay');
+        })
+        .catch(e => {
+          if (done) return;
+          done = true; clearTimeout(timer); restore();
+          showErr('⚠️ SDK error [' + (e.code||'?') + ']: ' + e.message);
+        });
     })
     .catch(e => {
       if (done) return;
-      done = true;
-      clearTimeout(timer);
-      restore();
-      const msg = e.code === 'permission-denied'
-        ? '⚠️ Permiso denegado — abre Firebase Console → Firestore → Reglas y publica'
-        : e.code === 'unavailable'
-        ? '⚠️ Sin internet o Firebase caído — intenta en unos segundos'
-        : e.code === 'not-found'
-        ? '⚠️ Proyecto Firebase no encontrado — verifica la configuración'
-        : '⚠️ Error [' + (e.code||'?') + ']: ' + e.message;
-      showErr(msg);
+      done = true; clearTimeout(timer); restore();
+      showErr('⚠️ Red bloqueada: ' + e.message + ' — intenta con otra conexión');
     });
 }
 
