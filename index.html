@@ -1412,5 +1412,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 <script src="firebase-app.js"></script>
 <script src="firebase-firestore.js"></script>
 <script src="cloud.js?v=20260520a"></script>
+<script>
+/* ── Service Worker registration ── */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            /* Nueva versión disponible — muestra botón de actualizar */
+            const btn = document.createElement('div');
+            btn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1d4ed8;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:700;cursor:pointer;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+            btn.textContent = '🔄 Nueva versión disponible — toca para actualizar';
+            btn.onclick = () => { nw.postMessage('SKIP_WAITING'); location.reload(); };
+            document.body.appendChild(btn);
+          }
+        });
+      });
+    }).catch(() => {});
+}
+</script>
 </body>
 </html>
