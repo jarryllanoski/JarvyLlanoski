@@ -922,6 +922,42 @@ function doPrint(){
   const qrUrl=v=>`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(v)}`;
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
+  function fmtDate(iso){
+    if(!iso) return '—';
+    const d=new Date(iso+'T12:00:00');
+    const day=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()];
+    return `${day} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  }
+
+  function buildDestino(s){
+    const u=(s.courier||'').toUpperCase();
+    const isRetiro=u.includes('RETIRO');
+    const isEnco=u.includes('ENCOMIENDA');
+    const isAgency=!isRetiro&&!isEnco&&(
+      ['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n))||
+      ((S.courierTypes||{})[s.courier]==='agencia')
+    );
+    if(isRetiro) return '';
+    if(isEnco){
+      let t=s.ciudadDestino?`CIUDAD DESTINO: ${s.ciudadDestino}`:'';
+      if(s.dniDestinatario) t+=(t?'\n':'')+'DNI destinatario: '+s.dniDestinatario;
+      return t;
+    }
+    if(isAgency){
+      const agMatch=(s.notes||'').match(/Agencia:\s*([^|]+)/i);
+      const agText=agMatch?agMatch[1].trim():(s.address||'');
+      let t=agText?`AGENCIA: ${agText}`:'';
+      if(s.dniRecoger) t+=(t?'\n':'')+'DNI para recoger: '+s.dniRecoger;
+      return t;
+    }
+    if(s.address){
+      let t=`DIRECCIÓN: ${s.address}`;
+      if(s.referencia) t+=`\nRef: ${s.referencia}`;
+      return t;
+    }
+    return '';
+  }
+
   /* ── card templates ── */
   function cardA4(s){
     const addr=s.address?(s.referencia?`${s.address} — Ref: ${s.referencia}`:s.address):'';
