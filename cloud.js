@@ -19,11 +19,13 @@ let _lastConnErr = '';  /* último error de conexión, para mostrarlo en el bann
 function _initDb() {
   if (_db) return;
   if (typeof firebase === 'undefined') {
-    toast('⚠️ Firebase SDK no cargó — verificá tu internet y recargá');
+    _lastConnErr = 'SDK no cargó (firebase undefined)';
+    toast('⚠️ ' + _lastConnErr);
     return;
   }
   if (typeof firebase.firestore === 'undefined') {
-    toast('⚠️ Firestore no disponible — recargá la página');
+    _lastConnErr = 'Firestore no disponible (firebase.firestore undefined)';
+    toast('⚠️ ' + _lastConnErr);
     return;
   }
   try {
