@@ -284,3 +284,9 @@ function requestNotifPermission() {
 /* ── Auto-reconnect (siempre conecta al workspace por defecto) ── */
 const DEFAULT_WSID = 'jarry';
 setTimeout(() => connectCloud(S.wsId || DEFAULT_WSID), 400);
+/* Si sigue sin conectar después de 13s, abre el overlay para mostrar el error */
+setTimeout(() => {
+  if (!_wsId && typeof openOverlay === 'function') {
+    openOverlay('cloudConnectOverlay');
+  }
+}, 13000);
