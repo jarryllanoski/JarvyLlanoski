@@ -31,7 +31,6 @@ function _initDb() {
   try {
     if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     _db = firebase.firestore();
-    _db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
   } catch(e) {
     toast('⚠️ Firebase error: ' + e.message);
     _db = null;
