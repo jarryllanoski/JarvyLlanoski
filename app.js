@@ -914,249 +914,167 @@ function doCSV(){
   a.download=`envios_${new Date().toLocaleDateString('es')}.csv`; a.click();
   toast('📊 CSV exportado');
 }
+/* ── helpers reutilizables para impresión ── */
+function _printEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _printDate(iso){
+  if(!iso) return '—';
+  const d=new Date(iso+'T12:00:00');
+  return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()]+' '+
+    String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+}
+function _printDestino(s){
+  const u=(s.courier||'').toUpperCase();
+  const isRetiro=u.includes('RETIRO');
+  const isEnco=u.includes('ENCOMIENDA');
+  const isAgency=!isRetiro&&!isEnco&&(
+    ['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n))||
+    ((S.courierTypes||{})[s.courier]==='agencia'));
+  if(isRetiro) return [];
+  if(isEnco){
+    const r=[];
+    if(s.ciudadDestino) r.push('CIUDAD DESTINO: '+s.ciudadDestino);
+    if(s.dniDestinatario) r.push('DNI destinatario: '+s.dniDestinatario);
+    return r;
+  }
+  if(isAgency){
+    const m=(s.notes||'').match(/Agencia:\s*([^|]+)/i);
+    const r=[];
+    const ag=m?m[1].trim():(s.address||'');
+    if(ag) r.push('AGENCIA: '+ag);
+    if(s.dniRecoger) r.push('DNI para recoger: '+s.dniRecoger);
+    return r;
+  }
+  const r=[];
+  if(s.address) r.push('DIRECCIÓN: '+s.address);
+  if(s.referencia) r.push('Ref: '+s.referencia);
+  return r;
+}
+function _printCleanNote(s){ return (s.notes||'').replace(/Agencia:[^|]*(\|)?/gi,'').replace(/\s*\|\s*$/,'').trim(); }
+
 function doPrint(){
   const list=S.shipments.filter(x=>x.sel).length?S.shipments.filter(x=>x.sel):S.shipments;
   if(!list.length){toast('Sin envíos');return;}
+
+  /* ── selector de formato dentro de la app ── */
+  let prev=document.getElementById('_printPicker');
+  if(prev) prev.remove();
+  const picker=document.createElement('div');
+  picker.id='_printPicker';
+  picker.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  picker.innerHTML=`
+    <div style="background:#0f0f1a;border:1px solid #2d2d44;border-radius:20px;padding:28px 24px;max-width:360px;width:100%;font-family:system-ui,sans-serif">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:6px">🖨️</div>
+        <div style="font-size:17px;font-weight:700;color:#f0f0f8;margin-bottom:4px">Imprimir envíos</div>
+        <div style="font-size:12px;color:#6b7280">${list.length} envío${list.length!==1?'s':''} · Elige el formato</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        <button onclick="window._doPrintFmt('label')" style="background:#13131f;border:1.5px solid #2d2d44;color:#f0f0f8;border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='#2d2d44'">
+          <div style="font-size:15px;font-weight:700;margin-bottom:3px">🏷️ Etiqueta A4</div>
+          <div style="font-size:12px;color:#6b7280">Una etiqueta por envío · estilo REMITENTE / PARA / DESTINO</div>
+        </button>
+        <button onclick="window._doPrintFmt('lista')" style="background:#13131f;border:1.5px solid #2d2d44;color:#f0f0f8;border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='#2d2d44'">
+          <div style="font-size:15px;font-weight:700;margin-bottom:3px">📋 Lista A4</div>
+          <div style="font-size:12px;color:#6b7280">2 columnas por página · incluye código QR</div>
+        </button>
+        <button onclick="window._doPrintFmt('ticket')" style="background:#13131f;border:1.5px solid #2d2d44;color:#f0f0f8;border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='#2d2d44'">
+          <div style="font-size:15px;font-weight:700;margin-bottom:3px">🧾 Ticket 80mm</div>
+          <div style="font-size:12px;color:#6b7280">Para impresoras térmicas de recibo</div>
+        </button>
+      </div>
+      <button onclick="document.getElementById('_printPicker').remove()" style="width:100%;background:none;border:1px solid #2d2d44;color:#6b7280;border-radius:10px;padding:10px;cursor:pointer;font-family:inherit;font-size:13px">Cancelar</button>
+    </div>`;
+  picker.addEventListener('click',e=>{if(e.target===picker)picker.remove();});
+  document.body.appendChild(picker);
+
   const biz=S.config.name||'';
   const today=new Date().toLocaleDateString('es-PE');
   const qrUrl=v=>`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(v)}`;
-  const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const esc=_printEsc, fd=_printDate, dest=_printDestino, cn=_printCleanNote;
 
-  function fmtDate(iso){
-    if(!iso) return '—';
-    const d=new Date(iso+'T12:00:00');
-    const day=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()];
-    return `${day} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-  }
-
-  function buildDestino(s){
-    const u=(s.courier||'').toUpperCase();
-    const isRetiro=u.includes('RETIRO');
-    const isEnco=u.includes('ENCOMIENDA');
-    const isAgency=!isRetiro&&!isEnco&&(
-      ['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n))||
-      ((S.courierTypes||{})[s.courier]==='agencia')
-    );
-    if(isRetiro) return '';
-    if(isEnco){
-      let t=s.ciudadDestino?`CIUDAD DESTINO: ${s.ciudadDestino}`:'';
-      if(s.dniDestinatario) t+=(t?'\n':'')+'DNI destinatario: '+s.dniDestinatario;
-      return t;
-    }
-    if(isAgency){
-      const agMatch=(s.notes||'').match(/Agencia:\s*([^|]+)/i);
-      const agText=agMatch?agMatch[1].trim():(s.address||'');
-      let t=agText?`AGENCIA: ${agText}`:'';
-      if(s.dniRecoger) t+=(t?'\n':'')+'DNI para recoger: '+s.dniRecoger;
-      return t;
-    }
-    if(s.address){
-      let t=`DIRECCIÓN: ${s.address}`;
-      if(s.referencia) t+=`\nRef: ${s.referencia}`;
-      return t;
-    }
-    return '';
-  }
-
-  /* ── shared: clean notes removes internal agency line ── */
-  function cleanNotes(s){ return (s.notes||'').replace(/Agencia:[^|]*(\|)?/gi,'').replace(/\s*\|\s*$/,'').trim(); }
-
-  /* ── shared: build DESTINO content lines ── */
-  function buildDestino(s){
-    const u=(s.courier||'').toUpperCase();
-    const isRetiro=u.includes('RETIRO');
-    const isEnco=u.includes('ENCOMIENDA');
-    const isAgency=!isRetiro&&!isEnco&&(
-      ['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n))||
-      ((S.courierTypes||{})[s.courier]==='agencia')
-    );
-    if(isRetiro) return [];
-    if(isEnco){
-      const lines=[];
-      if(s.ciudadDestino) lines.push('CIUDAD DESTINO: '+s.ciudadDestino);
-      if(s.dniDestinatario) lines.push('DNI destinatario: '+s.dniDestinatario);
-      return lines;
-    }
-    if(isAgency){
-      const agMatch=(s.notes||'').match(/Agencia:\s*([^|]+)/i);
-      const agText=agMatch?agMatch[1].trim():(s.address||'');
-      const lines=[];
-      if(agText) lines.push('AGENCIA: '+agText);
-      if(s.dniRecoger) lines.push('DNI para recoger: '+s.dniRecoger);
-      return lines;
-    }
-    const lines=[];
-    if(s.address) lines.push('DIRECCIÓN: '+s.address);
-    if(s.referencia) lines.push('Ref: '+s.referencia);
-    return lines;
-  }
-
-  /* ── ETIQUETA (formato REMITENTE/PARA/DESTINO — default) ── */
   function cardLabel(s){
-    const dest=buildDestino(s);
-    const note=cleanNotes(s);
-    return `<div class="lcard">
-      <div class="lcard-top"><span class="lremit">REMITENTE</span><span class="lbiz">${esc(biz)}</span></div>
-      <div class="lcard-mid">
-        <div class="lpara">PARA:</div>
-        <div class="lname">${esc((s.name||'').toUpperCase())}</div>
-        <div class="lphone">${esc(s.phone)}</div>
-        ${dest.length?`<div class="ldest-lbl">DESTINO:</div>${dest.map(l=>`<div class="ldest-line">${esc(l)}</div>`).join('')}`:''}
-        ${s.cost?`<div class="lcost">MONTO: S/ ${esc(s.cost)}</div>`:''}
-        ${note?`<div class="lnote">${esc(note)}</div>`:''}
-      </div>
-      <div class="lcard-bot"><span class="lcourier">${esc(s.courier)}</span><span class="ldate">${fmtDate(s.date)}</span></div>
-    </div>`;
+    const dl=dest(s), note=cn(s);
+    return `<div class="lcard"><div class="ltop"><span class="lremit">REMITENTE</span><span class="lbiz">${esc(biz)}</span></div><div class="lmid"><div class="lpara">PARA:</div><div class="lname">${esc((s.name||'').toUpperCase())}</div><div class="lphone">${esc(s.phone)}</div>${dl.length?`<div class="ldlbl">DESTINO:</div>${dl.map(l=>`<div class="ldline">${esc(l)}</div>`).join('')}`:''} ${s.cost?`<div class="lcost">MONTO: S/ ${esc(s.cost)}</div>`:''} ${note?`<div class="lnote">${esc(note)}</div>`:''}</div><div class="lbot"><span class="lcou">${esc(s.courier)}</span><span class="ldat">${fd(s.date)}</span></div></div>`;
   }
-
-  /* ── A4 LISTA (2 columnas, con QR) ── */
   function cardA4(s){
-    const dest=buildDestino(s);
-    const note=cleanNotes(s);
-    return `<div class="card">
-      <div class="card-body">
-        <div class="cname">${esc(s.name)}</div>
-        <div class="crow">📞 ${esc(s.phone)}</div>
-        ${dest.map(l=>`<div class="crow addr">${esc(l)}</div>`).join('')}
-        <div class="crow">🚚 ${esc(s.courier)} · ${fmtDate(s.date)}${s.cost?` · S/ ${esc(s.cost)}`:''}</div>
-        ${note?`<div class="crow note">📝 ${esc(note)}</div>`:''}
-        <span class="badge">${esc(s.status)}</span>
-      </div>
-      <div class="qr-block">
-        <img src="${qrUrl(s.phone)}" width="68" height="68" alt="QR">
-        <div class="qr-num">${esc(s.phone)}</div>
-      </div>
-    </div>`;
+    const dl=dest(s), note=cn(s);
+    return `<div class="card"><div class="cbody"><div class="cname">${esc(s.name)}</div><div class="crow">📞 ${esc(s.phone)}</div>${dl.map(l=>`<div class="crow caddr">${esc(l)}</div>`).join('')}<div class="crow">🚚 ${esc(s.courier)} · ${fd(s.date)}${s.cost?` · S/ ${esc(s.cost)}`:''}</div>${note?`<div class="crow cnote">📝 ${esc(note)}</div>`:''}<span class="cbadge">${esc(s.status)}</span></div><div class="cqr"><img src="${qrUrl(s.phone)}" width="68" height="68" alt="QR"><div class="cqrn">${esc(s.phone)}</div></div></div>`;
   }
-
-  /* ── TICKET 80mm ── */
   function cardTicket(s){
-    const dest=buildDestino(s);
-    const note=cleanNotes(s);
-    return `<div class="ticket">
-      <div class="t-biz">${esc(biz)}</div>
-      <div class="t-sep">- - - - - - - - - - - - - - -</div>
-      <div class="t-name">${esc((s.name||'').toUpperCase())}</div>
-      <div class="t-phone">${esc(s.phone)}</div>
-      ${dest.map(l=>`<div class="t-dest">${esc(l)}</div>`).join('')}
-      ${note?`<div class="t-note">${esc(note)}</div>`:''}
-      ${s.cost?`<div class="t-cost">MONTO: S/ ${esc(s.cost)}</div>`:''}
-      <div class="t-footer"><b>${esc(s.courier)}</b> &nbsp; ${fmtDate(s.date)}</div>
-      <div class="t-qr"><img src="${qrUrl(s.phone)}" width="88" height="88" alt="${esc(s.phone)}"></div>
-      <div class="t-cut">· · · · · · · · · · · · · · · · · ·</div>
-    </div>`;
+    const dl=dest(s), note=cn(s);
+    return `<div class="tk"><div class="tbiz">${esc(biz)}</div><div class="tsep">- - - - - - - - - - - -</div><div class="tname">${esc((s.name||'').toUpperCase())}</div><div class="tphone">${esc(s.phone)}</div>${dl.map(l=>`<div class="tdest">${esc(l)}</div>`).join('')}${note?`<div class="tnote">${esc(note)}</div>`:''} ${s.cost?`<div class="tcost">MONTO: S/ ${esc(s.cost)}</div>`:''}<div class="tfoot"><b>${esc(s.courier)}</b> ${fd(s.date)}</div><div class="tqr"><img src="${qrUrl(s.phone)}" width="88" height="88" alt="${esc(s.phone)}"></div><div class="tcut">· · · · · · · · · · · ·</div></div>`;
   }
 
-  const cardsLabel = list.map(cardLabel).join('');
-  const cardsA4    = list.map(cardA4).join('');
-  const cardsTicket= list.map(cardTicket).join('');
-
-  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-<title>Imprimir — ${esc(biz)}</title>
+  window._doPrintFmt=function(fmt){
+    document.getElementById('_printPicker')?.remove();
+    const cards={label:list.map(cardLabel).join(''),lista:list.map(cardA4).join(''),ticket:list.map(cardTicket).join('')};
+    const pageCSS={label:'@page{size:A4 portrait;margin:12mm 10mm}',lista:'@page{size:A4 portrait;margin:12mm 10mm}',ticket:'@page{size:80mm auto;margin:3mm 2mm}'};
+    const bodyMap={
+      label:`<div id="pw">${cards.label}</div>`,
+      lista:`<div id="pw"><div style="font-family:Arial,sans-serif;font-size:9pt;color:#555;margin-bottom:5mm;padding-bottom:3mm;border-bottom:1px solid #ccc">📦 ${esc(biz)} · ${today} · ${list.length} envío${list.length!==1?'s':''}</div><div class="grid">${cards.lista}</div></div>`,
+      ticket:`<div id="pw"><div class="twrap">${cards.ticket}</div></div>`
+    };
+    const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Imprimir — ${esc(biz)}</title>
 <style>
-/* ── TOOLBAR ── */
-#toolbar{position:fixed;top:0;left:0;right:0;background:#1a1a2e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:8px;z-index:999;font-family:system-ui,sans-serif;flex-wrap:wrap}
-.lbl{font-size:11px;color:#aaa;white-space:nowrap}
-.fmt-btn{background:#2a2a42;border:1.5px solid #444;color:#ccc;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-.fmt-btn.active{background:#1d4ed8;border-color:#3b82f6;color:#fff}
-#printBtn{margin-left:auto;background:#16a34a;border:none;color:#fff;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
-#content{margin-top:58px;background:#f0f0f0;min-height:100vh;padding:10px}
-@media print{#toolbar{display:none!important}#content{margin-top:0;background:#fff;padding:0}}
-
-/* ── PAGE SIZE ── */
-#pageStyle{}
-
-/* ── ETIQUETA (formato principal) ── */
-body.fmt-label #label{display:block}
-body.fmt-label #lista,body.fmt-label #ticket{display:none}
-.lcard{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;border:1.5px solid #000;margin-bottom:8mm;break-inside:avoid;page-break-inside:avoid}
-.lcard-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ccc;padding:4px 10px;background:#f9f9f9}
-.lremit{font-size:7.5pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase}
-.lbiz{font-size:9pt;font-weight:700;color:#000}
-.lcard-mid{padding:7px 10px 4px}
+${pageCSS[fmt]}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;background:#fff;color:#000}
+/* ETIQUETA */
+.lcard{font-family:Arial,Helvetica,sans-serif;border:1.5px solid #000;margin-bottom:8mm;break-inside:avoid;page-break-inside:avoid}
+.ltop,.lbot{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:#f4f4f4;border-bottom:1px solid #ccc}
+.lbot{border-top:1px solid #ccc;border-bottom:none}
+.lremit{font-size:7pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase}
+.lbiz{font-size:9pt;font-weight:700}
+.lmid{padding:8px 12px 6px}
 .lpara{font-size:7pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px}
-.lname{font-size:17pt;font-weight:700;line-height:1.15;margin-bottom:2px}
-.lphone{font-size:12pt;font-weight:600;color:#222;margin-bottom:5px}
-.ldest-lbl{font-size:7pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase;margin-top:5px;margin-bottom:2px}
-.ldest-line{font-size:9pt;color:#111;line-height:1.5;font-weight:500}
-.lcost{font-size:10pt;font-weight:700;margin-top:4px}
+.lname{font-size:18pt;font-weight:700;line-height:1.15;margin-bottom:3px}
+.lphone{font-size:13pt;font-weight:600;margin-bottom:6px}
+.ldlbl{font-size:7pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase;margin-top:6px;margin-bottom:2px}
+.ldline{font-size:9.5pt;line-height:1.5;font-weight:500}
+.lcost{font-size:10pt;font-weight:700;margin-top:5px}
 .lnote{font-size:8pt;color:#555;margin-top:4px}
-.lcard-bot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ccc;padding:4px 10px;background:#f9f9f9}
-.lcourier{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.ldate{font-size:9pt;font-weight:600;color:#333}
-
-/* ── A4 LISTA ── */
-body.fmt-lista #lista{display:block}
-body.fmt-lista #label,body.fmt-lista #ticket{display:none}
-.lista-hdr{font-family:Arial,sans-serif;font-size:9pt;color:#555;margin-bottom:5mm;padding-bottom:3mm;border-bottom:1px solid #ccc}
-.lista-grid{display:grid;grid-template-columns:1fr 1fr;gap:5mm;font-family:Arial,Helvetica,sans-serif;color:#000}
-.card{display:flex;gap:8px;border:1px solid #aaa;border-radius:5px;padding:7px;break-inside:avoid;page-break-inside:avoid;background:#fff}
-.card-body{flex:1;min-width:0}
-.cname{font-size:12pt;font-weight:700;margin-bottom:2px;line-height:1.2}
-.crow{font-size:8pt;color:#333;margin-bottom:2px;line-height:1.4}
-.addr{color:#444}
-.note{color:#666}
-.badge{display:inline-block;font-size:7pt;font-weight:700;background:#eee;border:1px solid #ccc;border-radius:6px;padding:1px 7px;margin-top:3px}
-.qr-block{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
-.qr-block img{display:block}
-.qr-num{font-size:6pt;color:#999;text-align:center;max-width:70px;word-break:break-all}
-
-/* ── TICKET 80mm ── */
-body.fmt-ticket #ticket{display:block}
-body.fmt-ticket #lista,body.fmt-ticket #label{display:none}
-.ticket-wrap{width:72mm;margin:0 auto;font-family:'Courier New',Courier,monospace;font-size:9pt;color:#000;background:#fff}
-.ticket{margin-bottom:5mm}
-.t-biz{text-align:center;font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:1.5mm}
-.t-sep{font-size:7pt;color:#666;margin:1.5mm 0;text-align:center}
-.t-name{font-size:12pt;font-weight:700;margin:1mm 0;line-height:1.2}
-.t-phone{font-size:10pt;margin:1mm 0}
-.t-dest{font-size:8pt;margin:.5mm 0;line-height:1.4}
-.t-note{font-size:7.5pt;color:#444;margin:.5mm 0}
-.t-cost{font-size:10pt;font-weight:700;margin:1.5mm 0}
-.t-footer{display:flex;justify-content:space-between;font-size:8.5pt;margin:1.5mm 0;border-top:1px solid #aaa;padding-top:1.5mm}
-.t-qr{text-align:center;margin:2mm 0}
-.t-qr img{display:block;margin:0 auto}
-.t-cut{text-align:center;font-size:7pt;color:#bbb;margin:2mm 0 4mm;letter-spacing:2px}
+.lcou{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.ldat{font-size:9pt;font-weight:600}
+/* LISTA */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.card{display:flex;gap:8px;border:1px solid #aaa;border-radius:5px;padding:7px;break-inside:avoid;page-break-inside:avoid}
+.cbody{flex:1;min-width:0}
+.cname{font-size:12pt;font-weight:700;margin-bottom:2px;font-family:Arial,sans-serif}
+.crow{font-size:8pt;color:#333;margin-bottom:2px;line-height:1.4;font-family:Arial,sans-serif}
+.caddr{color:#444}.cnote{color:#666}
+.cbadge{display:inline-block;font-size:7pt;font-weight:700;background:#eee;border:1px solid #ccc;border-radius:6px;padding:1px 7px;margin-top:3px}
+.cqr{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.cqrn{font-size:6pt;color:#999;text-align:center;max-width:70px;word-break:break-all;font-family:Arial,sans-serif}
+/* TICKET */
+.twrap{width:72mm;margin:0 auto;font-family:'Courier New',Courier,monospace;font-size:9pt}
+.tk{margin-bottom:5mm}
+.tbiz{text-align:center;font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:1.5mm}
+.tsep{font-size:7pt;color:#666;margin:1.5mm 0;text-align:center}
+.tname{font-size:12pt;font-weight:700;margin:1mm 0;line-height:1.2}
+.tphone{font-size:10pt;margin:1mm 0}
+.tdest{font-size:8pt;margin:.5mm 0;line-height:1.4}
+.tnote{font-size:7.5pt;color:#444;margin:.5mm 0}
+.tcost{font-size:10pt;font-weight:700;margin:1.5mm 0}
+.tfoot{display:flex;justify-content:space-between;font-size:8.5pt;margin:1.5mm 0;border-top:1px solid #aaa;padding-top:1.5mm}
+.tqr{text-align:center;margin:2mm 0}
+.tcut{text-align:center;font-size:7pt;color:#bbb;margin:2mm 0 4mm;letter-spacing:2px}
 </style>
 <script>
-var FMT={
-  label:'@page{size:A4 portrait;margin:12mm 10mm}',
-  lista:'@page{size:A4 portrait;margin:12mm 10mm}',
-  ticket:'@page{size:80mm auto;margin:3mm 2mm}'
-};
-function setFmt(f){
-  document.body.className='fmt-'+f;
-  document.getElementById('pageStyle').textContent=FMT[f];
-  document.querySelectorAll('.fmt-btn').forEach(function(b){b.classList.toggle('active',b.dataset.fmt===f);});
-}
+window.addEventListener('load',function(){
+  var imgs=Array.from(document.images);
+  if(!imgs.length){setTimeout(function(){window.print();},150);return;}
+  var n=imgs.length,done=0;
+  function chk(){if(++done>=n)setTimeout(function(){window.print();},200);}
+  imgs.forEach(function(i){if(i.complete)chk();else{i.onload=chk;i.onerror=chk;}});
+});
 <\/script>
-</head>
-<body class="fmt-label">
-<style id="pageStyle">@page{size:A4 portrait;margin:12mm 10mm}</style>
-
-<div id="toolbar">
-  <span class="lbl">Formato:</span>
-  <button class="fmt-btn active" data-fmt="label" onclick="setFmt('label')">🏷️ Etiqueta A4</button>
-  <button class="fmt-btn" data-fmt="lista" onclick="setFmt('lista')">📋 Lista A4</button>
-  <button class="fmt-btn" data-fmt="ticket" onclick="setFmt('ticket')">🧾 Ticket 80mm</button>
-  <button id="printBtn" onclick="window.print()">🖨️ Imprimir</button>
-</div>
-
-<div id="content">
-  <div id="label">${cardsLabel}</div>
-  <div id="lista" style="display:none">
-    <div class="lista-hdr">📦 ${esc(biz)} · ${today} · ${list.length} envío${list.length!==1?'s':''}</div>
-    <div class="lista-grid">${cardsA4}</div>
-  </div>
-  <div id="ticket" style="display:none"><div class="ticket-wrap">${cardsTicket}</div></div>
-</div>
-</body></html>`;
-
-  const w=window.open('','_blank');
-  if(!w){toast('⚠️ Activa las ventanas emergentes para imprimir');return;}
-  w.document.write(html);
-  w.document.close();
-}
+</head><body>${bodyMap[fmt]}</body></html>`;
+    const w=window.open('','_blank');
+    if(!w){toast('⚠️ Permite ventanas emergentes en tu navegador');return;}
+    w.document.write(html);
+    w.document.close();
+  };
+}}
 
 /* ── SHARE ── */
 function genFormUrl(){
