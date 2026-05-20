@@ -157,7 +157,7 @@ function cloudSync() {
       trash:            _clean(S.trash) || [],
       deletedPedidoIds: S.deletedPedidoIds || [],
       t: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(e => toast('⚠️ Error sync: ' + e.message));
+    }, { merge: true }).catch(e => toast('⚠️ Error sync: ' + e.message));
   }, 800);
 }
 
