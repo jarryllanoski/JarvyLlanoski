@@ -917,12 +917,184 @@ function doCSV(){
 function doPrint(){
   const list=S.shipments.filter(x=>x.sel).length?S.shipments.filter(x=>x.sel):S.shipments;
   if(!list.length){toast('Sin envíos');return;}
-  const qr=phone=>`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(phone)}`;
+  const biz=S.config.name||'';
+  const today=new Date().toLocaleDateString('es-PE');
+  const qrUrl=v=>`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(v)}`;
+  const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  /* ── card templates ── */
+  function cardA4(s){
+    const addr=s.address?(s.referencia?`${s.address} — Ref: ${s.referencia}`:s.address):'';
+    return `<div class="card">
+      <div class="card-body">
+        <div class="biz">${esc(biz)}</div>
+        <div class="cname">${esc(s.name)}</div>
+        <div class="row">📞 ${esc(s.phone)}</div>
+        ${addr?`<div class="row addr">🏠 ${esc(addr)}</div>`:''}
+        <div class="row">🚚 ${esc(s.courier)}${s.date?` · 📅 ${esc(s.date)}`:''}${s.cost?` · S/ ${esc(s.cost)}`:''}</div>
+        <div class="status-line"><span class="badge">${esc(s.status)}</span>${s.notes?`<span class="note">📝 ${esc(s.notes)}</span>`:''}</div>
+        ${s.id?`<div class="track">#${esc(s.id.slice(-6).toUpperCase())}</div>`:''}
+      </div>
+      <div class="qr-block">
+        <img src="${qrUrl(s.phone)}" width="80" height="80" alt="QR">
+        <div class="qr-num">${esc(s.phone)}</div>
+      </div>
+    </div>`;
+  }
+
+  function cardLabel(s){
+    const addr=s.address?(s.referencia?`${s.address} — Ref: ${s.referencia}`:s.address):'';
+    return `<div class="label-card">
+      <div class="label-biz">${esc(biz)}</div>
+      <div class="label-name">${esc(s.name)}</div>
+      <div class="label-phone">${esc(s.phone)}</div>
+      ${addr?`<div class="label-addr">🏠 ${esc(addr)}</div>`:''}
+      <div class="label-courier">🚚 ${esc(s.courier)}${s.date?` | 📅 ${esc(s.date)}`:''}</div>
+      ${s.cost?`<div class="label-cost">S/ ${esc(s.cost)}</div>`:''}
+      ${s.notes?`<div class="label-notes">📝 ${esc(s.notes)}</div>`:''}
+      <div class="label-qr-row">
+        <img src="${qrUrl(s.phone)}" width="130" height="130" alt="QR">
+        <div class="label-qr-info">
+          ${s.id?`<div class="label-track">#${esc(s.id.slice(-6).toUpperCase())}</div>`:''}
+          <div class="label-status">${esc(s.status)}</div>
+          <div class="label-date">Impreso: ${today}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function cardTicket(s){
+    const addr=s.address?(s.referencia?`${s.address}\nRef: ${s.referencia}`:s.address):'';
+    return `<div class="ticket">
+      <div class="t-biz">${esc(biz)}</div>
+      <div class="t-sep">--------------------------------</div>
+      <div class="t-name">${esc(s.name)}</div>
+      <div class="t-phone">${esc(s.phone)}</div>
+      ${addr?`<div class="t-addr">${esc(addr)}</div>`:''}
+      <div class="t-courier">${esc(s.courier)}${s.date?' | '+esc(s.date):''}</div>
+      ${s.cost?`<div class="t-cost">MONTO: S/ ${esc(s.cost)}</div>`:''}
+      ${s.notes?`<div class="t-notes">${esc(s.notes)}</div>`:''}
+      <div class="t-status">[${esc(s.status)}]</div>
+      <div class="t-qr"><img src="${qrUrl(s.phone)}" width="100" height="100" alt="${esc(s.phone)}"></div>
+      ${s.id?`<div class="t-track">#${esc(s.id.slice(-6).toUpperCase())}</div>`:''}
+      <div class="t-sep">--------------------------------</div>
+      <div class="t-cut">✂ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+    </div>`;
+  }
+
+  const cardsA4    = list.map(cardA4).join('');
+  const cardsLabel = list.map(cardLabel).join('');
+  const cardsTicket= list.map(cardTicket).join('');
+
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Imprimir — ${esc(biz)}</title>
+<style>
+/* ── TOOLBAR (pantalla) ── */
+#toolbar{position:fixed;top:0;left:0;right:0;background:#1e1e2e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:999;font-family:system-ui,sans-serif;flex-wrap:wrap}
+#toolbar .lbl{font-size:12px;color:#aaa;white-space:nowrap}
+.fmt-btn{background:#2d2d44;border:1.5px solid #444;color:#eee;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.fmt-btn.active{background:#1d4ed8;border-color:#3b82f6;color:#fff}
+#printBtn{margin-left:auto;background:#22c55e;border:none;color:#fff;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+#content{margin-top:60px}
+@media print{#toolbar{display:none}#content{margin-top:0}}
+
+/* ── PAGE SIZE (swapped by JS) ── */
+#pageStyle{}
+
+/* ── A4 LISTA ── */
+body.fmt-lista #lista{display:block}
+body.fmt-lista #label,body.fmt-lista #ticket{display:none}
+.lista-grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm;font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#000;background:#fff}
+.lista-header{font-family:Arial,sans-serif;font-size:9pt;color:#555;margin-bottom:5mm;padding-bottom:3mm;border-bottom:1px solid #ccc}
+.card{display:flex;gap:8px;border:1px solid #bbb;border-radius:6px;padding:8px;break-inside:avoid;page-break-inside:avoid;background:#fff}
+.card-body{flex:1;min-width:0}
+.biz{font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.cname{font-size:13pt;font-weight:700;margin-bottom:3px;line-height:1.2}
+.row{font-size:8.5pt;color:#333;margin-bottom:2px;line-height:1.4}
+.addr{color:#555}
+.status-line{margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.badge{font-size:7pt;font-weight:700;background:#eee;border:1px solid #ccc;border-radius:8px;padding:1px 6px;white-space:nowrap}
+.note{font-size:7.5pt;color:#666}
+.track{font-size:7pt;color:#aaa;margin-top:3px;letter-spacing:1px}
+.qr-block{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;flex-shrink:0}
+.qr-block img{width:72px;height:72px;display:block}
+.qr-num{font-size:6.5pt;color:#888;text-align:center;word-break:break-all;max-width:72px}
+
+/* ── A4 ETIQUETA ── */
+body.fmt-label #label{display:block}
+body.fmt-label #lista,body.fmt-label #ticket{display:none}
+.label-card{break-inside:avoid;page-break-inside:avoid;page-break-after:always;break-after:page;border:2px solid #000;border-radius:8px;padding:12mm;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;min-height:120mm;box-sizing:border-box}
+.label-card:last-child{page-break-after:auto;break-after:auto}
+.label-biz{font-size:9pt;color:#777;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4mm}
+.label-name{font-size:22pt;font-weight:700;margin-bottom:3mm;line-height:1.2}
+.label-phone{font-size:16pt;font-weight:600;color:#333;margin-bottom:3mm}
+.label-addr{font-size:11pt;color:#444;margin-bottom:3mm;line-height:1.5}
+.label-courier{font-size:10pt;color:#555;margin-bottom:2mm}
+.label-cost{font-size:14pt;font-weight:700;margin-bottom:2mm}
+.label-notes{font-size:9pt;color:#666;margin-bottom:4mm;border-top:1px dashed #ccc;padding-top:2mm}
+.label-qr-row{display:flex;align-items:flex-end;gap:8mm;margin-top:4mm;padding-top:4mm;border-top:1px solid #ddd}
+.label-qr-row img{width:110px;height:110px;flex-shrink:0}
+.label-qr-info{flex:1}
+.label-track{font-size:18pt;font-weight:700;letter-spacing:3px;color:#222;margin-bottom:2mm}
+.label-status{font-size:10pt;font-weight:700;background:#eee;display:inline-block;padding:2px 10px;border-radius:4px;margin-bottom:2mm}
+.label-date{font-size:8pt;color:#999}
+
+/* ── TICKET 80mm ── */
+body.fmt-ticket #ticket{display:block}
+body.fmt-ticket #lista,body.fmt-ticket #label{display:none}
+.ticket-wrap{font-family:'Courier New',Courier,monospace;font-size:9pt;color:#000;background:#fff;width:72mm;margin:0 auto}
+.ticket{margin-bottom:4mm}
+.t-biz{font-size:10pt;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:1px;margin-bottom:2mm}
+.t-sep{font-size:7pt;color:#555;margin:1.5mm 0;letter-spacing:1px}
+.t-cut{font-size:7pt;color:#aaa;margin:1mm 0 3mm}
+.t-name{font-size:12pt;font-weight:700;margin:1mm 0}
+.t-phone{font-size:10pt;margin:1mm 0}
+.t-addr{font-size:8pt;margin:1mm 0;line-height:1.4;white-space:pre-wrap}
+.t-courier{font-size:8pt;margin:1mm 0}
+.t-cost{font-size:10pt;font-weight:700;margin:1.5mm 0}
+.t-notes{font-size:7.5pt;margin:1mm 0;color:#444}
+.t-status{font-size:8pt;margin:1mm 0}
+.t-qr{text-align:center;margin:2mm 0}
+.t-qr img{width:88px;height:88px}
+.t-track{text-align:center;font-size:8pt;letter-spacing:2px;color:#555;margin-bottom:1mm}
+</style>
+<script>
+var FMT_PAGES={
+  lista:'@page{size:A4 portrait;margin:12mm 10mm}',
+  label:'@page{size:A4 portrait;margin:10mm}',
+  ticket:'@page{size:80mm auto;margin:3mm 2mm}'
+};
+function setFmt(f){
+  document.body.className='fmt-'+f;
+  document.getElementById('pageStyle').textContent=FMT_PAGES[f];
+  document.querySelectorAll('.fmt-btn').forEach(function(b){b.classList.toggle('active',b.dataset.fmt===f);});
+}
+<\/script>
+</head>
+<body class="fmt-lista">
+<style id="pageStyle">@page{size:A4 portrait;margin:12mm 10mm}</style>
+
+<div id="toolbar">
+  <span class="lbl">Formato:</span>
+  <button class="fmt-btn active" data-fmt="lista" onclick="setFmt('lista')">📋 A4 Lista</button>
+  <button class="fmt-btn" data-fmt="label" onclick="setFmt('label')">🏷️ A4 Etiqueta</button>
+  <button class="fmt-btn" data-fmt="ticket" onclick="setFmt('ticket')">🧾 Ticket 80mm</button>
+  <button id="printBtn" onclick="window.print()">🖨️ Imprimir</button>
+</div>
+
+<div id="content">
+  <div id="lista">
+    <div class="lista-header">📦 ${esc(biz)} &nbsp;·&nbsp; ${today} &nbsp;·&nbsp; ${list.length} envío${list.length!==1?'s':''}</div>
+    <div class="lista-grid">${cardsA4}</div>
+  </div>
+  <div id="label" style="display:none">${cardsLabel}</div>
+  <div id="ticket" style="display:none"><div class="ticket-wrap">${cardsTicket}</div></div>
+</div>
+</body></html>`;
+
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>Envíos</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.card{border:1px solid #ddd;border-radius:8px;padding:12px;display:flex;gap:10px;page-break-inside:avoid}.info{flex:1}.name{font-weight:700;font-size:13px}.phone{color:#1a56db}.addr{color:#555;font-size:11px}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700}.qr{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0}.qr img{width:72px;height:72px}.qr span{font-size:9px;color:#888}@media print{.grid{gap:8px}}</style></head><body>
-    <h2 style="margin-bottom:16px">📦 Envíos — ${S.config.name} · ${new Date().toLocaleDateString('es-PE')}</h2>
-    <div class="grid">${list.map(s=>`<div class="card"><div class="info"><div class="name">${s.name}</div><div class="phone">📞 ${s.phone}</div><div class="addr">🏠 ${s.address}</div><div style="font-size:10px;color:#777;margin:3px 0">🚚 ${s.courier} · 📅 ${s.date||'—'}${s.cost?` · S/ ${s.cost}`:''}</div><span class="badge">${s.status}</span>${s.notes?`<div style="font-size:10px;color:#777;margin-top:3px">📝 ${s.notes}</div>`:''}</div><div class="qr"><img src="${qr(s.phone)}" alt="QR"><span>${s.phone}</span></div></div>`).join('')}</div>
-    <script>window.onload=()=>window.print()<\/script></body></html>`);
+  if(!w){toast('⚠️ Activa las ventanas emergentes para imprimir');return;}
+  w.document.write(html);
   w.document.close();
 }
 
