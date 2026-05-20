@@ -169,7 +169,10 @@ function connectCloud(wsId) {
   wsId = (wsId || '').trim().toLowerCase().replace(/\s+/g, '-');
   const errDiv = document.getElementById('cloudError');
   const showErr = msg => {
+    _lastConnErr = msg;
     if (errDiv) { errDiv.textContent = msg; errDiv.style.display = 'block'; }
+    const b = document.getElementById('_cloudErrBanner');
+    if (b) b.innerHTML = '⚠️ ' + msg + ' — toca para reintentar';
     toast(msg);
     console.error('connectCloud:', msg);
   };
