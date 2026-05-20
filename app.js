@@ -1054,105 +1054,100 @@ function doPrint(){
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>Imprimir — ${esc(biz)}</title>
 <style>
-/* ── TOOLBAR (pantalla) ── */
-#toolbar{position:fixed;top:0;left:0;right:0;background:#1e1e2e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:999;font-family:system-ui,sans-serif;flex-wrap:wrap}
-#toolbar .lbl{font-size:12px;color:#aaa;white-space:nowrap}
-.fmt-btn{background:#2d2d44;border:1.5px solid #444;color:#eee;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+/* ── TOOLBAR ── */
+#toolbar{position:fixed;top:0;left:0;right:0;background:#1a1a2e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:8px;z-index:999;font-family:system-ui,sans-serif;flex-wrap:wrap}
+.lbl{font-size:11px;color:#aaa;white-space:nowrap}
+.fmt-btn{background:#2a2a42;border:1.5px solid #444;color:#ccc;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 .fmt-btn.active{background:#1d4ed8;border-color:#3b82f6;color:#fff}
-#printBtn{margin-left:auto;background:#22c55e;border:none;color:#fff;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
-#content{margin-top:60px}
-@media print{#toolbar{display:none}#content{margin-top:0}}
+#printBtn{margin-left:auto;background:#16a34a;border:none;color:#fff;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+#content{margin-top:58px;background:#f0f0f0;min-height:100vh;padding:10px}
+@media print{#toolbar{display:none!important}#content{margin-top:0;background:#fff;padding:0}}
 
-/* ── PAGE SIZE (swapped by JS) ── */
+/* ── PAGE SIZE ── */
 #pageStyle{}
+
+/* ── ETIQUETA (formato principal) ── */
+body.fmt-label #label{display:block}
+body.fmt-label #lista,body.fmt-label #ticket{display:none}
+.lcard{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;border:1.5px solid #000;margin-bottom:8mm;break-inside:avoid;page-break-inside:avoid}
+.lcard-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ccc;padding:4px 10px;background:#f9f9f9}
+.lremit{font-size:7.5pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase}
+.lbiz{font-size:9pt;font-weight:700;color:#000}
+.lcard-mid{padding:7px 10px 4px}
+.lpara{font-size:7pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px}
+.lname{font-size:17pt;font-weight:700;line-height:1.15;margin-bottom:2px}
+.lphone{font-size:12pt;font-weight:600;color:#222;margin-bottom:5px}
+.ldest-lbl{font-size:7pt;font-weight:700;color:#888;letter-spacing:.8px;text-transform:uppercase;margin-top:5px;margin-bottom:2px}
+.ldest-line{font-size:9pt;color:#111;line-height:1.5;font-weight:500}
+.lcost{font-size:10pt;font-weight:700;margin-top:4px}
+.lnote{font-size:8pt;color:#555;margin-top:4px}
+.lcard-bot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ccc;padding:4px 10px;background:#f9f9f9}
+.lcourier{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.ldate{font-size:9pt;font-weight:600;color:#333}
 
 /* ── A4 LISTA ── */
 body.fmt-lista #lista{display:block}
 body.fmt-lista #label,body.fmt-lista #ticket{display:none}
-.lista-grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm;font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#000;background:#fff}
-.lista-header{font-family:Arial,sans-serif;font-size:9pt;color:#555;margin-bottom:5mm;padding-bottom:3mm;border-bottom:1px solid #ccc}
-.card{display:flex;gap:8px;border:1px solid #bbb;border-radius:6px;padding:8px;break-inside:avoid;page-break-inside:avoid;background:#fff}
+.lista-hdr{font-family:Arial,sans-serif;font-size:9pt;color:#555;margin-bottom:5mm;padding-bottom:3mm;border-bottom:1px solid #ccc}
+.lista-grid{display:grid;grid-template-columns:1fr 1fr;gap:5mm;font-family:Arial,Helvetica,sans-serif;color:#000}
+.card{display:flex;gap:8px;border:1px solid #aaa;border-radius:5px;padding:7px;break-inside:avoid;page-break-inside:avoid;background:#fff}
 .card-body{flex:1;min-width:0}
-.biz{font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
-.cname{font-size:13pt;font-weight:700;margin-bottom:3px;line-height:1.2}
-.row{font-size:8.5pt;color:#333;margin-bottom:2px;line-height:1.4}
-.addr{color:#555}
-.status-line{margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.badge{font-size:7pt;font-weight:700;background:#eee;border:1px solid #ccc;border-radius:8px;padding:1px 6px;white-space:nowrap}
-.note{font-size:7.5pt;color:#666}
-.track{font-size:7pt;color:#aaa;margin-top:3px;letter-spacing:1px}
-.qr-block{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;flex-shrink:0}
-.qr-block img{width:72px;height:72px;display:block}
-.qr-num{font-size:6.5pt;color:#888;text-align:center;word-break:break-all;max-width:72px}
-
-/* ── A4 ETIQUETA ── */
-body.fmt-label #label{display:block}
-body.fmt-label #lista,body.fmt-label #ticket{display:none}
-.label-card{break-inside:avoid;page-break-inside:avoid;page-break-after:always;break-after:page;border:2px solid #000;border-radius:8px;padding:12mm;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;min-height:120mm;box-sizing:border-box}
-.label-card:last-child{page-break-after:auto;break-after:auto}
-.label-biz{font-size:9pt;color:#777;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4mm}
-.label-name{font-size:22pt;font-weight:700;margin-bottom:3mm;line-height:1.2}
-.label-phone{font-size:16pt;font-weight:600;color:#333;margin-bottom:3mm}
-.label-addr{font-size:11pt;color:#444;margin-bottom:3mm;line-height:1.5}
-.label-courier{font-size:10pt;color:#555;margin-bottom:2mm}
-.label-cost{font-size:14pt;font-weight:700;margin-bottom:2mm}
-.label-notes{font-size:9pt;color:#666;margin-bottom:4mm;border-top:1px dashed #ccc;padding-top:2mm}
-.label-qr-row{display:flex;align-items:flex-end;gap:8mm;margin-top:4mm;padding-top:4mm;border-top:1px solid #ddd}
-.label-qr-row img{width:110px;height:110px;flex-shrink:0}
-.label-qr-info{flex:1}
-.label-track{font-size:18pt;font-weight:700;letter-spacing:3px;color:#222;margin-bottom:2mm}
-.label-status{font-size:10pt;font-weight:700;background:#eee;display:inline-block;padding:2px 10px;border-radius:4px;margin-bottom:2mm}
-.label-date{font-size:8pt;color:#999}
+.cname{font-size:12pt;font-weight:700;margin-bottom:2px;line-height:1.2}
+.crow{font-size:8pt;color:#333;margin-bottom:2px;line-height:1.4}
+.addr{color:#444}
+.note{color:#666}
+.badge{display:inline-block;font-size:7pt;font-weight:700;background:#eee;border:1px solid #ccc;border-radius:6px;padding:1px 7px;margin-top:3px}
+.qr-block{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.qr-block img{display:block}
+.qr-num{font-size:6pt;color:#999;text-align:center;max-width:70px;word-break:break-all}
 
 /* ── TICKET 80mm ── */
 body.fmt-ticket #ticket{display:block}
 body.fmt-ticket #lista,body.fmt-ticket #label{display:none}
-.ticket-wrap{font-family:'Courier New',Courier,monospace;font-size:9pt;color:#000;background:#fff;width:72mm;margin:0 auto}
-.ticket{margin-bottom:4mm}
-.t-biz{font-size:10pt;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:1px;margin-bottom:2mm}
-.t-sep{font-size:7pt;color:#555;margin:1.5mm 0;letter-spacing:1px}
-.t-cut{font-size:7pt;color:#aaa;margin:1mm 0 3mm}
-.t-name{font-size:12pt;font-weight:700;margin:1mm 0}
+.ticket-wrap{width:72mm;margin:0 auto;font-family:'Courier New',Courier,monospace;font-size:9pt;color:#000;background:#fff}
+.ticket{margin-bottom:5mm}
+.t-biz{text-align:center;font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:1.5mm}
+.t-sep{font-size:7pt;color:#666;margin:1.5mm 0;text-align:center}
+.t-name{font-size:12pt;font-weight:700;margin:1mm 0;line-height:1.2}
 .t-phone{font-size:10pt;margin:1mm 0}
-.t-addr{font-size:8pt;margin:1mm 0;line-height:1.4;white-space:pre-wrap}
-.t-courier{font-size:8pt;margin:1mm 0}
+.t-dest{font-size:8pt;margin:.5mm 0;line-height:1.4}
+.t-note{font-size:7.5pt;color:#444;margin:.5mm 0}
 .t-cost{font-size:10pt;font-weight:700;margin:1.5mm 0}
-.t-notes{font-size:7.5pt;margin:1mm 0;color:#444}
-.t-status{font-size:8pt;margin:1mm 0}
+.t-footer{display:flex;justify-content:space-between;font-size:8.5pt;margin:1.5mm 0;border-top:1px solid #aaa;padding-top:1.5mm}
 .t-qr{text-align:center;margin:2mm 0}
-.t-qr img{width:88px;height:88px}
-.t-track{text-align:center;font-size:8pt;letter-spacing:2px;color:#555;margin-bottom:1mm}
+.t-qr img{display:block;margin:0 auto}
+.t-cut{text-align:center;font-size:7pt;color:#bbb;margin:2mm 0 4mm;letter-spacing:2px}
 </style>
 <script>
-var FMT_PAGES={
+var FMT={
+  label:'@page{size:A4 portrait;margin:12mm 10mm}',
   lista:'@page{size:A4 portrait;margin:12mm 10mm}',
-  label:'@page{size:A4 portrait;margin:10mm}',
   ticket:'@page{size:80mm auto;margin:3mm 2mm}'
 };
 function setFmt(f){
   document.body.className='fmt-'+f;
-  document.getElementById('pageStyle').textContent=FMT_PAGES[f];
+  document.getElementById('pageStyle').textContent=FMT[f];
   document.querySelectorAll('.fmt-btn').forEach(function(b){b.classList.toggle('active',b.dataset.fmt===f);});
 }
 <\/script>
 </head>
-<body class="fmt-lista">
+<body class="fmt-label">
 <style id="pageStyle">@page{size:A4 portrait;margin:12mm 10mm}</style>
 
 <div id="toolbar">
   <span class="lbl">Formato:</span>
-  <button class="fmt-btn active" data-fmt="lista" onclick="setFmt('lista')">📋 A4 Lista</button>
-  <button class="fmt-btn" data-fmt="label" onclick="setFmt('label')">🏷️ A4 Etiqueta</button>
+  <button class="fmt-btn active" data-fmt="label" onclick="setFmt('label')">🏷️ Etiqueta A4</button>
+  <button class="fmt-btn" data-fmt="lista" onclick="setFmt('lista')">📋 Lista A4</button>
   <button class="fmt-btn" data-fmt="ticket" onclick="setFmt('ticket')">🧾 Ticket 80mm</button>
   <button id="printBtn" onclick="window.print()">🖨️ Imprimir</button>
 </div>
 
 <div id="content">
-  <div id="lista">
-    <div class="lista-header">📦 ${esc(biz)} &nbsp;·&nbsp; ${today} &nbsp;·&nbsp; ${list.length} envío${list.length!==1?'s':''}</div>
+  <div id="label">${cardsLabel}</div>
+  <div id="lista" style="display:none">
+    <div class="lista-hdr">📦 ${esc(biz)} · ${today} · ${list.length} envío${list.length!==1?'s':''}</div>
     <div class="lista-grid">${cardsA4}</div>
   </div>
-  <div id="label" style="display:none">${cardsLabel}</div>
   <div id="ticket" style="display:none"><div class="ticket-wrap">${cardsTicket}</div></div>
 </div>
 </body></html>`;
