@@ -958,68 +958,97 @@ function doPrint(){
     return '';
   }
 
-  /* ── card templates ── */
+  /* ── shared: clean notes removes internal agency line ── */
+  function cleanNotes(s){ return (s.notes||'').replace(/Agencia:[^|]*(\|)?/gi,'').replace(/\s*\|\s*$/,'').trim(); }
+
+  /* ── shared: build DESTINO content lines ── */
+  function buildDestino(s){
+    const u=(s.courier||'').toUpperCase();
+    const isRetiro=u.includes('RETIRO');
+    const isEnco=u.includes('ENCOMIENDA');
+    const isAgency=!isRetiro&&!isEnco&&(
+      ['SHALOM','OLVA','MARVISUR','DINSIDES'].some(n=>u.includes(n))||
+      ((S.courierTypes||{})[s.courier]==='agencia')
+    );
+    if(isRetiro) return [];
+    if(isEnco){
+      const lines=[];
+      if(s.ciudadDestino) lines.push('CIUDAD DESTINO: '+s.ciudadDestino);
+      if(s.dniDestinatario) lines.push('DNI destinatario: '+s.dniDestinatario);
+      return lines;
+    }
+    if(isAgency){
+      const agMatch=(s.notes||'').match(/Agencia:\s*([^|]+)/i);
+      const agText=agMatch?agMatch[1].trim():(s.address||'');
+      const lines=[];
+      if(agText) lines.push('AGENCIA: '+agText);
+      if(s.dniRecoger) lines.push('DNI para recoger: '+s.dniRecoger);
+      return lines;
+    }
+    const lines=[];
+    if(s.address) lines.push('DIRECCIÓN: '+s.address);
+    if(s.referencia) lines.push('Ref: '+s.referencia);
+    return lines;
+  }
+
+  /* ── ETIQUETA (formato REMITENTE/PARA/DESTINO — default) ── */
+  function cardLabel(s){
+    const dest=buildDestino(s);
+    const note=cleanNotes(s);
+    return `<div class="lcard">
+      <div class="lcard-top"><span class="lremit">REMITENTE</span><span class="lbiz">${esc(biz)}</span></div>
+      <div class="lcard-mid">
+        <div class="lpara">PARA:</div>
+        <div class="lname">${esc((s.name||'').toUpperCase())}</div>
+        <div class="lphone">${esc(s.phone)}</div>
+        ${dest.length?`<div class="ldest-lbl">DESTINO:</div>${dest.map(l=>`<div class="ldest-line">${esc(l)}</div>`).join('')}`:''}
+        ${s.cost?`<div class="lcost">MONTO: S/ ${esc(s.cost)}</div>`:''}
+        ${note?`<div class="lnote">${esc(note)}</div>`:''}
+      </div>
+      <div class="lcard-bot"><span class="lcourier">${esc(s.courier)}</span><span class="ldate">${fmtDate(s.date)}</span></div>
+    </div>`;
+  }
+
+  /* ── A4 LISTA (2 columnas, con QR) ── */
   function cardA4(s){
-    const addr=s.address?(s.referencia?`${s.address} — Ref: ${s.referencia}`:s.address):'';
+    const dest=buildDestino(s);
+    const note=cleanNotes(s);
     return `<div class="card">
       <div class="card-body">
-        <div class="biz">${esc(biz)}</div>
         <div class="cname">${esc(s.name)}</div>
-        <div class="row">📞 ${esc(s.phone)}</div>
-        ${addr?`<div class="row addr">🏠 ${esc(addr)}</div>`:''}
-        <div class="row">🚚 ${esc(s.courier)}${s.date?` · 📅 ${esc(s.date)}`:''}${s.cost?` · S/ ${esc(s.cost)}`:''}</div>
-        <div class="status-line"><span class="badge">${esc(s.status)}</span>${s.notes?`<span class="note">📝 ${esc(s.notes)}</span>`:''}</div>
-        ${s.id?`<div class="track">#${esc(s.id.slice(-6).toUpperCase())}</div>`:''}
+        <div class="crow">📞 ${esc(s.phone)}</div>
+        ${dest.map(l=>`<div class="crow addr">${esc(l)}</div>`).join('')}
+        <div class="crow">🚚 ${esc(s.courier)} · ${fmtDate(s.date)}${s.cost?` · S/ ${esc(s.cost)}`:''}</div>
+        ${note?`<div class="crow note">📝 ${esc(note)}</div>`:''}
+        <span class="badge">${esc(s.status)}</span>
       </div>
       <div class="qr-block">
-        <img src="${qrUrl(s.phone)}" width="80" height="80" alt="QR">
+        <img src="${qrUrl(s.phone)}" width="68" height="68" alt="QR">
         <div class="qr-num">${esc(s.phone)}</div>
       </div>
     </div>`;
   }
 
-  function cardLabel(s){
-    const addr=s.address?(s.referencia?`${s.address} — Ref: ${s.referencia}`:s.address):'';
-    return `<div class="label-card">
-      <div class="label-biz">${esc(biz)}</div>
-      <div class="label-name">${esc(s.name)}</div>
-      <div class="label-phone">${esc(s.phone)}</div>
-      ${addr?`<div class="label-addr">🏠 ${esc(addr)}</div>`:''}
-      <div class="label-courier">🚚 ${esc(s.courier)}${s.date?` | 📅 ${esc(s.date)}`:''}</div>
-      ${s.cost?`<div class="label-cost">S/ ${esc(s.cost)}</div>`:''}
-      ${s.notes?`<div class="label-notes">📝 ${esc(s.notes)}</div>`:''}
-      <div class="label-qr-row">
-        <img src="${qrUrl(s.phone)}" width="130" height="130" alt="QR">
-        <div class="label-qr-info">
-          ${s.id?`<div class="label-track">#${esc(s.id.slice(-6).toUpperCase())}</div>`:''}
-          <div class="label-status">${esc(s.status)}</div>
-          <div class="label-date">Impreso: ${today}</div>
-        </div>
-      </div>
-    </div>`;
-  }
-
+  /* ── TICKET 80mm ── */
   function cardTicket(s){
-    const addr=s.address?(s.referencia?`${s.address}\nRef: ${s.referencia}`:s.address):'';
+    const dest=buildDestino(s);
+    const note=cleanNotes(s);
     return `<div class="ticket">
       <div class="t-biz">${esc(biz)}</div>
-      <div class="t-sep">--------------------------------</div>
-      <div class="t-name">${esc(s.name)}</div>
+      <div class="t-sep">- - - - - - - - - - - - - - -</div>
+      <div class="t-name">${esc((s.name||'').toUpperCase())}</div>
       <div class="t-phone">${esc(s.phone)}</div>
-      ${addr?`<div class="t-addr">${esc(addr)}</div>`:''}
-      <div class="t-courier">${esc(s.courier)}${s.date?' | '+esc(s.date):''}</div>
+      ${dest.map(l=>`<div class="t-dest">${esc(l)}</div>`).join('')}
+      ${note?`<div class="t-note">${esc(note)}</div>`:''}
       ${s.cost?`<div class="t-cost">MONTO: S/ ${esc(s.cost)}</div>`:''}
-      ${s.notes?`<div class="t-notes">${esc(s.notes)}</div>`:''}
-      <div class="t-status">[${esc(s.status)}]</div>
-      <div class="t-qr"><img src="${qrUrl(s.phone)}" width="100" height="100" alt="${esc(s.phone)}"></div>
-      ${s.id?`<div class="t-track">#${esc(s.id.slice(-6).toUpperCase())}</div>`:''}
-      <div class="t-sep">--------------------------------</div>
-      <div class="t-cut">✂ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+      <div class="t-footer"><b>${esc(s.courier)}</b> &nbsp; ${fmtDate(s.date)}</div>
+      <div class="t-qr"><img src="${qrUrl(s.phone)}" width="88" height="88" alt="${esc(s.phone)}"></div>
+      <div class="t-cut">· · · · · · · · · · · · · · · · · ·</div>
     </div>`;
   }
 
-  const cardsA4    = list.map(cardA4).join('');
   const cardsLabel = list.map(cardLabel).join('');
+  const cardsA4    = list.map(cardA4).join('');
   const cardsTicket= list.map(cardTicket).join('');
 
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
