@@ -35,6 +35,7 @@ function loadCfgUI() {
   $('cfgPhone').value = S.config.phone || '';
   $('cfgCity').value = S.config.city || '';
   updateAutoStatusBadge();
+  if (typeof renderCfgEmpList === 'function') renderCfgEmpList();
 
   // DISPATCH DAYS
   const days = [{n:'Lun',v:1},{n:'Mar',v:2},{n:'Mié',v:3},{n:'Jue',v:4},{n:'Vie',v:5},{n:'Sáb',v:6},{n:'Dom',v:0}];
