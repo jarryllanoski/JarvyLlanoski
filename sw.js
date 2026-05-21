@@ -2,7 +2,7 @@
    Estrategia: Network-first para HTML/JS/CSS (siempre actualizado),
    cache como fallback si no hay internet.
 */
-const V = 'jarvy-20260521d';
+const V = 'jarvy-20260521e';
 const SHELL = [
   './index.html',
   './app.js',
