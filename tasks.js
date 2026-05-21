@@ -172,6 +172,14 @@ function taskCardHTML(t) {
       <span style="font-weight:700;color:#e3b341">✕ No puede${t.blockReason ? ': ' + t.blockReason : ''}</span>
       ${t.availableForVolunteers ? `<div style="color:var(--orange);margin-top:3px">🙋 Disponible para voluntarios</div>` : ''}
     </div>` : ''}
+    ${linkedShip ? `<div style="margin:8px 0 4px 36px;background:var(--bg3);border:1px solid var(--bd);border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:9px">
+      <span style="font-size:14px">📦</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${linkedShip.name||'Sin nombre'}</div>
+        ${(linkedShip.phone||linkedShip.address||linkedShip.district)?`<div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${[linkedShip.phone,linkedShip.address||linkedShip.district].filter(Boolean).join(' · ')}</div>`:''}
+      </div>
+      ${linkedShip.phone?`<a href="https://wa.me/51${(linkedShip.phone||'').replace(/\D/g,'')}" target="_blank" style="font-size:17px;text-decoration:none;-webkit-tap-highlight-color:transparent" onclick="event.stopPropagation()">💬</a>`:''}
+    </div>` : ''}
     <div class="task-actions">
       ${!isDone && !isBlocked ? `<button onclick="openBlockTask('${t.id}')" style="font-size:11px;background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.25);color:#e3b341;border-radius:7px;padding:4px 9px;cursor:pointer">✕ No puede</button>` : ''}
       ${isBlocked ? `<button onclick="reassignTask('${t.id}')" style="font-size:11px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);color:var(--blue);border-radius:7px;padding:4px 9px;cursor:pointer">👤 Reasignar</button>` : ''}
