@@ -481,6 +481,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 </head>
 <body>
 
+<script>
+/* ── Caja Negra: interceptor de errores ── */
+const _dbgLog = [];
+(function(){
+  const _push = (lvl, msg) => {
+    const ts = new Date().toTimeString().slice(0,8);
+    _dbgLog.unshift({ ts, lvl, msg: String(msg).slice(0,400) });
+    if (_dbgLog.length > 30) _dbgLog.length = 30;
+  };
+  const _ce = console.error.bind(console);
+  console.error = (...a) => { _push('ERROR', a.map(x=>x?.stack||x).join(' ')); _ce(...a); };
+  const _cw = console.warn.bind(console);
+  console.warn  = (...a) => { _push('WARN',  a.join(' ')); _cw(...a); };
+  window.onerror = (msg, src, line, col) => {
+    _push('CRASH', `${msg} @ ${(src||'').split('/').pop()}:${line}:${col}`);
+    return false;
+  };
+  window.onunhandledrejection = ev => _push('PROMISE', String(ev.reason?.message || ev.reason || 'rejected'));
+})();
+</script>
+
 <!-- HEADER -->
 <div class="hdr">
   <div class="hdr-logo" onclick="openOverlay('excelOverlay')" style="cursor:pointer" title="Importar / Exportar Excel">📦</div>
