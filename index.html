@@ -1398,6 +1398,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   </div>
 </div>
 
+<!-- OVERLAY: AGREGAR EMPLEADO (desde config) -->
+<div class="overlay" id="empAddFormOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">👤 Nuevo empleado</div>
+    <div class="fg">
+      <label class="fl">Nombre completo *</label>
+      <input class="fi" id="newEmpNameCfg" placeholder="Nombre del empleado..." autocomplete="off"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();addEmployeeCfg()}">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-sec" onclick="closeOverlay('empAddFormOverlay')" style="flex:1">Cancelar</button>
+      <button class="btn-pri" onclick="addEmployeeCfg()" style="flex:2">✅ Agregar</button>
+    </div>
+  </div>
+</div>
+
 <!-- OVERLAY: EMPLOYEE EDIT -->
 <div class="overlay" id="empEditOverlay">
   <div class="sheet">
