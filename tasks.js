@@ -785,12 +785,29 @@ function openPin(cb) {
   _openPinFor(S.statusPin || '', 'Ingresa la clave para continuar', cb);
 }
 
-function _openPinFor(expected, msg, cb) {
-  _pinEntry = ''; _pinExpected = expected; _pinCallback = cb;
+function _openPinFor(expected, msg, cb, credId) {
+  _pinEntry = ''; _pinExpected = expected; _pinCallback = cb; _pinCredId = credId || '';
   updatePinDots();
   $('pinMsg').textContent = msg;
   $('pinMsg').style.color = 'var(--text2)';
+  const fpBtn = $('pinFpBtn');
+  if (fpBtn) fpBtn.style.display = (_pinCredId && _isMobileFP()) ? 'flex' : 'none';
   openOverlay('pinOverlay');
+}
+
+function pinTryFp() {
+  if (!_pinCredId) return;
+  const fpBtn = $('pinFpBtn');
+  if (fpBtn) { fpBtn.style.opacity = '.4'; fpBtn.style.pointerEvents = 'none'; }
+  _verifyEmpFingerprint(_pinCredId, () => {
+    if (fpBtn) { fpBtn.style.opacity = '1'; fpBtn.style.pointerEvents = ''; }
+    closeOverlay('pinOverlay');
+    if (_pinCallback) { _pinCallback(); _pinCallback = null; }
+  }, () => {
+    if (fpBtn) { fpBtn.style.opacity = '1'; fpBtn.style.pointerEvents = ''; }
+    const m = $('pinMsg');
+    if (m) { m.textContent = '👆 Huella no reconocida, usa tu PIN'; m.style.color = 'var(--text2)'; }
+  });
 }
 
 function pinTap(d) {
