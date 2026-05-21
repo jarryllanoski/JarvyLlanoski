@@ -269,34 +269,9 @@ function _renderEmpChips() {
 }
 
 function _renderDateChips() {
-  const box = $('tDateChips'); if (!box) return;
-  const now = new Date();
-  const iso = d => d.toISOString().slice(0,10);
-  const chips = [
-    {label:'Sin fecha', date:''},
-    {label:'Hoy',       date: iso(now)},
-    {label:'Mañana',    date: iso(new Date(now.getTime()+86400000))},
-    {label:'+3 días',   date: iso(new Date(now.getTime()+3*86400000))},
-    {label:'+7 días',   date: iso(new Date(now.getTime()+7*86400000))},
-    {label:'📅 Elegir', date:'custom'},
-  ];
-  box.innerHTML = chips.map(c =>
-    `<button class="tf-date-chip" data-date="${c.date}" onclick="_setTaskFormDate('${c.date}')"
-      style="padding:8px 12px;border-radius:10px;border:2px solid var(--bd);background:var(--bg3);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap">${c.label}</button>`
-  ).join('');
-  /* If editing with a saved date that's not one of the chips, show custom input */
-  const presets = chips.slice(1,-1).map(c => c.date);
-  if (_tfDate && !presets.includes(_tfDate)) {
-    const inp = $('tDue');
-    if (inp) { inp.style.display = 'block'; }
-    document.querySelectorAll('.tf-date-chip').forEach(el => {
-      const sel = el.dataset.date === 'custom';
-      el.style.borderColor = sel ? 'var(--blue)' : 'var(--bd)';
-      el.style.background  = sel ? 'rgba(79,142,247,.15)' : 'var(--bg3)';
-    });
-  } else {
-    _setTaskFormDate(_tfDate);
-  }
+  const inp = $('tDue');
+  if (inp) inp.value = _tfDate || '';
+  _refreshDateBtn();
 }
 
 /* ── Linked-shipment helpers ──────────────────────────────────── */
