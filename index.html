@@ -1334,6 +1334,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   </div>
 </div>
 
+<!-- OVERLAY: ACTIVIDAD RECIENTE -->
+<div class="overlay" id="activityOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+      <div class="sheet-title" style="margin:0">🔥 Actividad reciente</div>
+      <div style="font-size:11px;color:var(--text2)">Últimas 50 acciones</div>
+    </div>
+    <div id="activityList" style="max-height:65vh;overflow-y:auto"></div>
+    <button class="btn-sec" onclick="closeOverlay('activityOverlay')" style="width:100%;margin-top:12px">Cerrar</button>
+  </div>
+</div>
+
 <!-- OVERLAY: VINCULAR ENVÍO A TAREA -->
 <div class="overlay" id="taskShipPickerOverlay">
   <div class="sheet">
