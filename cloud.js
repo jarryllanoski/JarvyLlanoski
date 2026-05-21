@@ -89,6 +89,10 @@ function _listen() {
     if (d.dispatch)      S.dispatch      = d.dispatch;
     if (d.trash)             S.trash             = d.trash;
     if (d.deletedPedidoIds) S.deletedPedidoIds  = d.deletedPedidoIds;
+    if (d.activityLog) {
+      S.activityLog = d.activityLog;
+      if (typeof _updateBellBadge === 'function') _updateBellBadge();
+    }
     lsSet('dpanel', JSON.stringify(S));
     if (typeof render      === 'function') render();
     if (typeof renderChips === 'function') renderChips();
