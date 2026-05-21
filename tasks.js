@@ -383,6 +383,8 @@ function saveTask() {
       status: 'pending', blockReason: '', availableForVolunteers: false,
       createdAt: new Date().toISOString()
     });
+    const newT = S.tasks[S.tasks.length-1];
+    if (typeof logActivity==='function') logActivity('task', `creó tarea: ${title}`, '', newT.id);
     toast('✅ Tarea creada');
   }
   save(); closeOverlay('taskFormOverlay'); renderTasks();
