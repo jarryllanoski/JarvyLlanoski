@@ -191,12 +191,14 @@ function taskCardHTML(t) {
 function cycleTaskStatus(id) {
   const t = S.tasks.find(x => x.id === id);
   if (!t) return;
-  /* cycle: pending → inprogress → done → pending */
-  if (t.status === 'pending')     { t.status = 'inprogress'; }
-  else if (t.status === 'inprogress') { t.status = 'done'; }
-  else if (t.status === 'done')   { t.status = 'pending'; t.blockReason = ''; t.availableForVolunteers = false; }
-  else if (t.status === 'blocked'){ t.status = 'pending'; }
+  const prev = t.status;
+  if (prev === 'pending')     { t.status = 'inprogress'; }
+  else if (prev === 'inprogress') { t.status = 'done'; }
+  else if (prev === 'done')   { t.status = 'pending'; t.blockReason = ''; t.availableForVolunteers = false; }
+  else if (prev === 'blocked'){ t.status = 'pending'; }
   else { t.status = 'inprogress'; }
+  const labels = { pending:'Pendiente', inprogress:'En curso', done:'✅ Completada', blocked:'Bloqueada' };
+  if (typeof logActivity==='function') logActivity('task', `"${t.title}" → ${labels[t.status]||t.status}`, '', t.id);
   save(); renderTasks();
 }
 
