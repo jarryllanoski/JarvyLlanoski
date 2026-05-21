@@ -363,12 +363,10 @@ function openTaskForm(id) {
 }
 
 function saveTask() {
-  const title = $('tTitle').value.trim();
-  if (!title) { toast('⚠️ Escribe el título'); return; }
-  /* If custom date input is visible, grab its value */
-  const duEl = $('tDue');
-  if (duEl && duEl.style.display !== 'none' && duEl.value) _tfDate = duEl.value;
-  const desc = ($('tDesc')||{value:''}).value.trim();
+  const title = ($('tTitle')||{value:''}).value.trim();
+  if (!title) { toast('⚠️ Escribe qué hay que hacer'); return; }
+  const duEl = $('tDue'); if (duEl && duEl.value) _tfDate = duEl.value;
+  const desc = '';
   if (_editTaskId) {
     const t = S.tasks.find(x => x.id === _editTaskId);
     if (t) {
