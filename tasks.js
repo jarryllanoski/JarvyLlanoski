@@ -196,6 +196,7 @@ let _editTaskId  = null;
 let _tfEmp  = '';
 let _tfDate = '';
 let _tfPri  = 'normal';
+let _tfLinkedId = '';
 
 const _EMP_COLORS = ['#388bfd','#a371f7','#3fb950','#f78166','#e3b341','#58a6ff'];
 
