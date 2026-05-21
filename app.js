@@ -1259,32 +1259,103 @@ function onCourierHdrTap(courier) {
 
 function openRoute(courier) {
   _routeCourier = courier;
-  $('routeTitle').textContent = '🚚 Ruta — ' + courier;
+  $('routeTitle').textContent = '🚚🗺️ Ruta — ' + courier;
+  const pending = S.shipments.filter(x => x.courier === courier && x.status !== 'Finalizado');
+  _routeOrder = pending.map(x => x.id);
   renderRouteList();
   openOverlay('routeOverlay');
 }
 
 function renderRouteList() {
   const el = $('routeList'); if (!el) return;
-  const items = S.shipments.filter(x => x.courier === _routeCourier && x.status !== 'Finalizado');
+  let items = S.shipments.filter(x => x.courier === _routeCourier && x.status !== 'Finalizado');
+  // Sort by _routeOrder; append any new items not yet in order
+  const ordMap = {}; _routeOrder.forEach((id, i) => ordMap[id] = i);
+  items.forEach(x => { if (!(x.id in ordMap)) { ordMap[x.id] = _routeOrder.length; _routeOrder.push(x.id); } });
+  items.sort((a, b) => (ordMap[a.id] ?? 999) - (ordMap[b.id] ?? 999));
   if (!items.length) {
     el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2)">✅ Sin entregas pendientes</div>';
     return;
   }
+  const total = items.length;
   el.innerHTML = items.map((s, i) => {
-    const proof = s.deliveryProof;
-    const done  = proof && proof.deliveredAt;
-    return `<div class="route-item ${done ? 'route-done' : ''}">
-      <div class="route-num" style="${done ? 'background:var(--green)' : ''}">${done ? '✓' : i + 1}</div>
+    const proof  = s.deliveryProof;
+    const done   = proof && proof.deliveredAt;
+    const driver = _routeDrivers[s.id] || '';
+    const ph     = (s.phone || '').replace(/\D/g, '');
+    return `<div class="route-item ${done ? 'route-done' : ''}" id="ri-${s.id}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;padding-top:1px">
+        <div class="route-num" style="${done ? 'background:var(--green)' : ''}">${done ? '✓' : i + 1}</div>
+        ${!done && total > 1 ? `
+        <button onclick="_routeMove('${s.id}',-1)" style="width:22px;height:22px;border-radius:6px;background:var(--bg3);border:1px solid var(--bd);color:var(--text2);font-size:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;padding:0" ${i===0?'disabled style="opacity:.3;pointer-events:none;width:22px;height:22px;border-radius:6px;background:var(--bg3);border:1px solid var(--bd);color:var(--text2);font-size:10px;display:flex;align-items:center;justify-content:center;padding:0"':''}>▲</button>
+        <button onclick="_routeMove('${s.id}',1)"  style="width:22px;height:22px;border-radius:6px;background:var(--bg3);border:1px solid var(--bd);color:var(--text2);font-size:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;padding:0" ${i===total-1?'disabled style="opacity:.3;pointer-events:none;width:22px;height:22px;border-radius:6px;background:var(--bg3);border:1px solid var(--bd);color:var(--text2);font-size:10px;display:flex;align-items:center;justify-content:center;padding:0"':''}>▼</button>
+        ` : ''}
+      </div>
       <div class="route-info">
         <div class="route-name">${s.name}</div>
         <div class="route-addr">🏠 ${_isDeliveryCourier(s.courier) ? mapsLink(s.address, s.gpsCoords) : (s.address||'')}</div>
-        <div style="font-size:11px;color:var(--text2)">📞 ${s.phone}</div>
+        ${ph ? `<div onclick="_routePhoneMenu(event,'${ph}')" style="font-size:11px;color:var(--blue);cursor:pointer;margin-top:2px;display:inline-flex;align-items:center;gap:3px">📞 ${s.phone} <span style="font-size:9px;opacity:.7">▾</span></div>` : ''}
+        ${!done ? `<div style="margin-top:5px" onclick="_routePickDriver(event,'${s.id}')">
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;cursor:pointer;border:1px solid ${driver?'rgba(163,113,247,.5)':'var(--bd)'};background:${driver?'rgba(163,113,247,.1)':'var(--bg3)'};color:${driver?'var(--purple)':'var(--text2)'}">👤 ${driver||'Sin driver'} <span style="font-size:9px">▾</span></span>
+        </div>` : ''}
         ${done ? `<div style="font-size:11px;color:var(--green);margin-top:3px">✅ Recibió: ${proof.receivedBy || '—'}</div>` : ''}
       </div>
       ${!done ? `<button class="route-btn" onclick="startDelivery('${s.id}')">📦 Entregar</button>` : ''}
     </div>`;
   }).join('');
+}
+
+function _routeMove(id, dir) {
+  const i = _routeOrder.indexOf(id); if (i < 0) return;
+  const j = i + dir;
+  if (j < 0 || j >= _routeOrder.length) return;
+  [_routeOrder[i], _routeOrder[j]] = [_routeOrder[j], _routeOrder[i]];
+  renderRouteList();
+}
+
+function _routePhoneMenu(ev, phone) {
+  ev.stopPropagation();
+  document.getElementById('_rPhPop')?.remove();
+  const pop = document.createElement('div');
+  pop.id = '_rPhPop';
+  pop.style.cssText = 'position:fixed;z-index:700;background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:3px;box-shadow:0 8px 28px rgba(0,0,0,.5);min-width:165px';
+  pop.innerHTML = `
+    <a href="tel:${phone}" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;background:rgba(56,139,253,.1)">📞 Llamar</a>
+    <a href="https://wa.me/51${phone}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;background:rgba(46,160,67,.1)">💬 WhatsApp</a>`;
+  const r = ev.target.getBoundingClientRect();
+  pop.style.top  = Math.min(r.bottom + 6, window.innerHeight - 120) + 'px';
+  pop.style.left = Math.min(r.left, window.innerWidth - 180) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => document.addEventListener('click', () => pop.remove(), { once: true }), 10);
+}
+
+function _routePickDriver(ev, shipId) {
+  ev.stopPropagation();
+  document.getElementById('_rDrPop')?.remove();
+  const emps = (S.employees || []);
+  const pop = document.createElement('div');
+  pop.id = '_rDrPop';
+  pop.style.cssText = 'position:fixed;z-index:700;background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 8px 28px rgba(0,0,0,.5);min-width:175px;max-height:220px;overflow-y:auto';
+  const cur = _routeDrivers[shipId] || '';
+  let html = `<div style="padding:7px 12px 5px;font-size:10px;color:var(--text2);font-weight:700;letter-spacing:.5px">ASIGNAR DRIVER</div>`;
+  if (cur) html += `<button onclick="_routeSetDriver('${shipId}','');document.getElementById('_rDrPop')?.remove()" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;color:var(--text2);font-size:12px;background:transparent;border:none;cursor:pointer;font-family:inherit;width:100%;text-align:left">✕ Sin driver</button>`;
+  if (!emps.length) html += `<div style="padding:10px 12px;font-size:12px;color:var(--text2)">Sin empleados registrados</div>`;
+  emps.forEach(e => {
+    const nm = e.name || e; const sel = nm === cur;
+    html += `<button onclick="_routeSetDriver('${shipId}','${nm.replace(/'/g,"\\'")}');document.getElementById('_rDrPop')?.remove()" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;color:${sel?'var(--purple)':'var(--text)'};font-size:12px;font-weight:${sel?700:400};background:${sel?'rgba(163,113,247,.1)':'transparent'};border:none;cursor:pointer;font-family:inherit;width:100%;text-align:left">👤 ${nm}</button>`;
+  });
+  pop.innerHTML = html;
+  const r = ev.target.getBoundingClientRect();
+  pop.style.top  = Math.min(r.bottom + 6, window.innerHeight - 240) + 'px';
+  pop.style.left = Math.min(r.left, window.innerWidth - 195) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => document.addEventListener('click', () => pop.remove(), { once: true }), 10);
+}
+
+function _routeSetDriver(shipId, empName) {
+  if (empName) _routeDrivers[shipId] = empName;
+  else delete _routeDrivers[shipId];
+  renderRouteList();
 }
 
 function startDelivery(id) {
