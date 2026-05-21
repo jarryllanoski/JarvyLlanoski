@@ -54,7 +54,15 @@ function renderSuppItems(){
   });
   const el = $('suppItemsList');
   if (!el) return;
-  if (!items.length) { el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2)">Sin ítems</div>`; return; }
+  if (!items.length) {
+    el.innerHTML = `<div onclick="const i=$('suppNewItem');if(i){i.focus();i.scrollIntoView({behavior:'smooth',block:'center'})}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:120px;cursor:pointer;border:2px dashed var(--bd);border-radius:12px;padding:20px;margin:4px 0;-webkit-tap-highlight-color:transparent;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--bd)'">
+      <div style="font-size:28px">📋</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2)">Lista vacía</div>
+      <div style="font-size:11px;color:var(--text2);opacity:.7">Toca aquí para agregar tu primer ítem</div>
+      <div style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(56,139,253,.12);border:1px solid rgba(56,139,253,.3);padding:6px 16px;border-radius:20px">＋ Agregar ítem</div>
+    </div>`;
+    return;
+  }
   el.innerHTML = items.map((item, idx) => {
     const realIdx = (sup.items||[]).indexOf(item);
     return `<div class="cfl-item supp-item" draggable="true"
