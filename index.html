@@ -462,6 +462,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 .emp-avatar span{font-size:9px;color:var(--text2);max-width:46px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 .task-group-hdr{font-size:11px;font-weight:700;color:var(--text2);padding:8px 0 5px;display:flex;align-items:center;gap:6px;letter-spacing:.5px;text-transform:uppercase}
 .task-fab{position:fixed;bottom:76px;right:16px;width:54px;height:54px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 4px 20px rgba(79,142,247,.45);z-index:200;display:none;align-items:center;justify-content:center;transition:transform .15s;-webkit-tap-highlight-color:transparent}
+.bell-btn{position:relative;background:var(--bg3);border:1px solid var(--bd);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.bell-btn:active{opacity:.7}
+.bell-badge{display:none;position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;background:var(--red);color:#fff;border-radius:8px;font-size:9px;font-weight:700;align-items:center;justify-content:center;padding:0 3px;line-height:1;border:1.5px solid var(--bg)}
+.act-banner{display:none;position:fixed;top:62px;left:8px;right:8px;z-index:400;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:11px 14px;flex-direction:row;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,.35);animation:actSlide .25s ease}
+@keyframes actSlide{from{transform:translateY(-8px);opacity:0}to{transform:translateY(0);opacity:1}}
 .task-fab:active{transform:scale(.92)}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
