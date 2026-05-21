@@ -137,8 +137,8 @@ function moveAllToPorAlistar(){
   save(); render();
   toast(`✅ ${checked.length} ítem(s) movidos a "Por alistar"`);
 }
-function sendSuppList(){
-  const i = S._suppIdx;
+function sendSuppList(idx){
+  const i = (idx != null && S.suppliers[idx] !== undefined) ? idx : S._suppIdx;
   if (i == null || !S.suppliers[i]) return;
   const sup = S.suppliers[i];
   const items = (sup.items||[]).filter(x=>x.checked);
