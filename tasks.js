@@ -752,7 +752,7 @@ function saveEmpEdit() {
     }
     S.employees[_empEditIdx] = { name, pin, dni, phone, permisos: perms };
   }
-  save(); renderEmpList(); renderEmpAvatars(); _updateUserBtn();
+  save(); _refreshEmpViews(); _updateUserBtn();
   closeOverlay('empEditOverlay');
   toast('✅ Empleado actualizado');
 }
