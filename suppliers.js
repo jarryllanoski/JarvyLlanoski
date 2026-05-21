@@ -19,7 +19,7 @@ function openSupplier(i){
   if (!S.suppliers[i]) return;
   S._suppIdx = i;
   const sup = S.suppliers[i];
-  $('suppOverlayTitle').textContent = sup.name;
+  $('suppName').textContent = sup.name;
   renderSuppItems();
   openOverlay('suppOverlay');
 }
