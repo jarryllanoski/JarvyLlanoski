@@ -393,12 +393,14 @@ function saveTask() {
     if (t) {
       t.title = title; t.description = desc;
       t.assignedTo = _tfEmp; t.dueDate = _tfDate; t.priority = _tfPri;
+      t.linkedShipmentId = _tfLinkedId || '';
     }
     toast('✅ Tarea actualizada');
   } else {
     S.tasks.push({
       id: 'task_' + Date.now(), title, description: desc,
       assignedTo: _tfEmp, dueDate: _tfDate, priority: _tfPri,
+      linkedShipmentId: _tfLinkedId || '',
       status: 'pending', blockReason: '', availableForVolunteers: false,
       createdAt: new Date().toISOString()
     });
