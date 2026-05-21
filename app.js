@@ -1243,6 +1243,7 @@ function closeQR(){
    DELIVERY ROUTE
 ════════════════════════════════════════ */
 let _routeCourier = '', _routeDelivId = null;
+let _routeOrder = [], _routeDrivers = {};
 let _sigCtx = null, _sigDrawing = false, _sigHasContent = false;
 
 /* Triple-tap detection per courier header */
