@@ -361,19 +361,22 @@ function openTaskForm(id) {
     if (!t) return;
     $('tTitle').value = t.title;
     $('tDesc').value  = t.description || '';
-    _tfEmp  = t.assignedTo || '';
-    _tfDate = t.dueDate    || '';
-    _tfPri  = t.priority   || 'normal';
+    _tfEmp      = t.assignedTo     || '';
+    _tfDate     = t.dueDate        || '';
+    _tfPri      = t.priority       || 'normal';
+    _tfLinkedId = t.linkedShipmentId || '';
   } else {
     $('tTitle').value = '';
     $('tDesc').value  = '';
-    _tfEmp  = _taskEmpFilter || '';
-    _tfDate = '';
-    _tfPri  = 'normal';
+    _tfEmp      = _taskEmpFilter || '';
+    _tfDate     = '';
+    _tfPri      = 'normal';
+    _tfLinkedId = '';
   }
   _renderEmpChips();
   _renderDateChips();
   _setTaskFormPri(_tfPri);
+  _refreshLinkedShipArea();
   openOverlay('taskFormOverlay');
   setTimeout(() => { const el = $('tTitle'); if (el) el.focus(); }, 120);
 }
