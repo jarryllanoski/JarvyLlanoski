@@ -99,11 +99,11 @@ function editSuppItem(idx){
 function addSuppItem(){
   const i = S._suppIdx;
   if (i == null || !S.suppliers[i]) return;
-  const name = ($('newSuppItem')||{value:''}).value.trim();
+  const name = ($('suppNewItem')||{value:''}).value.trim();
   if (!name) { toast('Escribe el nombre del ítem'); return; }
   if (!S.suppliers[i].items) S.suppliers[i].items = [];
   S.suppliers[i].items.push({name, qty:'', checked:false, verified:false});
-  $('newSuppItem').value = '';
+  $('suppNewItem').value = '';
   save(); renderSuppItems();
 }
 function toggleSuppItem(idx, val){
