@@ -508,10 +508,12 @@ function applyStatus(st) {
   if (sel.length > 1) {
     sel.forEach(x => { x.status=st; x.sel=false; });
     save(); render(); closeOverlay('statusOverlay');
+    if (typeof logActivity==='function') sel.forEach(x => logActivity('status', `${x.name} → ${st}`, x.id, ''));
     toast(`${stIcon(st)} ${st} → ${sel.length} clientes`);
   } else {
     s.status=st; s.sel=false;
     save(); render(); closeOverlay('statusOverlay');
+    if (typeof logActivity==='function') logActivity('status', `${s.name} → ${st}`, s.id, '');
     toast(`${stIcon(st)} ${st}`);
   }
 }
