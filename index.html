@@ -485,10 +485,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
       <div id="cloudBadge" onclick="openOverlay('cloudConnectOverlay')" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2);color:var(--text2);cursor:pointer;white-space:nowrap">⬜ Sin nube</div>
     </div>
   </div>
+  <button class="bell-btn" id="bellBtn" onclick="openActivityLog()">
+    🔔
+    <span class="bell-badge" id="bellBadge">0</span>
+  </button>
   <button class="usr-btn" id="userBtn" onclick="openUserSwitcher()">
     <div class="usr-av-sm" id="userBtnAv" style="background:linear-gradient(135deg,#e3b341,#a36b00)">👑</div>
     <span class="usr-btn-nm" id="userBtnName">Jefe</span>
   </button>
+</div>
+
+<!-- ACTIVITY BANNER -->
+<div class="act-banner" id="activityBanner">
+  <span style="font-size:17px;flex-shrink:0">🔔</span>
+  <div id="activityBannerTxt" style="flex:1;font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+  <button id="activityBannerLink" style="font-size:12px;color:var(--blue);font-weight:700;background:none;border:none;cursor:pointer;white-space:nowrap;padding:0;-webkit-tap-highlight-color:transparent">Ver →</button>
+  <button onclick="hideBanner()" style="font-size:16px;color:var(--text2);background:none;border:none;cursor:pointer;padding:0;line-height:1;-webkit-tap-highlight-color:transparent">✕</button>
 </div>
 
 <!-- TABS -->
