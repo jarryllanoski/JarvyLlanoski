@@ -220,25 +220,23 @@ function _setTaskFormEmp(name) {
   });
 }
 
-function _setTaskFormDate(d) {
-  const inp = $('tDue');
-  if (d === 'custom') {
-    if (inp) { inp.style.display = 'block'; setTimeout(() => inp.focus(), 50); inp.onchange = () => { _tfDate = inp.value; }; }
-    document.querySelectorAll('.tf-date-chip').forEach(el => {
-      const sel = el.dataset.date === 'custom';
-      el.style.borderColor = sel ? 'var(--blue)' : 'var(--bd)';
-      el.style.background  = sel ? 'rgba(79,142,247,.15)' : 'var(--bg3)';
-    });
-    return;
-  }
-  _tfDate = d;
-  if (inp) { inp.style.display = 'none'; inp.value = d; }
-  document.querySelectorAll('.tf-date-chip').forEach(el => {
-    const sel = el.dataset.date === d;
-    el.style.borderColor = sel ? 'var(--blue)' : 'var(--bd)';
-    el.style.background  = sel ? 'rgba(79,142,247,.15)' : 'var(--bg3)';
-  });
+function _setTaskDateHoy() {
+  _tfDate = new Date().toISOString().slice(0, 10);
+  const inp = $('tDue'); if (inp) inp.value = _tfDate;
+  _refreshDateBtn();
 }
+
+function _refreshDateBtn() {
+  const inp = $('tDue'); if (inp && inp.value) _tfDate = inp.value;
+  const today = new Date().toISOString().slice(0, 10);
+  const btn = $('tDateHoyBtn'); if (!btn) return;
+  const isToday = _tfDate === today;
+  btn.style.borderColor = isToday ? 'var(--blue)' : 'var(--bd)';
+  btn.style.background  = isToday ? 'rgba(79,142,247,.12)' : 'var(--bg3)';
+  btn.style.color       = isToday ? 'var(--blue)' : 'var(--text2)';
+}
+
+function _setTaskFormDate(d) { _tfDate = d; }
 
 function _setTaskFormPri(p) {
   _tfPri = p;
