@@ -539,6 +539,148 @@ function _doSwitch(userName) {
   toast('👤 Sesión: ' + (userName || 'Jefe / Admin'));
 }
 
+/* ── EMPLOYEE CONFIG (rich cards) ───────────────────────────────── */
+function _isMobileFP() {
+  return ((/Mobi|Android|iPhone/i.test(navigator.userAgent)) || navigator.maxTouchPoints > 1)
+    && !!window.PublicKeyCredential;
+}
+
+function renderCfgEmpList() {
+  const el = $('cfgEmpList'); if (!el) return;
+  if (!S.employees.length) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px">Sin empleados aún.</div>`;
+    return;
+  }
+  const showFP = _isMobileFP();
+  el.innerHTML = S.employees.map((e, i) => {
+    const nm    = _eName(e);
+    const col   = _EMP_COLORS[i % _EMP_COLORS.length];
+    const ini   = nm.charAt(0).toUpperCase();
+    const perms = _ePerms(e).length;
+    const pin   = _ePin(e);
+    const dni   = _eDni(e);
+    const phone = _ePhone(e).replace(/\s/g,'');
+    const ph51  = phone.replace(/\D/g,'');
+    const hasFP = !!e.credentialId;
+    const dniMask = dni ? '****' + String(dni).slice(-3) : '';
+    const meta  = [
+      perms + ' permiso' + (perms !== 1 ? 's activos' : ' activo'),
+      pin      ? 'PIN: ****'   : '',
+      dniMask  ? 'DNI: ' + dniMask : ''
+    ].filter(Boolean).join(' · ');
+    return `<div class="emp-cfg-card">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div class="emp-cfg-av" style="background:${col}">${ini}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:700;color:var(--text)">${nm}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:3px;line-height:1.5">${meta}</div>
+        </div>
+        <button class="emp-cfg-edit" onclick="openEmpEdit(${i})">✏️</button>
+      </div>
+      ${phone ? `<div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+        <a href="tel:+51${ph51}" class="emp-cfg-phone">
+          <span style="font-size:16px">📞</span>
+          <span style="font-size:13px;font-weight:600;color:#3fb950">+51 ${phone}</span>
+        </a>
+        <a href="https://wa.me/51${ph51}" target="_blank" class="emp-cfg-act" style="background:rgba(46,160,67,.15);border:1px solid rgba(46,160,67,.3)">💬</a>
+        <button class="emp-cfg-act" onclick="setEmpFilter('${nm.replace(/'/g,"\\'")}');goPage('tareas')" style="background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3)">📋</button>
+      </div>` : `<div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="emp-cfg-act" onclick="setEmpFilter('${nm.replace(/'/g,"\\'")}');goPage('tareas')" style="background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3)">📋</button>
+      </div>`}
+      ${showFP ? `<button class="emp-cfg-fp ${hasFP?'fp-ok':''}" onclick="registerEmpFingerprint(${i})">
+        ${hasFP ? '✅ Huella registrada · toca para actualizar' : '👆 Registrar huella digital'}
+      </button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function _refreshEmpViews() {
+  renderEmpList();
+  renderEmpAvatars();
+  renderCfgEmpList();
+}
+
+/* ── Employee add (config) ───── */
+function promptAddEmployee() {
+  const key = S.empAddKey || '';
+  if (!key) { _openAddEmpForm(); return; }
+  _openPinFor(key, '🔑 Clave para agregar empleados', _openAddEmpForm);
+}
+
+function _openAddEmpForm() {
+  const inp = $('newEmpNameCfg'); if (inp) inp.value = '';
+  openOverlay('empAddFormOverlay');
+  setTimeout(() => { const el = $('newEmpNameCfg'); if (el) el.focus(); }, 120);
+}
+
+function addEmployeeCfg() {
+  const name = ($('newEmpNameCfg')||{value:''}).value.trim();
+  if (!name) { toast('⚠️ Escribe el nombre'); return; }
+  if (S.employees.find(e => _eName(e) === name)) { toast('Ya existe ese empleado'); return; }
+  S.employees.push({ name, pin:'', dni:'', phone:'', permisos:['verPedidos','tareas'] });
+  save(); _refreshEmpViews();
+  closeOverlay('empAddFormOverlay');
+  toast(`✅ "${name}" agregado`);
+}
+
+/* ── Admin key for adding employees ── */
+function changeEmpAddKey() {
+  const current = S.empAddKey || '';
+  const setNew = () => {
+    _pinEntry = ''; _pinExpected = null; updatePinDots();
+    $('pinMsg').textContent = '🔑 Nueva clave (4 dígitos)';
+    $('pinMsg').style.color = 'var(--blue)';
+    openOverlay('pinOverlay');
+    _pinCallback = () => {
+      S.empAddKey = _pinEntry; save();
+      toast(_pinEntry ? '🔑 Clave de empleados actualizada' : '🔓 Clave eliminada');
+    };
+  };
+  if (current) _openPinFor(current, '🔑 Clave actual de empleados', setNew);
+  else setNew();
+}
+
+/* ── Fingerprint (WebAuthn) ──── */
+async function registerEmpFingerprint(empIdx) {
+  const e = S.employees[empIdx]; if (!e) return;
+  const nm = _eName(e);
+  try {
+    toast('👆 Escanea tu huella...');
+    const cred = await navigator.credentials.create({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'Total Tools' },
+        user: { id: new TextEncoder().encode(nm+'_'+empIdx), name: nm, displayName: nm },
+        pubKeyCredParams: [{ alg:-7, type:'public-key' }],
+        authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required' },
+        timeout: 60000, attestation: 'none'
+      }
+    });
+    const arr = new Uint8Array(cred.rawId);
+    e.credentialId = btoa(String.fromCharCode(...arr));
+    save(); renderCfgEmpList();
+    toast('✅ Huella registrada para ' + nm);
+  } catch(err) {
+    if (err.name !== 'NotAllowedError') toast('❌ ' + (err.message || 'No se pudo registrar'));
+  }
+}
+
+async function _verifyEmpFingerprint(credIdB64, onSuccess, onFail) {
+  try {
+    const raw = atob(credIdB64);
+    const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials: [{ type:'public-key', id:arr }],
+        userVerification: 'required', timeout: 30000
+      }
+    });
+    if (assertion) onSuccess(); else onFail(null);
+  } catch(err) { onFail(err); }
+}
+
 /* ── EMPLOYEE FORM ───────────────────────────────────────────────── */
 let _empEditIdx = -1;
 
