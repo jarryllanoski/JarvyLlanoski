@@ -779,7 +779,7 @@ function deleteEmployee(i) {
 }
 
 /* ── PIN ─────────────────────────────────────────────────────────── */
-let _pinEntry = '', _pinCallback = null, _pinExpected = '';
+let _pinEntry = '', _pinCallback = null, _pinExpected = '', _pinCredId = '';
 
 function openPin(cb) {
   _openPinFor(S.statusPin || '', 'Ingresa la clave para continuar', cb);
