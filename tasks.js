@@ -527,18 +527,8 @@ function switchToEmp(name) {
   const pin    = _ePin(emp);
   const credId = emp.credentialId || '';
   _closeUserDD();
-  if (credId && _isMobileFP()) {
-    toast('👆 Verifica tu identidad...');
-    _verifyEmpFingerprint(credId, () => {
-      _doSwitch(name);
-    }, () => {
-      if (pin) _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => _doSwitch(name));
-      else _doSwitch(name);
-    });
-    return;
-  }
   if (!pin) { _doSwitch(name); return; }
-  _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => { _doSwitch(name); });
+  _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => _doSwitch(name), credId);
 }
 
 function _doSwitch(userName) {
