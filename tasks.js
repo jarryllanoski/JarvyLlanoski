@@ -125,6 +125,7 @@ function taskCardHTML(t) {
   const today       = new Date().toISOString().slice(0, 10);
   const isOverdue   = !isDone && !isBlocked && t.dueDate && t.dueDate < today;
   const isToday     = !isDone && !isBlocked && t.dueDate === today;
+  const linkedShip  = t.linkedShipmentId ? (S.shipments||[]).find(x => x.id === t.linkedShipmentId) : null;
 
   const chkCls  = isDone ? 'done' : isInProg ? 'inprogress' : isBlocked ? 'blocked' : '';
   const chkIcon = isDone ? '✓' : isInProg ? '▶' : isBlocked ? '✕' : '';
