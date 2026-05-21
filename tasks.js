@@ -474,17 +474,22 @@ function _enforcePermisos() {
   }
 }
 
+function _closeUserDD() {
+  const dd = $('userDropdown'); if (dd) dd.style.display = 'none';
+}
+
 function openUserSwitcher() {
-  const list = $('userSwitcherList'); if (!list) return;
+  const dd = $('userDropdown'); if (!dd) return;
+  if (dd.style.display !== 'none') { _closeUserDD(); return; }
   const emps = S.employees || [];
-  list.innerHTML = [
+  $('userDropdownList').innerHTML = [
     `<div class="usr-item ${!S.activeUser?'usr-active':''}" onclick="switchToJefe()">
-      <div class="usr-av" style="background:linear-gradient(135deg,#e3b341,#a36b00)">👑</div>
+      <div class="usr-av" style="background:linear-gradient(135deg,#e3b341,#a36b00);font-size:15px">👑</div>
       <div class="usr-info"><div class="usr-nm">Jefe / Admin</div><div class="usr-sub">Acceso total</div></div>
       ${!S.activeUser?'<div class="usr-dot"></div>':''}
     </div>`,
     ...emps.map((e,i) => {
-      const nm   = _eName(e);
+      const nm     = _eName(e);
       const active = S.activeUser === nm;
       const perms  = _ePerms(e).length;
       const col    = _EMP_COLORS[i % _EMP_COLORS.length];
@@ -495,26 +500,34 @@ function openUserSwitcher() {
       </div>`;
     })
   ].join('');
-  openOverlay('userSwitcherOverlay');
+  dd.style.display = 'block';
+  setTimeout(() => {
+    function onOut(e) {
+      const btn = $('userBtn');
+      if (!dd.contains(e.target) && (!btn || !btn.contains(e.target))) {
+        _closeUserDD();
+        document.removeEventListener('click', onOut, true);
+      }
+    }
+    document.addEventListener('click', onOut, true);
+  }, 10);
 }
 
 function switchToJefe() {
-  if (!S.activeUser) { closeOverlay('userSwitcherOverlay'); return; }
+  if (!S.activeUser) { _closeUserDD(); return; }
   const jPin = S.statusPin || '';
-  if (!jPin) { _doSwitch(null); closeOverlay('userSwitcherOverlay'); return; }
-  _openPinFor(jPin, 'PIN de Jefe / Admin', () => {
-    _doSwitch(null); closeOverlay('userSwitcherOverlay');
-  });
+  if (!jPin) { _doSwitch(null); _closeUserDD(); return; }
+  _closeUserDD();
+  _openPinFor(jPin, 'PIN de Jefe / Admin', () => { _doSwitch(null); });
 }
 
 function switchToEmp(name) {
-  if (S.activeUser === name) { closeOverlay('userSwitcherOverlay'); return; }
+  if (S.activeUser === name) { _closeUserDD(); return; }
   const emp = _eObj(name); if (!emp) return;
   const pin = _ePin(emp);
-  if (!pin) { _doSwitch(name); closeOverlay('userSwitcherOverlay'); return; }
-  _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => {
-    _doSwitch(name); closeOverlay('userSwitcherOverlay');
-  });
+  if (!pin) { _doSwitch(name); _closeUserDD(); return; }
+  _closeUserDD();
+  _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => { _doSwitch(name); });
 }
 
 function _doSwitch(userName) {
