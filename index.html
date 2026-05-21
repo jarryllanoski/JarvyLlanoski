@@ -1317,6 +1317,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
   </div>
 </div>
 
+<!-- OVERLAY: VINCULAR ENVÍO A TAREA -->
+<div class="overlay" id="taskShipPickerOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📦 Vincular envío</div>
+    <input class="fi" id="taskShipSearch" placeholder="Buscar nombre o teléfono..." oninput="renderTaskShipList()" autocomplete="off" style="margin-bottom:8px">
+    <div id="taskShipList" style="max-height:52vh;overflow-y:auto"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-sec" onclick="selectTaskShip('');closeOverlay('taskShipPickerOverlay')" style="flex:1">✕ Sin vincular</button>
+      <button class="btn-sec" onclick="closeOverlay('taskShipPickerOverlay')" style="flex:1">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- OVERLAY: EMPLEADO FORM -->
 <div class="overlay" id="empFormOverlay">
   <div class="sheet">
