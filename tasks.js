@@ -337,19 +337,18 @@ function selectTaskShip(id) {
 
 function openTaskForm(id) {
   _editTaskId = id;
-  $('taskFormTitle').textContent = id ? 'Editar Tarea' : 'Nueva Tarea';
+  const titleEl = $('taskFormTitle');
+  if (titleEl) titleEl.textContent = id ? '✏️ Editar tarea' : '📋 Nueva tarea';
   if (id) {
     const t = S.tasks.find(x => x.id === id);
     if (!t) return;
     $('tTitle').value = t.title;
-    $('tDesc').value  = t.description || '';
-    _tfEmp      = t.assignedTo     || '';
-    _tfDate     = t.dueDate        || '';
-    _tfPri      = t.priority       || 'normal';
+    _tfEmp      = t.assignedTo      || '';
+    _tfDate     = t.dueDate         || '';
+    _tfPri      = t.priority        || 'normal';
     _tfLinkedId = t.linkedShipmentId || '';
   } else {
     $('tTitle').value = '';
-    $('tDesc').value  = '';
     _tfEmp      = _taskEmpFilter || '';
     _tfDate     = '';
     _tfPri      = 'normal';
