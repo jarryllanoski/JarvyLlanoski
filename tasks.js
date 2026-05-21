@@ -292,6 +292,67 @@ function _renderDateChips() {
   }
 }
 
+/* ── Linked-shipment helpers ──────────────────────────────────── */
+function _refreshLinkedShipArea() {
+  const area = $('tLinkedShipArea'); if (!area) return;
+  const s = _tfLinkedId ? (S.shipments||[]).find(x => x.id === _tfLinkedId) : null;
+  if (s) {
+    const info = [s.phone, s.address||s.district].filter(Boolean).join(' · ');
+    area.innerHTML =
+      `<div onclick="openTaskShipPicker()" style="background:var(--bg3);border:1px solid var(--blue);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <span style="font-size:17px">📦</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name||'Sin nombre'}</div>
+          ${info ? `<div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${info}</div>` : ''}
+        </div>
+        <span style="font-size:12px;color:var(--text2)">✏️</span>
+      </div>`;
+  } else {
+    area.innerHTML =
+      `<button onclick="openTaskShipPicker()" style="width:100%;padding:11px 12px;border-radius:10px;border:2px dashed var(--bd);background:var(--bg2);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;text-align:left;display:flex;align-items:center;gap:8px">
+        <span>📦</span><span>Sin envío vinculado</span><span style="margin-left:auto;opacity:.4">+</span>
+      </button>`;
+  }
+}
+
+function openTaskShipPicker() {
+  const inp = $('taskShipSearch'); if (inp) inp.value = '';
+  renderTaskShipList();
+  openOverlay('taskShipPickerOverlay');
+  setTimeout(() => { const el = $('taskShipSearch'); if (el) el.focus(); }, 120);
+}
+
+function renderTaskShipList() {
+  const el = $('taskShipList'); if (!el) return;
+  const q = (($('taskShipSearch')||{value:''}).value||'').toLowerCase().trim();
+  const list = (S.shipments||[]).filter(s => {
+    if (!q) return true;
+    return (s.name||'').toLowerCase().includes(q) || (s.phone||'').includes(q);
+  }).slice(0, 50);
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2);font-size:13px">Sin resultados</div>`;
+    return;
+  }
+  el.innerHTML = list.map(s => {
+    const sel  = s.id === _tfLinkedId;
+    const info = [s.phone, s.address||s.district].filter(Boolean).join(' · ');
+    return `<div onclick="selectTaskShip('${s.id}')" style="padding:10px 12px;border-radius:10px;margin-bottom:4px;background:${sel?'rgba(79,142,247,.12)':'var(--bg2)'};border:1px solid ${sel?'var(--blue)':'var(--bd)'};display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+      <span style="font-size:15px">📦</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name||'Sin nombre'}</div>
+        ${info ? `<div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${info}</div>` : ''}
+      </div>
+      ${sel ? `<span style="color:var(--blue);font-size:15px">✓</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function selectTaskShip(id) {
+  _tfLinkedId = id;
+  closeOverlay('taskShipPickerOverlay');
+  _refreshLinkedShipArea();
+}
+
 function openTaskForm(id) {
   _editTaskId = id;
   $('taskFormTitle').textContent = id ? 'Editar Tarea' : 'Nueva Tarea';
