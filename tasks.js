@@ -60,10 +60,7 @@ function renderEmpAvatars() {
       <span style="color:rgba(255,255,255,.8)">${name.length>7?name.slice(0,6)+'…':name}</span>
     </div>`;
   }).join('');
-  el.innerHTML = allAvatar + empAv +
-    `<div class="emp-avatar" onclick="openOverlay('empFormOverlay');renderEmpList()" style="background:var(--bg3);border:1px dashed var(--bd)">
-      <span style="font-size:16px">⚙️</span><span>Editar</span>
-    </div>`;
+  el.innerHTML = allAvatar + empAv;
 }
 
 function renderTasks() {
