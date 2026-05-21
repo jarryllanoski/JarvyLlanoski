@@ -144,6 +144,7 @@ function cloudSync() {
       dispatch:      S.dispatch   || {},
       trash:            _clean(S.trash) || [],
       deletedPedidoIds: S.deletedPedidoIds || [],
+      activityLog:      S.activityLog     || [],
       t: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(() => {});
   }, 800);
