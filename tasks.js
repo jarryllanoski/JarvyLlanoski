@@ -764,7 +764,7 @@ function deleteEmployee(i) {
   if (S.activeUser === name) { S.activeUser = null; _updateUserBtn(); }
   S.employees.splice(i, 1);
   if (_taskEmpFilter === name) _taskEmpFilter = '';
-  save(); renderEmpList(); renderEmpAvatars(); renderTasks();
+  save(); _refreshEmpViews(); renderTasks();
 }
 
 /* ── PIN ─────────────────────────────────────────────────────────── */
