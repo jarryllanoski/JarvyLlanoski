@@ -145,14 +145,14 @@ function renderStatsAsSuppliers() {
     </div>
     <div id="globalSuppResult" style="display:none;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:12px;line-height:1.8"></div>
     <div class="supp-cards">
-      ${S.suppliers.map(sup => {
+      ${S.suppliers.map((sup, i) => {
         const pending = (sup.items||[]).filter(x => !x.done).length;
         const total   = (sup.items||[]).length;
-        return `<div class="supp-card ${pending>0?'has-pending':''}" onclick="openSupplier('${sup.id}')">
+        return `<div class="supp-card ${pending>0?'has-pending':''}" onclick="openSupplier(${i})">
           <div class="supp-card-name">${sup.name}</div>
           <div class="supp-card-phone">
             <span style="font-size:11px;color:var(--blue)">📞 ${sup.phone}</span>
-            <button onclick="event.stopPropagation();sendSuppList('${sup.id}')"
+            <button onclick="event.stopPropagation();sendSuppList(${i})"
               style="background:rgba(46,160,67,.15);border:1px solid rgba(46,160,67,.3);color:var(--green);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">
               💬 Enviar
             </button>
@@ -163,7 +163,7 @@ function renderStatsAsSuppliers() {
               <span class="supp-item-text ${it.done?'done':''}" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.text}</span>
             </div>`).join('')}
             ${total>4?`<div style="font-size:10px;color:var(--text2)">+${total-4} más...</div>`:''}
-          </div>`:`<div style="font-size:11px;color:var(--text2);font-style:italic;margin-top:4px">Lista vacía</div>`}
+          </div>`:`<div style="font-size:11px;color:var(--text2);font-style:italic;margin-top:4px">Lista vacía — toca para agregar</div>`}
           ${pending>0?`<div style="margin-top:6px;font-size:10px;font-weight:700;color:var(--red)">⚠️ ${pending} pendiente${pending>1?'s':''}</div>`:
             total>0?`<div style="margin-top:6px;font-size:10px;font-weight:700;color:var(--green)">✅ Todo listo</div>`:''}
         </div>`;
