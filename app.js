@@ -86,14 +86,14 @@ function mapsLink(addr, gpsCoords) {
   return `<a href="${url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" title="Abrir en Google Maps">${addr} 🗺️</a>`;
 }
 function stClass(st) {
-  if (st==='Nuevo pedido'||st==='Faltante / pedir proveedor'||st==='Pendiente de pago') return 'st-pend';
+  if (st==='Nuevo pedido'||st==='En proceso'||st==='Pendiente de pago') return 'st-pend';
   if (st==='Por alistar'||st==='Alistado'||st==='Enviado') return 'st-env';
   if (st==='Llegó a destino') return 'st-cust';
   if (st==='Finalizado') return 'st-ent';
   return 'st-cust';
 }
 function stSoptClass(st) {
-  if (st==='Nuevo pedido'||st==='Faltante / pedir proveedor'||st==='Pendiente de pago') return 'sopt-pend';
+  if (st==='Nuevo pedido'||st==='En proceso'||st==='Pendiente de pago') return 'sopt-pend';
   if (st==='Por alistar'||st==='Alistado'||st==='Enviado') return 'sopt-env';
   if (st==='Llegó a destino') return 'sopt-cust';
   if (st==='Finalizado') return 'sopt-ent';
@@ -113,11 +113,11 @@ function clearSearch() { $('fSearch').value = ''; $('fSearch').focus(); render()
 
 /* ── STATS ───────────────────────────────────────────────────────── */
 function updateStats() {
-  if (_filt === 'Faltante / pedir proveedor') { renderStatsAsSuppliers(); return; }
+  if (_filt === 'En proceso') { renderStatsAsSuppliers(); return; }
   $('statsArea').style.display = 'grid';
   $('suppStatsArea').style.display = 'none';
   $('sTotal').textContent = S.shipments.length;
-  $('sPend').textContent  = S.shipments.filter(x => x.status==='Nuevo pedido'||x.status==='Faltante / pedir proveedor'||x.status==='Pendiente de pago').length;
+  $('sPend').textContent  = S.shipments.filter(x => x.status==='Nuevo pedido'||x.status==='En proceso'||x.status==='Pendiente de pago').length;
   $('sEnv').textContent   = S.shipments.filter(x => x.status==='Por alistar'||x.status==='Alistado'||x.status==='Enviado'||x.status==='Llegó a destino').length;
   $('sEnt').textContent   = S.shipments.filter(x => x.status==='Finalizado').length;
 }
@@ -787,7 +787,7 @@ function calcAutoStatus(s){
   if(_ruleOn('comprobante')   && s.docComprobante && s.status==='Pendiente de pago') return 'Finalizado';
   if(_ruleOn('embalado')      && s.docEmbalado)                               return 'Alistado';
   if(_ruleOn('embalado')      && s.alistado)                                  return 'Alistado';
-  if(S.config.autoStatusEnabled){if(s.stockOk)return 'Por alistar';if(s.faltante)return 'Faltante / pedir proveedor';}
+  if(S.config.autoStatusEnabled){if(s.stockOk)return 'Por alistar';if(s.faltante)return 'En proceso';}
   return null;
 }
 let _autoFields={faltante:false,stockOk:false,alistado:false,arrivedAtDest:false,delivered:false};
