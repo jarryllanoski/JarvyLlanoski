@@ -860,7 +860,7 @@ function saveShipment(){
   const autoSt=calcAutoStatus(data);
   if(autoSt&&statusPrio(autoSt)>statusPrio(data.status))data.status=autoSt;
   if(_editId){const idx=S.shipments.findIndex(x=>x.id===_editId);S.shipments[idx]={...S.shipments[idx],...data};toast(autoSt?'🤖 Actualizado (estado automático)':'✅ Actualizado');}
-  else{data.id='id_'+Date.now();data.createdAt=new Date().toISOString();S.shipments.push(data);toast(autoSt?'🤖 Envío registrado (estado automático)':'✅ Envío registrado');}
+  else{data.id='id_'+Date.now();data.createdAt=new Date().toISOString();data.printed=false;S.shipments.push(data);toast(autoSt?'🤖 Envío registrado (estado automático)':'✅ Envío registrado');}
   save(); closeOverlay('formOverlay'); render();
 }
 
