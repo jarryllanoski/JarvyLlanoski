@@ -524,9 +524,20 @@ function switchToJefe() {
 function switchToEmp(name) {
   if (S.activeUser === name) { _closeUserDD(); return; }
   const emp = _eObj(name); if (!emp) return;
-  const pin = _ePin(emp);
-  if (!pin) { _doSwitch(name); _closeUserDD(); return; }
+  const pin    = _ePin(emp);
+  const credId = emp.credentialId || '';
   _closeUserDD();
+  if (credId && _isMobileFP()) {
+    toast('👆 Verifica tu identidad...');
+    _verifyEmpFingerprint(credId, () => {
+      _doSwitch(name);
+    }, () => {
+      if (pin) _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => _doSwitch(name));
+      else _doSwitch(name);
+    });
+    return;
+  }
+  if (!pin) { _doSwitch(name); return; }
   _openPinFor(pin, 'PIN de ' + name.split(' ')[0], () => { _doSwitch(name); });
 }
 
