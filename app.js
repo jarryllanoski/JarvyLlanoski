@@ -869,6 +869,38 @@ function saveShipment(){
   save(); closeOverlay('formOverlay'); render();
 }
 
+/* ── DEBUG LOG ───────────────────────────────────────────────────── */
+function renderDbgLog() {
+  const el = $('dbgBox'); if (!el) return;
+  if (!_dbgLog.length) {
+    el.innerHTML = '<span style="color:#3fb950">✓ Sin errores registrados</span>';
+    return;
+  }
+  const C = { ERROR:'#f85149', WARN:'#e3b341', CRASH:'#ff7b72', PROMISE:'#ffa657' };
+  el.innerHTML = _dbgLog.map(e =>
+    `<div><span style="color:#8b949e">${e.ts}</span> <span style="color:${C[e.lvl]||'#79c0ff'};font-weight:700">[${e.lvl}]</span> <span style="color:#e6edf3">${e.msg}</span></div>`
+  ).join('');
+}
+
+function _dbgCopy() {
+  if (!_dbgLog.length) { toast('Sin eventos en el log'); return; }
+  const txt = _dbgLog.map(e => `[${e.ts}] [${e.lvl}] ${e.msg}`).join('\n');
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(txt).then(() => toast('📋 Log copiado al portapapeles'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); toast('📋 Log copiado');
+  }
+}
+
+function _dbgClear() {
+  _dbgLog.length = 0;
+  renderDbgLog();
+  toast('🗑️ Log limpiado');
+}
+
 /* ── EXPORT / IMPORT ─────────────────────────────────────────────── */
 function exportExcel(){
   if(!S.shipments.length){toast('Sin envíos para exportar');return;}
