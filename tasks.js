@@ -411,6 +411,7 @@ function saveBlockTask() {
   t.status = 'blocked';
   t.blockReason = $('blockReason').value.trim();
   t.availableForVolunteers = $('blockVolunteer').checked;
+  if (typeof logActivity==='function') logActivity('task', `"${t.title}" → No puede${t.blockReason?': '+t.blockReason:''}`, '', t.id);
   save(); closeOverlay('blockTaskOverlay'); renderTasks();
   toast('✕ Tarea marcada como bloqueada');
 }
