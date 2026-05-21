@@ -1283,8 +1283,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 
     <!-- Descripción -->
     <div class="fg">
-      <input class="fi" id="tDesc" placeholder="Descripción (opcional)" autocomplete="off">
+      <textarea class="fi" id="tDesc" placeholder="Descripción (opcional)" autocomplete="off" rows="2" style="resize:none;min-height:52px;line-height:1.5"></textarea>
     </div>
+
+    <!-- Vincular envío -->
+    <div class="fl" style="margin-bottom:7px">ENVÍO VINCULADO</div>
+    <div id="tLinkedShipArea" style="margin-bottom:16px"></div>
 
     <!-- Empleado: chips dinámicos -->
     <div class="fl" style="margin-bottom:7px">EMPLEADO</div>
