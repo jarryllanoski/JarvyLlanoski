@@ -522,6 +522,7 @@ function _doSwitch(userName) {
   lsSet('dpanel', JSON.stringify(S));
   _updateUserBtn();
   _enforcePermisos();
+  if (typeof logActivity==='function') logActivity('login', 'inició sesión: ' + (userName || 'Jefe / Admin'), '', '');
   toast('👤 Sesión: ' + (userName || 'Jefe / Admin'));
 }
 
