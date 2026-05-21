@@ -20,8 +20,6 @@ function goPage(id) {
   if (id === 'configurar') loadCfgUI();
   if (id === 'tareas') renderTasks();
   if (id === 'compartir') renderTokenList();
-  const fab = $('taskFab');
-  if (fab) fab.style.display = id === 'tareas' ? 'flex' : 'none';
 }
 
 /* OVERLAYS */
