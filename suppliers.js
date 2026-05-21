@@ -141,13 +141,14 @@ function sendSuppList(){
   window.open(url, '_blank');
 }
 function saveNewSupplier(){
-  const name = ($('newSuppName')||{value:''}).value.trim();
-  const phone = ($('newSuppPhone')||{value:''}).value.trim();
+  const name = ($('suppNewName')||{value:''}).value.trim();
+  const phone = ($('suppNewPhone')||{value:''}).value.trim();
   if (!name) { toast('Escribe el nombre del proveedor'); return; }
   if (!S.suppliers) S.suppliers = [];
   S.suppliers.push({name, phone, items:[]});
-  $('newSuppName').value = ''; if ($('newSuppPhone')) $('newSuppPhone').value = '';
+  $('suppNewName').value = ''; if ($('suppNewPhone')) $('suppNewPhone').value = '';
   save(); renderSuppList();
+  closeOverlay('suppNewOverlay');
   toast(`✅ Proveedor "${name}" agregado`);
 }
 function renderSuppList(){
