@@ -113,6 +113,10 @@ function _listen() {
         lsSet('dpanel', JSON.stringify(S));
         if (typeof render === 'function') render();
         if (typeof renderChips === 'function') renderChips();
+        const newOnes = S.shipments.slice(-added);
+        newOnes.forEach(p => {
+          if (typeof logActivity === 'function') logActivity('neworder', 'nuevo pedido: ' + (p.name||'Sin nombre'), p.id, '');
+        });
         toast('📥 ' + added + ' nuevo' + (added > 1 ? 's' : '') + ' pedido' + (added > 1 ? 's' : '') + ' del formulario');
         _alertNewOrder(added);
       }
