@@ -1005,10 +1005,13 @@ function updateShareUrl(){
 }
 function copyLink(){
   const url = genFormUrl();
-  navigator.clipboard.writeText(url).then(() => toast('🔗 Enlace copiado')).catch(() => {
+  navigator.clipboard.writeText(url).then(() => toast('🔗 Link copiado')).catch(() => {
     const el = $('shareUrl');
-    if (el) { el.select(); document.execCommand('copy'); toast('🔗 Enlace copiado'); }
+    if (el) { el.select(); document.execCommand('copy'); toast('🔗 Link copiado'); }
   });
+}
+function openFormDirect() {
+  window.open(genFormUrl(), '_blank');
 }
 function shareWA(){
   const url = genFormUrl();
