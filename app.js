@@ -1088,9 +1088,10 @@ async function renderTokenList(){
       } else {
         statusHtml = `<div style="font-size:12px;color:var(--blue);font-weight:600;margin:4px 0">🔵 Disponible · #${shortId}</div>`;
         const labelEsc = (t.label||'').replace(/'/g,"\\'");
+        const phoneEsc = (t.prefillPhone||'').replace(/'/g,"\\'");
         actionsHtml = `
           <button onclick="copyToken('${t.id}','${labelEsc}')" style="flex:1;padding:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer">📤 Compartir</button>
-          <button onclick="shareTokenWA('${t.id}','${labelEsc}')" style="flex:1;padding:8px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.25);border-radius:8px;color:#25d366;font-size:12px;cursor:pointer">💬 WA</button>
+          <button onclick="shareTokenWA('${t.id}','${labelEsc}','${phoneEsc}')" style="flex:1;padding:8px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.25);border-radius:8px;color:#25d366;font-size:12px;cursor:pointer">💬 WA</button>
           <button onclick="window.open(_tokenUrl('${t.id}'),'_blank')" style="padding:8px 10px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;color:var(--text2);font-size:12px;cursor:pointer" title="Previsualizar">↗</button>
           <button onclick="deleteToken('${t.id}')" style="padding:8px 10px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:8px;color:var(--red);font-size:12px;cursor:pointer">🗑️</button>`;
       }
