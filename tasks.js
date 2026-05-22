@@ -4,24 +4,32 @@
 ════════════════════════════════════════ */
 let _taskEmpFilter = '';
 let _taskStatusFilter = 'all';
+let _taskPriFilter = 'all';
 let _blockingTaskId = null;
 
 function setTaskFilter(f) {
   _taskStatusFilter = f;
-  /* chips */
-  ['All','Alta','Pend','Prog','Done','Block'].forEach(x => {
-    const el = $('tFilter' + x); if (el) el.classList.remove('active');
+  ['tStAll','tStPend','tStDone','tStBlock','tStProg'].forEach(id => {
+    const el = $(id); if (el) el.classList.remove('active');
   });
-  const chipMap = {all:'All', alta:'Alta', pending:'Pend', inprogress:'Prog', done:'Done', blocked:'Block'};
-  const chip = $('tFilter' + (chipMap[f] || 'All'));
-  if (chip) chip.classList.add('active');
-  /* pills */
-  ['All','Pend','Prog','Block','Done'].forEach(x => {
-    const el = $('tPill' + x); if (el) el.classList.remove('active');
+  const map = {all:'tStAll', pending:'tStPend', done:'tStDone', blocked:'tStBlock', inprogress:'tStProg'};
+  const el = $(map[f] || 'tStAll'); if (el) el.classList.add('active');
+  /* highlight matching stat card */
+  ['tStatAll','tStatPend','tStatBlock','tStatDone'].forEach(id => {
+    const e = $(id); if (e) e.style.borderColor = 'var(--bd)';
   });
-  const pillMap = {all:'All', pending:'Pend', inprogress:'Prog', blocked:'Block', done:'Done'};
-  const pill = $('tPill' + (pillMap[f] || 'All'));
-  if (pill) pill.classList.add('active');
+  const statMap = {all:'tStatAll', pending:'tStatPend', blocked:'tStatBlock', done:'tStatDone'};
+  const sc = $(statMap[f]); if (sc) sc.style.borderColor = 'var(--blue)';
+  renderTasks();
+}
+
+function setPriFilter(f) {
+  _taskPriFilter = f;
+  ['tPriAll','tPriAlta','tPriNormal','tPriBaja'].forEach(id => {
+    const el = $(id); if (el) el.classList.remove('active');
+  });
+  const map = {all:'tPriAll', alta:'tPriAlta', normal:'tPriNormal', baja:'tPriBaja'};
+  const el = $(map[f] || 'tPriAll'); if (el) el.classList.add('active');
   renderTasks();
 }
 
