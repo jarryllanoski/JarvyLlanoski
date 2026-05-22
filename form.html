@@ -563,6 +563,7 @@ async function checkToken(tok){
     currentToken = tok;
     if(data.prefillName)  _prefillName  = data.prefillName;
     if(data.prefillPhone) _prefillPhone = data.prefillPhone;
+    if(data.prefillLink)  _prefillLink  = data.prefillLink;
     loadCfg();
   }catch(e){
     /* 404 or network error */
