@@ -194,6 +194,7 @@ function taskCardHTML(t) {
       ${linkedShip.phone?`<a href="https://wa.me/51${(linkedShip.phone||'').replace(/\D/g,'')}" target="_blank" style="font-size:17px;text-decoration:none;-webkit-tap-highlight-color:transparent" onclick="event.stopPropagation()">💬</a>`:''}
     </div>` : ''}
     <div class="task-actions">
+      ${!t.assignedTo && !isDone ? `<button onclick="openTaskForm('${t.id}')" style="font-size:11px;background:rgba(56,139,253,.1);border:1px solid rgba(56,139,253,.3);color:var(--blue);border-radius:7px;padding:4px 10px;cursor:pointer;font-weight:600">👤 Asignar</button>` : ''}
       ${!isDone && !isBlocked ? `<button onclick="openBlockTask('${t.id}')" style="font-size:11px;background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.25);color:#e3b341;border-radius:7px;padding:4px 9px;cursor:pointer">✕ No puede</button>` : ''}
       ${isBlocked ? `<button onclick="reassignTask('${t.id}')" style="font-size:11px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);color:var(--blue);border-radius:7px;padding:4px 9px;cursor:pointer">👤 Reasignar</button>` : ''}
       <button onclick="deleteTask('${t.id}')" style="font-size:11px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red);border-radius:7px;padding:4px 9px;cursor:pointer">🗑️</button>
