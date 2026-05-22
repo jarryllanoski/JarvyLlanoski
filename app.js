@@ -1146,8 +1146,8 @@ async function _doGenerate(action) {
     } else if (action === 'open') {
       window.open(url, '_blank');
     }
-    /* Si había teléfono → copiarlo para buscarlo rápido en WA */
-    if (phone && (action === 'share' || action === 'copy')) {
+    /* Si había teléfono y se compartió → copiarlo para buscarlo rápido en WA */
+    if (phone && action === 'share') {
       try { await navigator.clipboard.writeText(phone); } catch(e) {}
       setTimeout(() => toast('📱 Número ' + phone + ' copiado — pégalo en WA para buscar'), 800);
     }
