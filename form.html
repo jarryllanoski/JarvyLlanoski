@@ -1447,6 +1447,11 @@ function renderTrackResult(ship, code){
     .map(([k,v])=>`<div class="tk-row"><span class="tk-row-lbl">${esc(k)}</span><span class="tk-row-val">${esc(v)}</span></div>`)
     .join('');
 
+  const bizPhone = ((CFG&&CFG.config&&CFG.config.phone)||'').replace(/\D/g,'');
+  const waConsultUrl = bizPhone
+    ? `https://wa.me/51${bizPhone}?text=${encodeURIComponent('Hola, tengo una consulta sobre mi pedido #'+tc)}`
+    : '';
+
   setTrackContent(`
     <div id="refreshRow" class="refresh-row">
       <span class="refresh-lbl">Se actualiza automáticamente</span>
@@ -1480,9 +1485,10 @@ function renderTrackResult(ship, code){
         ${ship.notes?`<div class="tk-row"><span class="tk-row-lbl">Notas</span><span class="tk-row-val">${esc(ship.notes)}</span></div>`:''}
         ${extraRows}
       </div>
-      ${(ship.links&&ship.links.length)?`<div class="tk-section"><div class="tk-lbl">Links</div>${ship.links.map(l=>`<a href="${l.u}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;text-decoration:none;color:var(--blue);font-size:13px;margin-bottom:6px;word-break:break-all">🔗 <span>${esc(l.n)}</span></a>`).join('')}</div>`:''}
+      ${(ship.links&&ship.links.length)?`<div class="tk-section"><div class="tk-lbl">📄 Documentos adjuntos</div>${ship.links.map(l=>`<a href="${l.u}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;text-decoration:none;margin-bottom:6px"><span style="color:var(--blue);font-weight:600;font-size:14px">📄 Presiona para ver tu documento</span><span style="color:var(--text2);font-size:18px">→</span></a>`).join('')}</div>`:''}
     </div>
-    <div class="used-note">🔒 Este link ya fue utilizado · Para registrar un nuevo pedido solicitá un nuevo link</div>
+    ${waConsultUrl?`<div style="padding:4px 0 8px;text-align:center"><a href="${waConsultUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:#25D366;border-radius:14px;color:#fff;font-weight:700;font-size:15px;text-decoration:none">💬 Consultar por WhatsApp</a></div>`:''}
+
   `);
 }
 
