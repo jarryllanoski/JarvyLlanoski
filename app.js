@@ -40,7 +40,7 @@ S.shipments.forEach(s => {
   if (s.chkEmbalado === undefined) s.chkEmbalado = false;
 });
 S.extraFields = S.extraFields.map(f => typeof f === 'string' ? { name:f, required:false, visible:true } : f);
-const OLD_FIXED = ['NUEVO PEDIDO','EN PROCESO','POR ALISTAR','ENVIADO','FINALIZADO','ENTREGADO','PENDIENTE'];
+const OLD_FIXED = ['NUEVO PEDIDO','EN PROCESO','POR ALISTAR','ENVIADO','FINALIZADO','ENTREGADO','PENDIENTE','Faltante / pedir proveedor'];
 S.labels = S.labels.filter(l => !OLD_FIXED.includes(l) && !FIXED_LABELS.includes(l));
 const _initCustom = S.labels.slice();
 S.labels = [...FIXED_LABELS, ..._initCustom];
