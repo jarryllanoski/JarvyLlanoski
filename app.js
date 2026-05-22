@@ -449,7 +449,7 @@ function cardDocs(s, gChk, eChk, cChk) {
       <div class="doc-lbl">GUÍA COURIER</div>
       <div class="doc-chk ${gChk?'on-g':''}" onclick="event.stopPropagation();togDoc('${s.id}','guia')">${gChk?'✓':''}</div>
     </div>`:''}
-    ${(s.links||[]).map(l=>`<div class="link-chip">🔗 ${l.n}</div>`).join('')}
+    ${(s.links||[]).map(l=>`<a href="${l.u}" target="_blank" rel="noopener" class="link-chip" style="text-decoration:none;cursor:pointer">🔗 ${l.n}</a>`).join('')}
   </div>`;
 }
 
