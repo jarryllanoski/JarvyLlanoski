@@ -973,11 +973,13 @@ const _dbgLog = [];
 
 <!-- LABEL EDIT SHEET -->
 <div class="overlay" id="labelEditOverlay">
-  <div class="sheet">
+  <div class="sheet" style="max-height:90vh">
     <div class="sheet-handle"></div>
-    <div id="labelEditContent"></div>
-    <button class="btn-pri" onclick="saveLabelEdit()">💾 Guardar cambios</button>
-    <button class="btn-sec" onclick="closeOverlay('labelEditOverlay')">Cancelar</button>
+    <div id="labelEditContent" style="overflow-y:auto;flex:1;padding-bottom:4px"></div>
+    <div style="padding-top:12px;display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+      <button class="btn-pri" onclick="saveLabelEdit()">💾 Guardar cambios</button>
+      <button class="btn-sec" onclick="closeOverlay('labelEditOverlay')">Cancelar</button>
+    </div>
   </div>
 </div>
 
