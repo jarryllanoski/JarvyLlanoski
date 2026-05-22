@@ -578,14 +578,21 @@ const _dbgLog = [];
   <!-- Employee avatars -->
   <div id="empAvatars" style="display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none"></div>
 
-  <!-- Priority filter chips -->
+  <!-- Priority filter row -->
+  <div style="display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none">
+    <div class="chip active" id="tPriAll"    onclick="setPriFilter('all')">↕ Todo</div>
+    <div class="chip"        id="tPriAlta"   onclick="setPriFilter('alta')">🔴 Alta</div>
+    <div class="chip"        id="tPriNormal" onclick="setPriFilter('normal')">🟡 Normal</div>
+    <div class="chip"        id="tPriBaja"   onclick="setPriFilter('baja')">🟢 Baja</div>
+  </div>
+  <!-- Status filter row -->
   <div style="display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none">
-    <div class="chip active" id="tFilterAll" onclick="setTaskFilter('all')">↕ Todo</div>
-    <div class="chip" id="tFilterAlta" onclick="setTaskFilter('alta')">🔴 Alta</div>
-    <div class="chip" id="tFilterPend" onclick="setTaskFilter('pending')">📋 Pendiente</div>
-    <div class="chip" id="tFilterProg" onclick="setTaskFilter('inprogress')">⏳ En curso</div>
-    <div class="chip" id="tFilterDone" onclick="setTaskFilter('done')">✅ Listas</div>
-    <div class="chip" id="tFilterBlock" onclick="setTaskFilter('blocked')">✕ Bloqueadas</div>
+    <div class="chip active" id="tStAll"   onclick="setTaskFilter('all')">📋 Todas</div>
+    <div class="chip"        id="tStPend"  onclick="setTaskFilter('pending')">⏳ Pendientes</div>
+    <div class="chip"        id="tStDone"  onclick="setTaskFilter('done')">✅ Hechas</div>
+    <div class="chip"        id="tStBlock" onclick="setTaskFilter('blocked')">✕ No pueden</div>
+    <div class="chip"        id="tStProg"  onclick="setTaskFilter('inprogress')">▶ En curso</div>
+    <div class="chip"        id="tStClr"   onclick="setTaskFilter('all');setPriFilter('all')">🧹</div>
   </div>
 
   <div id="taskArea"></div>
