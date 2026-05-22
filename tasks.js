@@ -85,9 +85,10 @@ function renderTasks() {
   if (!el) return;
   const q = ($('taskSearch')||{value:''}).value.toLowerCase();
   let tasks = [...S.tasks];
-  if (_taskEmpFilter) tasks = tasks.filter(t => t.assignedTo === _taskEmpFilter);
-  if (_taskStatusFilter === 'alta')       tasks = tasks.filter(t => t.priority === 'alta');
-  else if (_taskStatusFilter === 'pending')    tasks = tasks.filter(t => t.status === 'pending');
+  if (_taskEmpFilter === '__libre__') tasks = tasks.filter(t => !t.assignedTo || t.assignedTo === '');
+  else if (_taskEmpFilter) tasks = tasks.filter(t => t.assignedTo === _taskEmpFilter);
+  if (_taskPriFilter !== 'all') tasks = tasks.filter(t => (t.priority || 'normal') === _taskPriFilter);
+  if (_taskStatusFilter === 'pending')    tasks = tasks.filter(t => t.status === 'pending');
   else if (_taskStatusFilter === 'inprogress') tasks = tasks.filter(t => t.status === 'inprogress');
   else if (_taskStatusFilter === 'done')       tasks = tasks.filter(t => t.status === 'done');
   else if (_taskStatusFilter === 'blocked')    tasks = tasks.filter(t => t.status === 'blocked');
