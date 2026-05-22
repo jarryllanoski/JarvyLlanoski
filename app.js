@@ -1005,10 +1005,13 @@ function updateShareUrl(){
 }
 function copyLink(){
   const url = genFormUrl();
-  navigator.clipboard.writeText(url).then(() => toast('🔗 Enlace copiado')).catch(() => {
+  navigator.clipboard.writeText(url).then(() => toast('🔗 Link copiado')).catch(() => {
     const el = $('shareUrl');
-    if (el) { el.select(); document.execCommand('copy'); toast('🔗 Enlace copiado'); }
+    if (el) { el.select(); document.execCommand('copy'); toast('🔗 Link copiado'); }
   });
+}
+function openFormDirect() {
+  window.open(genFormUrl(), '_blank');
 }
 function shareWA(){
   const url = genFormUrl();
@@ -1085,9 +1088,10 @@ async function renderTokenList(){
       } else {
         statusHtml = `<div style="font-size:12px;color:var(--blue);font-weight:600;margin:4px 0">🔵 Disponible · #${shortId}</div>`;
         const labelEsc = (t.label||'').replace(/'/g,"\\'");
+        const phoneEsc = (t.prefillPhone||'').replace(/'/g,"\\'");
         actionsHtml = `
           <button onclick="copyToken('${t.id}','${labelEsc}')" style="flex:1;padding:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer">📤 Compartir</button>
-          <button onclick="shareTokenWA('${t.id}','${labelEsc}')" style="flex:1;padding:8px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.25);border-radius:8px;color:#25d366;font-size:12px;cursor:pointer">💬 WA</button>
+          <button onclick="shareTokenWA('${t.id}','${labelEsc}','${phoneEsc}')" style="flex:1;padding:8px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.25);border-radius:8px;color:#25d366;font-size:12px;cursor:pointer">💬 WA</button>
           <button onclick="window.open(_tokenUrl('${t.id}'),'_blank')" style="padding:8px 10px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;color:var(--text2);font-size:12px;cursor:pointer" title="Previsualizar">↗</button>
           <button onclick="deleteToken('${t.id}')" style="padding:8px 10px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:8px;color:var(--red);font-size:12px;cursor:pointer">🗑️</button>`;
       }
@@ -1139,6 +1143,11 @@ async function _doGenerate(action) {
     } else if (action === 'open') {
       window.open(url, '_blank');
     }
+    /* Si había teléfono → copiarlo para buscarlo rápido en WA */
+    if (phone && (action === 'share' || action === 'copy')) {
+      try { await navigator.clipboard.writeText(phone); } catch(e) {}
+      setTimeout(() => toast('📱 Número ' + phone + ' copiado — pégalo en WA para buscar'), 800);
+    }
   } catch(e) { toast('⚠️ Error: ' + e.message); }
 }
 
@@ -1156,14 +1165,18 @@ async function copyToken(tokenId, label){
   await _shareLink(url, label ? `Link para ${label}` : 'Link de pedido');
 }
 
-function shareTokenWA(tokenId, label){
-  const url = _tokenUrl(tokenId);
+function shareTokenWA(tokenId, label, phone){
+  const url  = _tokenUrl(tokenId);
   const name = label || '';
   const biz  = S.config && S.config.name ? S.config.name : 'Mi tienda';
   const msg  = name
     ? `Hola ${name} 👋\n\nPor acá te envío tu link personal para registrar tu pedido en *${biz}*:\n\n🔗 ${url}\n\n_El link es de uso único y solo para vos._`
     : `📦 *${biz}*\n\nRegistá tu pedido acá:\n${url}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  const clean = phone ? phone.replace(/\D/g,'') : '';
+  const waUrl = clean
+    ? `https://wa.me/51${clean}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
 }
 
 async function deleteToken(tokenId){
