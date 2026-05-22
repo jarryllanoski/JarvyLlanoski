@@ -492,6 +492,7 @@ let _phoneTimer    = null;
 let _knownClient   = null;
 let _prefillName   = '';
 let _prefillPhone  = '';
+let _prefillLink   = '';
 let _gpsLat        = null;
 let _gpsLon        = null;
 
@@ -562,6 +563,7 @@ async function checkToken(tok){
     currentToken = tok;
     if(data.prefillName)  _prefillName  = data.prefillName;
     if(data.prefillPhone) _prefillPhone = data.prefillPhone;
+    if(data.prefillLink)  _prefillLink  = data.prefillLink;
     loadCfg();
   }catch(e){
     /* 404 or network error */
@@ -1262,7 +1264,7 @@ async function submitOrder(){
     docGuia:        null,
     docEmbalado:    null,
     docComprobante: null,
-    links:          [],
+    links:          _prefillLink ? [{u:_prefillLink, n:_prefillLink.length>36?_prefillLink.substring(0,36)+'…':_prefillLink}] : [],
     sel:            false,
     chkGuia:        false,
     chkEmbalado:    false,
@@ -1478,6 +1480,7 @@ function renderTrackResult(ship, code){
         ${ship.notes?`<div class="tk-row"><span class="tk-row-lbl">Notas</span><span class="tk-row-val">${esc(ship.notes)}</span></div>`:''}
         ${extraRows}
       </div>
+      ${(ship.links&&ship.links.length)?`<div class="tk-section"><div class="tk-lbl">Links</div>${ship.links.map(l=>`<a href="${l.u}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;text-decoration:none;color:var(--blue);font-size:13px;margin-bottom:6px;word-break:break-all">🔗 <span>${esc(l.n)}</span></a>`).join('')}</div>`:''}
     </div>
     <div class="used-note">🔒 Este link ya fue utilizado · Para registrar un nuevo pedido solicitá un nuevo link</div>
   `);

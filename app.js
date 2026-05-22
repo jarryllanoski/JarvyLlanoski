@@ -40,7 +40,7 @@ S.shipments.forEach(s => {
   if (s.chkEmbalado === undefined) s.chkEmbalado = false;
 });
 S.extraFields = S.extraFields.map(f => typeof f === 'string' ? { name:f, required:false, visible:true } : f);
-const OLD_FIXED = ['NUEVO PEDIDO','EN PROCESO','POR ALISTAR','ENVIADO','FINALIZADO','ENTREGADO','PENDIENTE'];
+const OLD_FIXED = ['NUEVO PEDIDO','EN PROCESO','POR ALISTAR','ENVIADO','FINALIZADO','ENTREGADO','PENDIENTE','Faltante / pedir proveedor'];
 S.labels = S.labels.filter(l => !OLD_FIXED.includes(l) && !FIXED_LABELS.includes(l));
 const _initCustom = S.labels.slice();
 S.labels = [...FIXED_LABELS, ..._initCustom];
@@ -449,7 +449,7 @@ function cardDocs(s, gChk, eChk, cChk) {
       <div class="doc-lbl">GUÍA COURIER</div>
       <div class="doc-chk ${gChk?'on-g':''}" onclick="event.stopPropagation();togDoc('${s.id}','guia')">${gChk?'✓':''}</div>
     </div>`:''}
-    ${(s.links||[]).map(l=>`<div class="link-chip">🔗 ${l.n}</div>`).join('')}
+    ${(s.links||[]).map(l=>`<a href="${l.u}" target="_blank" rel="noopener" class="link-chip" style="text-decoration:none;cursor:pointer">🔗 ${l.n}</a>`).join('')}
   </div>`;
 }
 
@@ -1118,11 +1118,13 @@ async function _doGenerate(action) {
   const label    = ($('tokenLabel') ||{value:''}).value.trim();
   const phone    = ($('tokenPhone') ||{value:''}).value.trim().replace(/\D/g,'');
   const expDays  = ($('tokenExpiry')||{value:''}).value;
+  const link     = ($('tokenLink')  ||{value:''}).value.trim();
   const tok = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const data = {
     label,
     prefillName:  label || null,
     prefillPhone: phone || null,
+    prefillLink:  link  || null,
     singleUse:  true,
     used:       false,
     createdAt:  new Date().toISOString(),
@@ -1134,6 +1136,7 @@ async function _doGenerate(action) {
     const url = _tokenUrl(tok);
     const lbl = $('tokenLabel'); if(lbl) lbl.value = '';
     const phn = $('tokenPhone'); if(phn) phn.value = '';
+    const lnk = $('tokenLink');  if(lnk) lnk.value = '';
     renderTokenList();
     if (action === 'copy') {
       try { await navigator.clipboard.writeText(url); } catch(e) {}
