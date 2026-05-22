@@ -546,27 +546,23 @@ const _dbgLog = [];
 
 <!-- TAREAS -->
 <div class="page" id="page-tareas">
-  <!-- Stats strip: tap cada pill para filtrar -->
-  <div class="task-strip" id="taskStatsArea">
-    <div class="task-pill active" id="tPillAll" onclick="setTaskFilter('all')">
-      <div class="task-pill-n c-green" id="tTotal">0</div>
-      <div class="task-pill-l">Total</div>
+  <!-- Stats 2x2 grid -->
+  <div class="stats" id="taskStatsArea" style="margin-bottom:12px">
+    <div class="stat" id="tStatAll" onclick="setTaskFilter('all');setPriFilter('all')" style="cursor:pointer">
+      <div class="stat-n c-green" id="tTotal">0</div>
+      <div class="stat-l">Total tareas</div>
     </div>
-    <div class="task-pill" id="tPillPend" onclick="setTaskFilter('pending')">
-      <div class="task-pill-n c-orange" id="tPend">0</div>
-      <div class="task-pill-l">Pendientes</div>
+    <div class="stat" id="tStatPend" onclick="setTaskFilter('pending')" style="cursor:pointer">
+      <div class="stat-n c-orange" id="tPend">0</div>
+      <div class="stat-l">⏳ Pendientes</div>
     </div>
-    <div class="task-pill" id="tPillProg" onclick="setTaskFilter('inprogress')">
-      <div class="task-pill-n c-blue" id="tInProg">0</div>
-      <div class="task-pill-l">En curso</div>
+    <div class="stat" id="tStatBlock" onclick="setTaskFilter('blocked')" style="cursor:pointer">
+      <div class="stat-n c-red" id="tBlocked">0</div>
+      <div class="stat-l">✕ No pueden</div>
     </div>
-    <div class="task-pill" id="tPillBlock" onclick="setTaskFilter('blocked')">
-      <div class="task-pill-n c-red" id="tBlocked">0</div>
-      <div class="task-pill-l">Bloqueadas</div>
-    </div>
-    <div class="task-pill" id="tPillDone" onclick="setTaskFilter('done')">
-      <div class="task-pill-n c-purple" id="tDone">0</div>
-      <div class="task-pill-l">Listas ✅</div>
+    <div class="stat" id="tStatDone" onclick="setTaskFilter('done')" style="cursor:pointer">
+      <div class="stat-n c-purple" id="tDone">0</div>
+      <div class="stat-l">✅ Completadas</div>
     </div>
   </div>
 
