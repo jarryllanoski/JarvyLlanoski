@@ -22,27 +22,44 @@ function toggleExtraFlag(i, flag){
   if (flag === 'visible') S.extraFields[i].visible = S.extraFields[i].visible === false ? true : false;
   save(); loadCfgUI();
 }
-let _editLabelIdx = null;
+let _editLabelIdx = null, _editLabelName = '';
 function openLabelEdit(label, idx){
   _editLabelIdx = idx;
-  $('labelEditTitle').textContent = label;
+  _editLabelName = label;
   const msgs = S.msgTemplates[label] || ['',''];
-  $('labelMsg1').value = msgs[0] || '';
-  $('labelMsg2').value = msgs[1] || '';
-  if (idx !== null) {
-    $('labelEditNameWrap') && ($('labelEditNameWrap').style.display = '');
-    $('labelEditName') && ($('labelEditName').value = label);
-  } else {
-    $('labelEditNameWrap') && ($('labelEditNameWrap').style.display = 'none');
-  }
+  const isFixed = idx === null;
+  const icon = FIXED_LABEL_ICONS[label] || '🏷️';
+  $('labelEditContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span style="font-size:22px">${icon}</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif">${label}</div>
+        <div style="font-size:11px;color:var(--text2)">${isFixed ? 'Etiqueta fija — solo puedes editar sus mensajes' : 'Etiqueta personalizada'}</div>
+      </div>
+    </div>
+    ${!isFixed ? `<div class="fg" style="margin-top:10px"><label class="fl">Nombre de la etiqueta</label><input class="fi" id="labelEditName" value="${label.replace(/"/g,'&quot;')}" maxlength="40"></div>` : ''}
+    <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin:14px 0 10px">💬 MENSAJES PREDETERMINADOS</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:26px;height:26px;border-radius:8px;background:var(--blue);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">A</div>
+      <span style="font-size:12px;font-weight:600;color:var(--text2)">Mensaje A</span>
+    </div>
+    <textarea id="labelMsg1" class="fi" rows="3" placeholder="Hola {nombre}, tu pedido está en camino 🚚..." style="resize:none;line-height:1.5;font-family:inherit">${msgs[0]||''}</textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin:12px 0 6px">
+      <div style="width:26px;height:26px;border-radius:8px;background:var(--green);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">B</div>
+      <span style="font-size:12px;font-weight:600;color:var(--text2)">Mensaje B</span>
+    </div>
+    <textarea id="labelMsg2" class="fi" rows="3" placeholder="Hola {nombre}, tu pedido fue entregado ✅..." style="resize:none;line-height:1.5;font-family:inherit">${msgs[1]||''}</textarea>
+    <div style="background:rgba(56,139,253,.08);border:1px solid rgba(56,139,253,.2);border-radius:9px;padding:10px 12px;margin-top:12px;font-size:11px;color:var(--text2);line-height:1.7">
+      <b style="color:var(--blue)">Variables disponibles:</b><br>
+      {nombre} {telefono} {direccion} {courier} {fecha} {costo} {estado}
+    </div>`;
   openOverlay('labelEditOverlay');
 }
 function saveLabelEdit(){
-  const title = $('labelEditTitle').textContent;
-  let label = title;
+  let label = _editLabelName;
   if (_editLabelIdx !== null && $('labelEditName')) {
     const newName = $('labelEditName').value.trim();
-    if (newName && newName !== title) {
+    if (newName && newName !== label) {
       const old = S.labels[_editLabelIdx];
       S.labels[_editLabelIdx] = newName;
       if (S.msgTemplates[old]) { S.msgTemplates[newName] = S.msgTemplates[old]; delete S.msgTemplates[old]; }
@@ -56,7 +73,7 @@ function saveLabelEdit(){
   else delete S.msgTemplates[label];
   save(); loadCfgUI();
   closeOverlay('labelEditOverlay');
-  toast('✅ Etiqueta guardada');
+  toast('✅ Mensajes guardados');
 }
 let _editCourierIdx = null;
 function openCourierEdit(i){
