@@ -1164,14 +1164,18 @@ async function copyToken(tokenId, label){
   await _shareLink(url, label ? `Link para ${label}` : 'Link de pedido');
 }
 
-function shareTokenWA(tokenId, label){
-  const url = _tokenUrl(tokenId);
+function shareTokenWA(tokenId, label, phone){
+  const url  = _tokenUrl(tokenId);
   const name = label || '';
   const biz  = S.config && S.config.name ? S.config.name : 'Mi tienda';
   const msg  = name
     ? `Hola ${name} 👋\n\nPor acá te envío tu link personal para registrar tu pedido en *${biz}*:\n\n🔗 ${url}\n\n_El link es de uso único y solo para vos._`
     : `📦 *${biz}*\n\nRegistá tu pedido acá:\n${url}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  const clean = phone ? phone.replace(/\D/g,'') : '';
+  const waUrl = clean
+    ? `https://wa.me/51${clean}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
 }
 
 async function deleteToken(tokenId){
