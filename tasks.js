@@ -68,7 +68,14 @@ function renderEmpAvatars() {
       <span style="color:rgba(255,255,255,.8)">${name.length>7?name.slice(0,6)+'…':name}</span>
     </div>`;
   }).join('');
-  el.innerHTML = allAvatar + empAv;
+  const libreCount = S.tasks.filter(t => !t.assignedTo && t.status !== 'done').length;
+  const libreAv = `<div class="emp-avatar ${_taskEmpFilter==='__libre__'?'active':''}" onclick="setEmpFilter('__libre__')"
+    style="background:${_taskEmpFilter==='__libre__'?'var(--text2)':'var(--bg3)'};border:1px solid var(--bd);position:relative">
+    <span style="font-size:16px">❓</span>
+    ${libreCount > 0 ? `<div style="position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700">${libreCount}</div>` : ''}
+    <span style="color:var(--text2);font-size:10px">Libre</span>
+  </div>`;
+  el.innerHTML = allAvatar + empAv + libreAv;
 }
 
 function renderTasks() {
