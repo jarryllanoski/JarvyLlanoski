@@ -1264,7 +1264,7 @@ async function submitOrder(){
     docGuia:        null,
     docEmbalado:    null,
     docComprobante: null,
-    links:          [],
+    links:          _prefillLink ? [{u:_prefillLink, n:_prefillLink.length>36?_prefillLink.substring(0,36)+'…':_prefillLink}] : [],
     sel:            false,
     chkGuia:        false,
     chkEmbalado:    false,
