@@ -339,7 +339,7 @@ function toggleCotizImg(input){
   reader.onload = e => {
     if (!S.suppliers[i].cotizImgs) S.suppliers[i].cotizImgs = [];
     S.suppliers[i].cotizImgs.push(e.target.result);
-    save(); renderCotizArea(i);
+    save(); renderCotizArea(S._suppIdx);
     toast('🖼️ Cotización agregada');
   };
   reader.readAsDataURL(file);
