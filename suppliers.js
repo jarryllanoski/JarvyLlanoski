@@ -303,14 +303,16 @@ function openEditSupplier(i){
 function saveEditSupplier(){
   const i = S._suppIdx;
   if (i == null || !S.suppliers[i]) return;
-  const nameEl = $('editSuppName'); const phoneEl = $('editSuppPhone');
+  const nameEl = $('suppEditName'); const phoneEl = $('suppEditPhone');
   if (!nameEl) return;
   const name = nameEl.value.trim();
   if (!name) { toast('Escribe el nombre'); return; }
   S.suppliers[i].name = name;
   if (phoneEl) S.suppliers[i].phone = phoneEl.value.trim();
-  save(); renderSuppList();
-  closeOverlay('editSuppOverlay');
+  if ($('suppName')) $('suppName').textContent = name;
+  renderSuppPhone(i);
+  save(); renderStatsAsSuppliers();
+  closeOverlay('suppEditOverlay');
   toast('✅ Proveedor actualizado');
 }
 
