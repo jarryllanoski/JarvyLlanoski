@@ -1029,18 +1029,27 @@ const _dbgLog = [];
     </div>
     <!-- Phone + WA (rendered by openSupplier) -->
     <div id="suppPhone" style="margin-bottom:10px"></div>
-    <!-- Code search row -->
-    <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:6px;margin-bottom:8px">
-      <span style="font-size:14px;color:var(--text2)">🔗</span>
-      <input id="suppCodeSearch" placeholder="Pega código para marcar stock..."
-        onkeydown="if(!(event.ctrlKey||event.metaKey)&&event.key.length===1)event.preventDefault()"
-        oninput="matchSuppCode(this.value);this.value=''"
-        style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:12px;min-width:0;caret-color:transparent" autocomplete="off">
-      <button onclick="filterSuppItems('all');renderSuppItems()" style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--blue);font-weight:600;white-space:nowrap">👁 Ver</button>
-      <button onclick="clearCheckedSupp()" title="Desmarcar todos" style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:4px 10px;font-size:13px;cursor:pointer;color:var(--text2)">↺</button>
+    <!-- Code + cotización row -->
+    <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:6px;padding:8px 12px">
+        <span onclick="openCotizMenu()" style="font-size:16px;cursor:pointer;flex-shrink:0" title="Agregar cotización">🔗</span>
+        <input id="suppCodeSearch" placeholder="Buscar código..."
+          onkeydown="if(!(event.ctrlKey||event.metaKey)&&event.key.length===1)event.preventDefault()"
+          oninput="matchSuppCode(this.value);this.value=''"
+          style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:12px;min-width:0;caret-color:transparent" autocomplete="off">
+        <button onclick="filterSuppItems('all');renderSuppItems()" style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--blue);font-weight:600;white-space:nowrap">👁 Ver</button>
+        <button id="suppCotizViewBtn" onclick="viewSuppCotiz()" style="display:none;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:4px 9px;font-size:14px;cursor:pointer" title="Ver cotización">📄</button>
+        <button id="suppCotizDelBtn" onclick="delSuppCotiz()" style="display:none;background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);border-radius:6px;padding:4px 9px;font-size:14px;cursor:pointer;color:var(--red)" title="Borrar cotización">🗑</button>
+      </div>
+      <!-- Cotización preview inline -->
+      <div id="suppCotizArea"></div>
     </div>
-    <!-- Cotización compacta -->
-    <div id="suppCotizArea" style="margin-bottom:8px"></div>
+    <!-- Excel catalog row -->
+    <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;margin-bottom:10px">
+      <span id="suppCatalogLbl" style="font-size:12px;color:var(--text2)">📊 Sin catálogo Excel</span>
+      <button onclick="$('suppExcelInput').click()" style="background:var(--blue);border:none;border-radius:7px;color:#fff;font-weight:700;font-size:12px;padding:5px 12px;cursor:pointer;white-space:nowrap">＋ Subir Excel</button>
+      <input type="file" id="suppExcelInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="uploadSuppCatalog(this)">
+    </div>
     <!-- Items header -->
     <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin-bottom:6px">📋 PENDIENTES</div>
     <div id="suppItemsList" style="min-height:120px;max-height:35vh;overflow-y:auto;margin-bottom:10px"></div>
