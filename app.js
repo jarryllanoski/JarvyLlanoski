@@ -127,8 +127,8 @@ function renderStatsAsSuppliers() {
   $('suppStatsArea').style.display = 'block';
   if (!S.suppliers) S.suppliers = [];
   const suppWithItems = S.suppliers.filter(sup => (sup.items||[]).length > 0);
-  const allReady = suppWithItems.length > 0 && suppWithItems.every(sup => sup.items.every(x => x.done));
-  const enProceso = S.shipments.filter(x => x.status === 'EN PROCESO');
+  const allReady = suppWithItems.length > 0 && suppWithItems.every(sup => sup.items.every(x => x.checked || x.done));
+  const enProceso = S.shipments.filter(x => x.status === 'En proceso');
   $('suppStatsArea').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text)">🏭 Proveedores</div>
