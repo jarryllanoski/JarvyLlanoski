@@ -317,3 +317,27 @@ function saveEditSupplier(){
   toast('✅ Proveedor actualizado');
 }
 
+function openSuppDeleteConfirm(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const sup = S.suppliers[i];
+  const count = (sup.items||[]).length;
+  const msg = $('suppDelConfirmMsg');
+  if (msg) msg.innerHTML = `Vas a eliminar <strong>"${sup.name}"</strong>${count > 0 ? ` y sus <strong>${count} ítem${count>1?'s':''}</strong>` : ''}.<br>Esta acción <strong>no se puede deshacer</strong>.`;
+  openOverlay('suppDelConfirmOverlay');
+}
+
+function doDeleteSupplier(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const name = S.suppliers[i].name;
+  S.suppliers.splice(i, 1);
+  S._suppIdx = null;
+  save();
+  closeOverlay('suppDelConfirmOverlay');
+  closeOverlay('suppEditOverlay');
+  closeOverlay('suppOverlay');
+  renderStatsAsSuppliers();
+  toast(`🗑 "${name}" eliminado`);
+}
+
