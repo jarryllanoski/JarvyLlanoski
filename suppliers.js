@@ -253,16 +253,83 @@ function switchSupplier(i){
   openSupplier(i);
 }
 function renderCotizArea(i){
-  const el = $('cotizArea');
-  if (!el || i == null || !S.suppliers[i]) return;
-  const sup = S.suppliers[i];
-  const imgs = sup.cotizImgs || [];
-  el.innerHTML = imgs.length
-    ? imgs.map((src,idx) => `<div class="cotiz-thumb" onclick="openViewer(${idx},'cotiz')">
-        <img src="${src}" style="width:60px;height:60px;object-fit:cover;border-radius:6px">
-        <button onclick="event.stopPropagation();delCotiz(${idx})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
-      </div>`).join('')
-    : `<div style="color:var(--text2);font-size:12px;padding:8px">Sin cotizaciones</div>`;
+  const el = $('suppCotizArea');
+  const viewBtn = $('suppCotizViewBtn');
+  const delBtn  = $('suppCotizDelBtn');
+  if (!el) return;
+  const sup = (i != null) ? S.suppliers[i] : null;
+  const imgs = (sup && sup.cotizImgs) || [];
+  if (imgs.length) {
+    /* Show first image as inline preview */
+    const src = imgs[0];
+    const isPdf = src.startsWith('data:application/pdf');
+    el.innerHTML = isPdf
+      ? `<div style="padding:8px 12px 10px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--bd)">
+           <span style="font-size:22px">📄</span>
+           <span style="font-size:12px;color:var(--blue);font-weight:600">Cotización PDF adjunta</span>
+           ${imgs.length>1?`<span style="font-size:10px;color:var(--text2)">(${imgs.length} archivos)</span>`:''}
+         </div>`
+      : `<div style="border-top:1px solid var(--bd);position:relative">
+           <img src="${src}" style="width:100%;max-height:160px;object-fit:contain;display:block;background:#000;cursor:pointer" onclick="viewSuppCotiz()">
+           ${imgs.length>1?`<div style="position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">${imgs.length} fotos</div>`:''}
+         </div>`;
+    if (viewBtn) viewBtn.style.display = '';
+    if (delBtn)  delBtn.style.display  = '';
+  } else {
+    el.innerHTML = '';
+    if (viewBtn) viewBtn.style.display = 'none';
+    if (delBtn)  delBtn.style.display  = 'none';
+  }
+}
+
+function viewSuppCotiz(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const imgs = S.suppliers[i].cotizImgs || [];
+  if (!imgs.length) return;
+  if (typeof openViewer === 'function') openViewer(0, 'cotiz');
+}
+
+function delSuppCotiz(){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i]) return;
+  const count = (S.suppliers[i].cotizImgs||[]).length;
+  if (!count) return;
+  S.suppliers[i].cotizImgs = [];
+  save(); renderCotizArea(i);
+  toast('🗑 Cotización eliminada');
+}
+
+function uploadSuppCatalog(input){
+  const i = S._suppIdx;
+  if (i == null || !S.suppliers[i] || !input.files[0]) return;
+  const file = input.files[0];
+  const lbl = $('suppCatalogLbl');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'binary'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      if (!S.suppliers[i].items) S.suppliers[i].items = [];
+      let added = 0;
+      rows.forEach(row => {
+        /* Accept any column that looks like a code/name */
+        const name = String(row['Codigo']||row['codigo']||row['CODIGO']||row['Código']||row['Nombre']||row['nombre']||row['NOMBRE']||row['Item']||row['item']||Object.values(row)[0]||'').trim();
+        const qty  = String(row['Stock']||row['stock']||row['Cantidad']||row['cantidad']||row['Qty']||row['qty']||Object.values(row)[1]||'').trim();
+        if (!name) return;
+        const exists = S.suppliers[i].items.some(x => (x.name||'').toUpperCase() === name.toUpperCase());
+        if (!exists) { S.suppliers[i].items.push({name, qty, checked:false, verified:false}); added++; }
+      });
+      save(); renderSuppItems();
+      if (lbl) lbl.innerHTML = `📊 <span style="color:var(--green)">${file.name} — ${added} ítems importados</span>`;
+      toast(`✅ ${added} producto(s) importados del Excel`);
+    } catch(err) {
+      toast('⚠️ Error al leer Excel: ' + err.message);
+    }
+  };
+  reader.readAsBinaryString(file);
+  input.value = '';
 }
 function toggleCotizImg(input){
   const i = S._suppIdx;
@@ -272,7 +339,7 @@ function toggleCotizImg(input){
   reader.onload = e => {
     if (!S.suppliers[i].cotizImgs) S.suppliers[i].cotizImgs = [];
     S.suppliers[i].cotizImgs.push(e.target.result);
-    save(); renderCotizArea(i);
+    save(); renderCotizArea(S._suppIdx);
     toast('🖼️ Cotización agregada');
   };
   reader.readAsDataURL(file);
@@ -290,6 +357,7 @@ function delCotiz(idx){
   S.suppliers[i].cotizImgs.splice(idx, 1);
   save(); renderCotizArea(i);
 }
+
 function openEditSupplier(i){
   if (!S.suppliers[i]) return;
   const sup = S.suppliers[i];
