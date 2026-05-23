@@ -1,27 +1,88 @@
 // suppliers.js — Gestión de proveedores
 /* ── SUPPLIERS ── */
-function globalSuppSearch(){
-  const q = ($('globalSuppSearch')||{value:''}).value.trim().toLowerCase();
-  if (!q) { render(); return; }
-  const el = $('suppList');
-  if (!el) return;
-  const all = [];
+
+/* Global code paste: auto-marca coincidencias en TODOS los proveedores */
+function globalSuppSearch(code){
+  const c = (code||'').trim().toUpperCase();
+  if (!c) return;
+  const el = $('globalSuppResult');
+  let matched = 0, matchedIn = [];
   S.suppliers.forEach(sup => {
     (sup.items||[]).forEach(item => {
-      if (item.name.toLowerCase().includes(q)) all.push({sup, item});
+      const name = (item.name||item.text||'').toUpperCase();
+      if (name.includes(c) || (c.length >= 3 && name.replace(/\s.*/,'').startsWith(c.substring(0,c.length)))) {
+        item.checked = true; matched++;
+        if (!matchedIn.includes(sup.name)) matchedIn.push(sup.name);
+      }
     });
   });
-  el.innerHTML = all.length
-    ? all.map(({sup,item}) => `<div class="cfl-item"><span class="cfl-icon">🔍</span><span class="cfl-name">${item.name}</span><span style="font-size:11px;color:var(--text2)">${sup.name}</span></div>`).join('')
-    : `<div style="text-align:center;padding:24px;color:var(--text2)">Sin resultados</div>`;
+  if (matched > 0) {
+    save(); renderStatsAsSuppliers();
+    if (el) { el.style.display='block'; el.innerHTML=`✅ <b>${matched}</b> ítem(s) marcado(s) en: <b>${matchedIn.join(', ')}</b>`; }
+  } else {
+    if (el) { el.style.display='block'; el.innerHTML=`❌ Código <b>${c}</b> no encontrado en ningún proveedor`; }
+  }
 }
+
+/* Per-supplier code paste: auto-marca en el proveedor abierto */
+function matchSuppCode(code){
+  const i = S._suppIdx;
+  if (i==null||!S.suppliers[i]) return;
+  const c = (code||'').trim().toUpperCase();
+  if (!c) return;
+  let matched = 0;
+  (S.suppliers[i].items||[]).forEach(item => {
+    const name = (item.name||item.text||'').toUpperCase();
+    if (name.includes(c) || (c.length >= 3 && name.replace(/\s.*/,'').startsWith(c.substring(0,c.length)))) {
+      item.checked = true; matched++;
+    }
+  });
+  if (matched > 0) { save(); renderSuppItems(); renderSuppPhone(i); toast(`✅ ${matched} ítem(s) marcado(s) en stock`); }
+  else toast(`❌ Código no encontrado en este proveedor`);
+}
+
+/* Desmarcar todos los ítems del proveedor activo */
+function clearCheckedSupp(){
+  const i = S._suppIdx;
+  if (i==null||!S.suppliers[i]) return;
+  (S.suppliers[i].items||[]).forEach(item => item.checked = false);
+  save(); renderSuppItems();
+}
+
 function openSupplier(i){
   if (!S.suppliers[i]) return;
   S._suppIdx = i;
   const sup = S.suppliers[i];
   $('suppName').textContent = sup.name;
+  renderSuppPhone(i);
   renderSuppItems();
+  renderCotizArea(i);
   openOverlay('suppOverlay');
+}
+
+function renderSuppPhone(i){
+  const sup = S.suppliers[i];
+  const el = $('suppPhone');
+  if (!el) return;
+  if (!sup || !sup.phone) { el.innerHTML = ''; return; }
+  const phone = sup.phone.replace(/\D/g,'');
+  el.innerHTML = `
+    <span style="color:var(--blue);font-size:14px;font-weight:600">📞 ${sup.phone}</span>
+    <a href="https://wa.me/51${phone}" target="_blank"
+      style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:rgba(46,160,67,.15);border:1px solid rgba(46,160,67,.3);border-radius:8px;color:var(--green);font-weight:700;font-size:12px;text-decoration:none">
+      💬 WhatsApp
+    </a>`;
+}
+
+/* Abre el overlay de edición pre-rellenado */
+function openEditSupplierOverlay(){
+  const i = S._suppIdx;
+  if (i==null||!S.suppliers[i]) return;
+  const sup = S.suppliers[i];
+  const nameEl = $('suppEditName'), phoneEl = $('suppEditPhone');
+  if (nameEl) nameEl.value = sup.name;
+  if (phoneEl) phoneEl.value = (sup.phone||'').replace(/\D/g,'').slice(-9);
+  openOverlay('suppEditOverlay');
 }
 function toggleAllSuppItems(){
   const i = S._suppIdx;
