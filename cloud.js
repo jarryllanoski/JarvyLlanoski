@@ -118,6 +118,7 @@ function _listen() {
         if ((S.trash||[]).find(x => x.shipment && x.shipment.id === d.id)) return;
         if ((S.deletedPedidoIds||[]).includes(d.id)) return;
         if (d.printed === undefined) d.printed = false;
+        if (STATUS_MIGRATE[d.status]) d.status = STATUS_MIGRATE[d.status];
         S.shipments.push(d);
         added++;
       });
