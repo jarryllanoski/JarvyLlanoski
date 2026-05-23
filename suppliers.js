@@ -357,6 +357,7 @@ function delCotiz(idx){
   S.suppliers[i].cotizImgs.splice(idx, 1);
   save(); renderCotizArea(i);
 }
+
 function openEditSupplier(i){
   if (!S.suppliers[i]) return;
   const sup = S.suppliers[i];
