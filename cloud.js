@@ -73,10 +73,18 @@ function _listen() {
           cs.docEmbalado    = local.docEmbalado;
           cs.docComprobante = local.docComprobante;
         }
+        /* Migrate stale statuses from Firebase */
+        if (STATUS_MIGRATE[cs.status]) cs.status = STATUS_MIGRATE[cs.status];
       });
       S.shipments = d.s;
     }
-    if (d.labels)        S.labels        = d.labels;
+    if (d.labels) {
+      /* Migrate stale label names from Firebase and always enforce FIXED_LABELS */
+      const _oldFl = ['NUEVO PEDIDO','EN PROCESO','POR ALISTAR','ENVIADO','FINALIZADO','ENTREGADO','PENDIENTE','Faltante / pedir proveedor'];
+      const _migrated = d.labels.map(l => STATUS_MIGRATE[l] || l);
+      const _custom = _migrated.filter(l => !_oldFl.includes(l) && !FIXED_LABELS.includes(l));
+      S.labels = [...FIXED_LABELS, ..._custom];
+    }
     if (d.couriers)      S.couriers      = d.couriers;
     if (d.courierActive) S.courierActive = d.courierActive;
     if (d.courierTypes)  S.courierTypes  = d.courierTypes;
