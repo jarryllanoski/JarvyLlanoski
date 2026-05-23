@@ -1080,7 +1080,21 @@ const _dbgLog = [];
     </div>
     <button class="btn-pri" onclick="saveEditSupplier()">💾 Guardar cambios</button>
     <button class="btn-sec" onclick="closeOverlay('suppEditOverlay')">Cancelar</button>
-    <button onclick="confirmDelItem('supplier',S._suppIdx);closeOverlay('suppEditOverlay');closeOverlay('suppOverlay')" style="width:100%;margin-top:4px;padding:12px;background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);border-radius:12px;color:var(--red);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">🗑 Eliminar proveedor</button>
+    <button onclick="openSuppDeleteConfirm()" style="width:100%;margin-top:4px;padding:12px;background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);border-radius:12px;color:var(--red);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">🗑 Eliminar proveedor</button>
+  </div>
+</div>
+
+<!-- SUPPLIER DELETE CONFIRM OVERLAY -->
+<div class="overlay" id="suppDelConfirmOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div style="text-align:center;padding:8px 0 16px">
+      <div style="font-size:40px;margin-bottom:8px">⚠️</div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px">¿Eliminar proveedor?</div>
+      <div id="suppDelConfirmMsg" style="font-size:13px;color:var(--text2);line-height:1.5"></div>
+    </div>
+    <button onclick="doDeleteSupplier()" style="width:100%;padding:14px;background:var(--red);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:8px">🗑 Sí, eliminar definitivamente</button>
+    <button class="btn-sec" onclick="closeOverlay('suppDelConfirmOverlay')">Cancelar — no eliminar</button>
   </div>
 </div>
 
