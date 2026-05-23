@@ -127,8 +127,8 @@ function renderStatsAsSuppliers() {
   $('suppStatsArea').style.display = 'block';
   if (!S.suppliers) S.suppliers = [];
   const suppWithItems = S.suppliers.filter(sup => (sup.items||[]).length > 0);
-  const allReady = suppWithItems.length > 0 && suppWithItems.every(sup => sup.items.every(x => x.done));
-  const enProceso = S.shipments.filter(x => x.status === 'EN PROCESO');
+  const allReady = suppWithItems.length > 0 && suppWithItems.every(sup => sup.items.every(x => x.checked || x.done));
+  const enProceso = S.shipments.filter(x => x.status === 'En proceso');
   $('suppStatsArea').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text)">🏭 Proveedores</div>
@@ -146,12 +146,12 @@ function renderStatsAsSuppliers() {
     <div id="globalSuppResult" style="display:none;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:12px;line-height:1.8"></div>
     <div class="supp-cards">
       ${S.suppliers.map((sup, i) => {
-        const pending = (sup.items||[]).filter(x => !x.done).length;
+        const pending = (sup.items||[]).filter(x => !(x.checked||x.done)).length;
         const total   = (sup.items||[]).length;
         return `<div class="supp-card ${pending>0?'has-pending':''}" onclick="openSupplier(${i})">
           <div class="supp-card-name">${sup.name}</div>
           <div class="supp-card-phone">
-            <span style="font-size:11px;color:var(--blue)">📞 ${sup.phone}</span>
+            ${sup.phone?`<span style="font-size:11px;color:var(--blue)">📞 ${sup.phone}</span>`:''}
             <button onclick="event.stopPropagation();sendSuppList(${i})"
               style="background:rgba(46,160,67,.15);border:1px solid rgba(46,160,67,.3);color:var(--green);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">
               💬 Enviar
@@ -159,8 +159,8 @@ function renderStatsAsSuppliers() {
           </div>
           ${total>0?`<div class="supp-card-items">
             ${(sup.items||[]).slice(0,4).map(it=>`<div class="supp-item-row">
-              <div class="supp-item-dot ${it.done?'done':''}"></div>
-              <span class="supp-item-text ${it.done?'done':''}" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.text}</span>
+              <div class="supp-item-dot ${(it.checked||it.done)?'done':''}"></div>
+              <span class="supp-item-text ${(it.checked||it.done)?'done':''}" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.name||it.text||''}</span>
             </div>`).join('')}
             ${total>4?`<div style="font-size:10px;color:var(--text2)">+${total-4} más...</div>`:''}
           </div>`:`<div style="font-size:11px;color:var(--text2);font-style:italic;margin-top:4px">Lista vacía — toca para agregar</div>`}

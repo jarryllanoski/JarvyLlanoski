@@ -1025,17 +1025,28 @@ const _dbgLog = [];
 <div class="overlay" id="suppOverlay">
   <div class="sheet" style="max-height:90vh;min-height:60vh">
     <div class="sheet-handle"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <div class="sheet-title" style="margin:0;cursor:pointer;user-select:none" id="suppName" ondblclick="openSuppSwitch()">Proveedor</div>
-      <button onclick="openEditSupplier()" style="background:rgba(56,139,253,.12);border:1px solid rgba(56,139,253,.3);color:var(--blue);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button>
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div class="sheet-title" style="margin:0;font-size:18px" id="suppName" ondblclick="openSuppSwitch()">Proveedor</div>
+      <button onclick="openEditSupplierOverlay()" style="background:rgba(56,139,253,.12);border:1px solid rgba(56,139,253,.3);color:var(--blue);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
     </div>
-    <div id="suppPhone" style="color:var(--blue);font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px"></div>
-
-    <!-- COTIZACIÓN COMPACTA -->
+    <!-- Phone + WA (rendered by openSupplier) -->
+    <div id="suppPhone" style="margin-bottom:10px"></div>
+    <!-- Code search row -->
+    <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <span style="font-size:14px;color:var(--text2)">🔗</span>
+      <input id="suppCodeSearch" placeholder="Pega código para marcar stock..."
+        onkeydown="if(!(event.ctrlKey||event.metaKey)&&event.key.length===1)event.preventDefault()"
+        oninput="matchSuppCode(this.value);this.value=''"
+        style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:12px;min-width:0;caret-color:transparent" autocomplete="off">
+      <button onclick="filterSuppItems('all');renderSuppItems()" style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--blue);font-weight:600;white-space:nowrap">👁 Ver</button>
+      <button onclick="clearCheckedSupp()" title="Desmarcar todos" style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:4px 10px;font-size:13px;cursor:pointer;color:var(--text2)">↺</button>
+      <button onclick="confirmDelItem('supplier',S._suppIdx);closeOverlay('suppOverlay')" title="Eliminar proveedor" style="background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;color:var(--red)">🗑</button>
+    </div>
+    <!-- Cotización compacta -->
     <div id="suppCotizArea" style="margin-bottom:8px"></div>
-
-    <!-- LISTA HEADER -->
-    <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin-bottom:6px;cursor:pointer;user-select:none" ondblclick="toggleAllSuppItems()">📋 PENDIENTES</div>
+    <!-- Items header -->
+    <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin-bottom:6px">📋 PENDIENTES</div>
     <div id="suppItemsList" style="min-height:120px;max-height:35vh;overflow-y:auto;margin-bottom:10px"></div>
     <div style="display:flex;gap:8px;margin-bottom:4px">
       <input class="fi" id="suppNewItem" placeholder="Agregar producto o tarea..." style="flex:1" onkeydown="if(event.key==='Enter')addSuppItem()">
