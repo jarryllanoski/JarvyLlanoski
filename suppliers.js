@@ -170,8 +170,9 @@ function addSuppItem(){
 function toggleSuppItem(idx, val){
   const i = S._suppIdx;
   if (i == null || !S.suppliers[i]) return;
-  if (S.suppliers[i].items[idx]) S.suppliers[i].items[idx].checked = val;
-  save();
+  const item = S.suppliers[i].items[idx];
+  if (item) { item.checked = val; if (val) item.verified = true; }
+  save(); renderStatsAsSuppliers();
 }
 function delSuppItem(idx){
   const i = S._suppIdx;
