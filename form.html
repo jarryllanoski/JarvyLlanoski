@@ -1070,7 +1070,7 @@ function onShalomSearch(q){
       style="padding:12px 14px;border-bottom:1px solid var(--bd);cursor:pointer;background:${selected?'rgba(56,139,253,.12)':'transparent'};-webkit-tap-highlight-color:transparent"
       onmouseenter="this.style.background='rgba(56,139,253,.08)'" onmouseleave="this.style.background='${selected?'rgba(56,139,253,.12)':'transparent'}'">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <span style="font-size:13px;font-weight:700;color:var(--text);flex:1">${esc(a.lugar)}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text);flex:1">${esc(a.lugar||a.zona||a.destino||'Sin nombre')}</span>
         <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;
           background:${isAtend?'rgba(46,160,67,.15)':'rgba(139,148,158,.1)'};
           color:${isAtend?'var(--green)':'var(--text2)'}">
