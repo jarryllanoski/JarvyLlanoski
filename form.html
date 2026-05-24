@@ -1066,20 +1066,22 @@ function onShalomSearch(q){
   const tokens=qn.split(/\s+/).filter(t=>t.length>=2);
 
   const scored=_shalomAgs.map(a=>{
-    const nl=norm(a.lugar), nd=norm(a.departamento), np=norm(a.provincia), nz=norm(a.zona);
-    const all=`${nl} ${nd} ${np} ${nz}`;
+    const nl=norm(a.lugar), nd=norm(a.departamento), np=norm(a.provincia),
+          nz=norm(a.zona), nn=norm(a.nombre), nab=norm(a.ter_abrebiatura);
+    const all=`${nl} ${nn} ${nab} ${nd} ${np} ${nz}`;
     let s=0;
-    /* Búsqueda por frase completa */
-    if(nl===qn)                          s=100;
-    else if(nl.startsWith(qn))           s=80;
-    else if(nl.includes(qn))             s=60;
-    else if(nd===qn||np===qn)            s=55;
-    else if(nd.includes(qn)||np.includes(qn)) s=40;
-    else if(nz.includes(qn))             s=20;
-    /* Búsqueda multi-palabra: todas las palabras deben aparecer */
+    /* Frase completa — prioridad por campo */
+    if(nl===qn||nn===qn)                              s=100;
+    else if(nl.startsWith(qn)||nn.startsWith(qn))     s=85;
+    else if(nl.includes(qn)||nn.includes(qn))         s=65;
+    else if(nab===qn)                                  s=60;
+    else if(nd===qn||np===qn)                          s=55;
+    else if(nd.includes(qn)||np.includes(qn))          s=40;
+    else if(nz.includes(qn)||nab.includes(qn))         s=20;
+    /* Multi-palabra: todas las palabras deben estar en algún campo */
     if(s===0&&tokens.length>1){
       if(tokens.every(t=>all.includes(t))){
-        const inLugar=tokens.filter(t=>nl.includes(t)).length;
+        const inLugar=tokens.filter(t=>nl.includes(t)||nn.includes(t)).length;
         s=10+inLugar*15;
       }
     }
@@ -1092,13 +1094,15 @@ function onShalomSearch(q){
 
   if(!scored.length){
     res.style.display='block';
-    res.innerHTML=`<div style="padding:14px;text-align:center;font-size:13px;color:var(--text2)">Sin resultados para "${esc(qt)}"</div>`;
+    res.innerHTML=`<div style="padding:14px;text-align:center;font-size:13px;color:var(--text2)">Sin resultados para "${esc(qt)}" — intenta con otra ciudad o región</div>`;
     return;
   }
   res.style.display='block';
   res.innerHTML=scored.map((a,idx)=>{
     const isAtend=(a.estadoAgencia||'').includes('ATENDIENDO');
     const selected=agState.shalomId===a.ter_id;
+    const horaDom=a.hora_domingo&&a.hora_domingo.trim()&&a.hora_domingo!==a.hora_atencion
+      ? `<div style="font-size:10px;color:var(--text2);opacity:.7">🕐 Dom: ${esc(a.hora_domingo)}</div>` : '';
     return `<div onclick="selShalomAgency(${idx},${a.ter_id})"
       style="padding:12px 14px;border-bottom:1px solid var(--bd);cursor:pointer;background:${selected?'rgba(56,139,253,.12)':'transparent'};-webkit-tap-highlight-color:transparent"
       onmouseenter="this.style.background='rgba(56,139,253,.08)'" onmouseleave="this.style.background='${selected?'rgba(56,139,253,.12)':'transparent'}'">
@@ -1110,9 +1114,11 @@ function onShalomSearch(q){
           ${isAtend?'● Abierto':'○ Cerrado'}
         </span>
       </div>
-      <div style="font-size:11px;color:var(--text2)">${esc(a.departamento)} · ${esc(a.provincia)} · ${esc(a.zona)}</div>
+      <div style="font-size:11px;color:var(--text2)">${esc(a.departamento)} · ${esc(a.provincia)}${a.zona&&a.zona!==a.provincia?' · '+esc(a.zona):''}</div>
       <div style="font-size:11px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.direccion)}</div>
       ${a.hora_atencion?`<div style="font-size:10px;color:var(--text2);margin-top:3px;opacity:.7">🕐 ${esc(a.hora_atencion)}</div>`:''}
+      ${horaDom}
+      ${a.telefono?`<div style="font-size:10px;color:var(--blue);margin-top:3px">📞 ${esc(a.telefono)}</div>`:''}
     </div>`;
   }).join('');
   res._hits=scored;
