@@ -1058,30 +1058,41 @@ function renderShalomSearch(agBox){
 function onShalomSearch(q){
   const res=$('shalomResults');
   if(!res) return;
-  if(!q||q.trim().length<2){ res.style.display='none'; return; }
+  const qt=(q||'').trim();
+  if(qt.length<2){ res.style.display='none'; return; }
   if(!_shalomAgs){ res.style.display='none'; return; }
   const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  const qn=norm(q.trim());
-  /* Score: exact lugar=100, lugar starts=80, lugar contains=60, dept/prov=40, zona=20 */
-  const scored=_shalomAgs
-    .filter(a=>a.lugar)
-    .map(a=>{
-      const nl=norm(a.lugar),nd=norm(a.departamento),np=norm(a.provincia),nz=norm(a.zona);
-      let s=0;
-      if(nl===qn)              s=100;
-      else if(nl.startsWith(qn)) s=80;
-      else if(nl.includes(qn))   s=60;
-      else if(nd.includes(qn)||np.includes(qn)) s=40;
-      else if(nz.includes(qn))   s=20;
-      return {a,s};
-    })
-    .filter(x=>x.s>0)
-    .sort((x,y)=>y.s-x.s)
-    .slice(0,30)
-    .map(x=>x.a);
+  const qn=norm(qt);
+  const tokens=qn.split(/\s+/).filter(t=>t.length>=2);
+
+  const scored=_shalomAgs.map(a=>{
+    const nl=norm(a.lugar), nd=norm(a.departamento), np=norm(a.provincia), nz=norm(a.zona);
+    const all=`${nl} ${nd} ${np} ${nz}`;
+    let s=0;
+    /* Búsqueda por frase completa */
+    if(nl===qn)                          s=100;
+    else if(nl.startsWith(qn))           s=80;
+    else if(nl.includes(qn))             s=60;
+    else if(nd===qn||np===qn)            s=55;
+    else if(nd.includes(qn)||np.includes(qn)) s=40;
+    else if(nz.includes(qn))             s=20;
+    /* Búsqueda multi-palabra: todas las palabras deben aparecer */
+    if(s===0&&tokens.length>1){
+      if(tokens.every(t=>all.includes(t))){
+        const inLugar=tokens.filter(t=>nl.includes(t)).length;
+        s=10+inLugar*15;
+      }
+    }
+    return {a,s};
+  })
+  .filter(x=>x.s>0)
+  .sort((x,y)=>y.s-x.s)
+  .slice(0,30)
+  .map(x=>x.a);
+
   if(!scored.length){
     res.style.display='block';
-    res.innerHTML=`<div style="padding:14px;text-align:center;font-size:13px;color:var(--text2)">Sin resultados para "${esc(q)}"</div>`;
+    res.innerHTML=`<div style="padding:14px;text-align:center;font-size:13px;color:var(--text2)">Sin resultados para "${esc(qt)}"</div>`;
     return;
   }
   res.style.display='block';
@@ -1099,7 +1110,7 @@ function onShalomSearch(q){
           ${isAtend?'● Abierto':'○ Cerrado'}
         </span>
       </div>
-      <div style="font-size:11px;color:var(--text2)">${esc(a.departamento)} / ${esc(a.provincia)}</div>
+      <div style="font-size:11px;color:var(--text2)">${esc(a.departamento)} · ${esc(a.provincia)} · ${esc(a.zona)}</div>
       <div style="font-size:11px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.direccion)}</div>
       ${a.hora_atencion?`<div style="font-size:10px;color:var(--text2);margin-top:3px;opacity:.7">🕐 ${esc(a.hora_atencion)}</div>`:''}
     </div>`;
