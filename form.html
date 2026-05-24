@@ -874,6 +874,11 @@ function collectExtra(){
 function renderAgencyBox(courierName){
   const agBox = $('agencyBox');
   if(!agBox) return;
+  /* SHALOM: live search from API endpoint */
+  if(courierName&&courierName.toUpperCase().includes('SHALOM')){
+    renderShalomSearch(agBox);
+    return;
+  }
   const data  = getAgencyData(courierName);
   if(!data){
     agBox.innerHTML=`<div class="agc-box"><span class="agc-lbl">Agencia</span><div style="font-size:13px;color:var(--text2)">Sin datos de agencia para este courier.</div></div>`;
