@@ -1006,7 +1006,7 @@ function fetchShalomAgs(cb){
   if(_shalomAgs){ cb(_shalomAgs); return; }
   fetch(SHALOM_API)
     .then(r=>r.json())
-    .then(json=>{ _shalomAgs = (json.data||json||[]).filter(a=>a.lugar&&a.lugar.trim()&&a.estadoAgencia); cb(_shalomAgs); })
+    .then(json=>{ _shalomAgs = (json.data||json||[]).filter(a=>a.destino==1); cb(_shalomAgs); })
     .catch(()=>cb(null));
 }
 
