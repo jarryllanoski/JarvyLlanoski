@@ -1055,8 +1055,7 @@ function onShalomSearch(q){
   const qn=norm(q);
   const hits=_shalomAgs.filter(a=>{
     return norm(a.lugar).includes(qn)||norm(a.zona).includes(qn)||
-           norm(a.provincia).includes(qn)||norm(a.departamento).includes(qn)||
-           norm(a.direccion).includes(qn);
+           norm(a.provincia).includes(qn)||norm(a.departamento).includes(qn);
   }).slice(0,25);
   if(!hits.length){
     res.style.display='block';
