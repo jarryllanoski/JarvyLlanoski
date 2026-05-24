@@ -874,6 +874,9 @@ function collectExtra(){
 function renderAgencyBox(courierName){
   const agBox = $('agencyBox');
   if(!agBox) return;
+  if(courierName&&courierName.toUpperCase().includes('SHALOM')){
+    renderShalomSearch(agBox); return;
+  }
   const data  = getAgencyData(courierName);
   if(!data){
     agBox.innerHTML=`<div class="agc-box"><span class="agc-lbl">Agencia</span><div style="font-size:13px;color:var(--text2)">Sin datos de agencia para este courier.</div></div>`;
@@ -993,15 +996,136 @@ function selAgency(el, addr){
   $('err_agency')&&$('err_agency').classList.remove('show');
 }
 
+/* ─── SHALOM LIVE SEARCH ─────────────────────────────────────── */
+const _SHALOM_FN = 'https://us-central1-jarvyllanoski.cloudfunctions.net';
+const _SHALOM_FB = 'https://us-central1-total-tools-24ce8.cloudfunctions.net/agenciasShalom';
+let _shalomAgs = null;
+let _shalomTimer = null;
+
+function _normStr(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+
+async function _loadShalomAgs(){
+  if(_shalomAgs) return _shalomAgs;
+  /* intenta endpoint seguro primero, fallback al público */
+  for(const url of [_SHALOM_FN+'/agenciasShalom', _SHALOM_FB]){
+    try {
+      const r = await fetch(url);
+      if(!r.ok) continue;
+      const json = await r.json();
+      const arr = (json.data||json||[]).filter(a=>a.lugar&&a.lugar.trim());
+      if(arr.length){ _shalomAgs = arr; return arr; }
+    } catch(e){ /* next */ }
+  }
+  return null;
+}
+
+function renderShalomSearch(agBox){
+  agBox.innerHTML=`<div class="agc-box">
+    <span class="agc-lbl">🚌 Agencia SHALOM — busca tu destino</span>
+    <div style="position:relative;margin-bottom:6px">
+      <input class="fi" id="shalomQ" placeholder="Ej: Lima, Trujillo, Huancayo..."
+        oninput="onShalomSearch(this.value)" autocomplete="off" style="padding-right:36px">
+      <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🔍</span>
+    </div>
+    <div id="shalomHint" style="font-size:12px;color:var(--text2);padding:4px 2px 6px">⏳ Cargando agencias...</div>
+    <div id="shalomResults" style="max-height:260px;overflow-y:auto;border-radius:10px;border:1px solid var(--bd);display:none"></div>
+    ${agState.addr?`<div class="sel-badge">🚌 <span>${esc(agState.addr)}</span><button class="clr-btn" onclick="resetAgencySelection()">✕</button></div>`:''}
+    <div class="ferr" id="err_agency" style="margin-top:6px">Selecciona una agencia</div>
+    <div class="fg" style="margin-top:14px;margin-bottom:0">
+      <input class="fi" id="f_dni_recoger" type="text" inputmode="numeric"
+        placeholder="🪪 DNI para recoger *" maxlength="8" pattern="[0-9]*">
+      <div class="ferr" id="err_dni_recoger">Ingresa el DNI (8 dígitos)</div>
+    </div>
+  </div>`;
+  if(agState.addr){ const i=$('shalomQ'); if(i) i.value=agState.addr; }
+  _loadShalomAgs().then(ags=>{
+    const h=$('shalomHint');
+    if(!ags){ if(h) h.innerHTML='<span style="color:var(--red)">⚠️ Sin conexión — verifica internet</span>'; return; }
+    if(h) h.textContent='🔍 '+ags.length+' agencias — escribe tu ciudad o distrito';
+    const q=($('shalomQ')||{}).value;
+    if(q&&q.trim()) onShalomSearch(q);
+  });
+}
+
+function onShalomSearch(q){
+  const res=$('shalomResults'); if(!res) return;
+  const qt=(q||'').trim();
+  if(qt.length<2){ res.style.display='none'; return; }
+  if(!_shalomAgs){ res.style.display='none'; return; }
+  const qn=_normStr(qt);
+  const tokens=qn.split(/\s+/).filter(t=>t.length>=2);
+  const scored=_shalomAgs.map(a=>{
+    const nl=_normStr(a.lugar), nd=_normStr(a.departamento),
+          np=_normStr(a.provincia), nz=_normStr(a.zona), nn=_normStr(a.nombre);
+    const all=`${nl} ${nn} ${nd} ${np} ${nz}`;
+    let s=0;
+    if(nl===qn||nn===qn)                           s=100;
+    else if(nl.startsWith(qn)||nn.startsWith(qn))  s=85;
+    else if(nl.includes(qn)||nn.includes(qn))      s=65;
+    else if(nd===qn||np===qn)                       s=55;
+    else if(nd.includes(qn)||np.includes(qn))      s=40;
+    else if(nz.includes(qn))                       s=20;
+    if(s===0&&tokens.length>1&&tokens.every(t=>all.includes(t)))
+      s=10+tokens.filter(t=>nl.includes(t)||nn.includes(t)).length*15;
+    return {a,s};
+  }).filter(x=>x.s>0).sort((x,y)=>y.s-x.s).slice(0,30).map(x=>x.a);
+  if(!scored.length){
+    res.style.display='block';
+    res.innerHTML=`<div style="padding:14px;text-align:center;font-size:13px;color:var(--text2)">Sin resultados para "${esc(qt)}" — intenta con otra ciudad</div>`;
+    return;
+  }
+  res.style.display='block';
+  res.innerHTML=scored.map((a,idx)=>{
+    const open=(a.estadoAgencia||'').includes('ATENDIENDO');
+    const sel=agState.shalomId===a.ter_id;
+    return `<div onclick="selShalomAgency(${idx},${a.ter_id})"
+      style="padding:12px 14px;border-bottom:1px solid var(--bd);cursor:pointer;background:${sel?'rgba(56,139,253,.12)':'transparent'};-webkit-tap-highlight-color:transparent"
+      onmouseenter="this.style.background='rgba(56,139,253,.08)'" onmouseleave="this.style.background='${sel?'rgba(56,139,253,.12)':'transparent'}'">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+        <span style="font-size:13px;font-weight:700;flex:1">${esc(a.lugar)}</span>
+        <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
+          background:${open?'rgba(46,160,67,.15)':'rgba(139,148,158,.1)'};
+          color:${open?'var(--green)':'var(--text2)'}">
+          ${open?'● Abierto':'○ Cerrado'}
+        </span>
+      </div>
+      <div style="font-size:11px;color:var(--text2)">${esc(a.departamento)} · ${esc(a.provincia)}${a.zona&&a.zona!==a.provincia?' · '+esc(a.zona):''}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.direccion)}</div>
+      ${a.hora_atencion?`<div style="font-size:10px;color:var(--text2);opacity:.8;margin-top:2px">🕐 ${esc(a.hora_atencion)}</div>`:''}
+      ${a.telefono?`<div style="font-size:10px;color:var(--blue);margin-top:2px">📞 ${esc(a.telefono)}</div>`:''}
+    </div>`;
+  }).join('');
+  res._hits=scored;
+}
+
+function selShalomAgency(idx, terId){
+  const res=$('shalomResults');
+  const a=res&&res._hits&&res._hits[idx];
+  if(!a) return;
+  agState.dept=a.departamento||''; agState.prov=a.provincia||'';
+  agState.dist=a.zona||a.lugar||''; agState.addr=a.lugar||'';
+  agState.shalomId=terId; agState.shalomDir=a.direccion||'';
+  const inp=$('shalomQ'); if(inp) inp.value=a.lugar;
+  if(res) res.style.display='none';
+  const old=document.querySelector('.sel-badge'); if(old) old.remove();
+  const box=document.querySelector('.agc-box');
+  if(box){
+    const b=document.createElement('div'); b.className='sel-badge';
+    b.innerHTML=`🚌 <span>${esc(a.lugar)} — ${esc(a.departamento)}</span><button class="clr-btn" onclick="resetAgencySelection()">✕</button>`;
+    box.appendChild(b);
+  }
+  $('err_agency')&&$('err_agency').classList.remove('show');
+}
+
 function resetAgencySelection(){
   agState.addr=''; agState.dept=''; agState.prov=''; agState.dist='';
-  const badge = document.querySelector('.sel-badge');
-  if(badge) badge.remove();
+  agState.shalomId=null; agState.shalomDir='';
+  const b=document.querySelector('.sel-badge'); if(b) b.remove();
   document.querySelectorAll('.agc-item').forEach(x=>x.classList.remove('active'));
 }
 
 function resetAgency(){
-  agState={dept:'',prov:'',dist:'',addr:''};
+  agState={dept:'',prov:'',dist:'',addr:'',shalomId:null,shalomDir:''};
 }
 
 /* ─── DELIVERY ADDRESS ──────────────────────────────────────────── */

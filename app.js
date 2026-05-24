@@ -840,6 +840,12 @@ function openForm(id){
     _autoFields={faltante:!!s.faltante,stockOk:!!s.stockOk,alistado:!!s.alistado,arrivedAtDest:!!s.arrivedAtDest,delivered:!!s.delivered};
     if($('fGuideNumber'))$('fGuideNumber').value=s.guideNumber||'';
     if($('fPendingBalance'))$('fPendingBalance').value=s.pendingBalance||'';
+    /* Shalom tracking box — visible solo si el courier es Shalom */
+    const isShalom=(s.courier||'').toUpperCase().includes('SHALOM');
+    const stb=$('shalomTrackBox');
+    if(stb) stb.style.display=isShalom?'block':'none';
+    if($('fShalomCode'))$('fShalomCode').value=s.shalomCode||'';
+    const str=$('shalomTrackResult'); if(str) str.style.display='none';
   }else{
     ['fName','fPhone','fAddr','fCost','fNotes'].forEach(i=>$(i).value='');
     $('fDate').valueAsDate=new Date();
@@ -860,7 +866,7 @@ function saveShipment(){
   const name=$('fName').value.trim(),phone=$('fPhone').value.trim(),addr=$('fAddr').value.trim();
   if(!name||!phone||!addr){toast('⚠️ Nombre, teléfono y dirección requeridos');return;}
   const extra={}; document.querySelectorAll('.xf').forEach(el=>extra[el.dataset.f]=el.value);
-  const autoData={faltante:_autoFields.faltante,stockOk:_autoFields.stockOk,alistado:_autoFields.alistado,arrivedAtDest:_autoFields.arrivedAtDest,delivered:_autoFields.delivered,guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0};
+  const autoData={faltante:_autoFields.faltante,stockOk:_autoFields.stockOk,alistado:_autoFields.alistado,arrivedAtDest:_autoFields.arrivedAtDest,delivered:_autoFields.delivered,guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',shalomCode:$('fShalomCode')?$('fShalomCode').value.trim():'',pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0};
   const data={name,phone,address:addr,courier:$('fCourier').value,date:$('fDate').value,status:$('fStatus').value,cost:$('fCost').value,notes:$('fNotes').value.trim(),extra,docGuia:_docs.guia,docEmbalado:_docs.embalado,docComprobante:_docs.comprobante,links:JSON.parse(JSON.stringify(_links)),sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,...autoData};
   const autoSt=calcAutoStatus(data);
   if(autoSt&&statusPrio(autoSt)>statusPrio(data.status))data.status=autoSt;
@@ -1480,4 +1486,49 @@ function confirmDelivery() {
   renderRouteList();
 }
 
+/* ── SHALOM TRACKING ─────────────────────────────────────────────── */
+async function consultarTrackingShalom(){
+  const guia=($('fGuideNumber')||{value:''}).value.trim();
+  const code=($('fShalomCode')||{value:''}).value.trim();
+  const res=$('shalomTrackResult');
+  if(!guia||!code){toast('⚠️ Ingresa N° de guía y código Shalom');return;}
+  if(!res) return;
+  res.style.display='block';
+  res.innerHTML='<div style="font-size:12px;color:var(--text2);padding:6px 0">⏳ Consultando tracking...</div>';
+  try {
+    const r=await fetch('https://us-central1-jarvyllanoski.cloudfunctions.net/trackingShalom',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({orderNumber:guia,orderCode:code})
+    });
+    const data=await r.json();
+    if(!r.ok||data.error){
+      res.innerHTML=`<div style="padding:10px;background:rgba(247,129,102,.08);border:1px solid rgba(247,129,102,.3);border-radius:8px;font-size:12px;color:var(--red)">⚠️ ${data.error||'Sin respuesta de Shalom'}</div>`;
+      return;
+    }
+    /* Guardar en el pedido actual */
+    if(_editId){
+      const s=S.shipments.find(x=>x.id===_editId);
+      if(s){ s.shalomTracking=data; s.shalomTrackingAt=new Date().toISOString(); lsSet('dpanel',JSON.stringify(S)); cloudSync(); }
+    }
+    /* Mostrar resultado */
+    const estado=data.estado||data.status||data.estado_envio||JSON.stringify(data);
+    const eventos=(data.eventos||data.tracking||data.historial||[]);
+    let html=`<div style="padding:10px;background:rgba(56,139,253,.08);border:1px solid rgba(56,139,253,.3);border-radius:8px">`;
+    html+=`<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px">📡 Estado: ${typeof estado==='string'?estado:JSON.stringify(estado)}</div>`;
+    if(eventos.length){
+      html+=`<div style="font-size:11px;color:var(--text2)">`;
+      eventos.slice(0,5).forEach(ev=>{
+        const desc=ev.descripcion||ev.description||ev.estado||JSON.stringify(ev);
+        const fecha=ev.fecha||ev.date||ev.f||'';
+        html+=`<div style="padding:4px 0;border-bottom:1px solid rgba(48,54,61,.5)">${fecha?`<span style="opacity:.6">${fecha} — </span>`:''}${desc}</div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+    res.innerHTML=html;
+  } catch(e){
+    res.innerHTML=`<div style="padding:10px;background:rgba(247,129,102,.08);border:1px solid rgba(247,129,102,.3);border-radius:8px;font-size:12px;color:var(--red)">⚠️ Error de red — verifica internet</div>`;
+  }
+}
 
