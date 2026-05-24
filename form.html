@@ -1019,7 +1019,8 @@ function renderShalomSearch(agBox){
         style="padding-right:36px">
       <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🔍</span>
     </div>
-    <div id="shalomResults" style="max-height:220px;overflow-y:auto;border-radius:10px;border:1px solid var(--bd);display:none"></div>
+    <div id="shalomHint" style="font-size:12px;color:var(--text2);padding:4px 2px 6px;display:block"></div>
+    <div id="shalomResults" style="max-height:240px;overflow-y:auto;border-radius:10px;border:1px solid var(--bd);display:none"></div>
     <div id="shalomLoading" style="font-size:12px;color:var(--text2);padding:8px 0;display:none">Cargando agencias...</div>
     ${agState.addr?`<div class="sel-badge">🚌 <span>${esc(agState.addr)}</span><button class="clr-btn" onclick="resetAgencySelection()">✕</button></div>`:''}
     <div class="ferr" id="err_agency" style="margin-top:6px">Selecciona una agencia</div>
@@ -1035,7 +1036,8 @@ function renderShalomSearch(agBox){
   fetchShalomAgs(ags=>{
     if(ld) ld.style.display='none';
     if(!ags) return;
-    /* If user already typed something, search now */
+    const hintEl=$('shalomHint');
+    if(hintEl) hintEl.textContent='🔍 '+ags.length+' agencias disponibles — escribe tu ciudad o distrito';
     const q=($('shalomQ')||{}).value;
     if(q&&q.trim()) onShalomSearch(q);
   });
@@ -1049,28 +1051,41 @@ function renderShalomSearch(agBox){
 function onShalomSearch(q){
   const res=$('shalomResults');
   if(!res) return;
-  if(!q||q.length<2){ res.style.display='none'; return; }
+  if(!q||q.trim().length<2){ res.style.display='none'; return; }
   if(!_shalomAgs){ res.style.display='none'; return; }
   const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  const qn=norm(q);
-  const hits=_shalomAgs.filter(a=>{
-    return norm(a.lugar).includes(qn)||norm(a.zona).includes(qn)||
-           norm(a.provincia).includes(qn)||norm(a.departamento).includes(qn);
-  }).slice(0,25);
-  if(!hits.length){
+  const qn=norm(q.trim());
+  /* Score: exact lugar=100, lugar starts=80, lugar contains=60, dept/prov=40, zona=20 */
+  const scored=_shalomAgs
+    .filter(a=>a.lugar)
+    .map(a=>{
+      const nl=norm(a.lugar),nd=norm(a.departamento),np=norm(a.provincia),nz=norm(a.zona);
+      let s=0;
+      if(nl===qn)              s=100;
+      else if(nl.startsWith(qn)) s=80;
+      else if(nl.includes(qn))   s=60;
+      else if(nd.includes(qn)||np.includes(qn)) s=40;
+      else if(nz.includes(qn))   s=20;
+      return {a,s};
+    })
+    .filter(x=>x.s>0)
+    .sort((x,y)=>y.s-x.s)
+    .slice(0,30)
+    .map(x=>x.a);
+  if(!scored.length){
     res.style.display='block';
     res.innerHTML=`<div style="padding:14px;text-align:center;font-size:13px;color:var(--text2)">Sin resultados para "${esc(q)}"</div>`;
     return;
   }
   res.style.display='block';
-  res.innerHTML=hits.map((a,idx)=>{
+  res.innerHTML=scored.map((a,idx)=>{
     const isAtend=(a.estadoAgencia||'').includes('ATENDIENDO');
     const selected=agState.shalomId===a.ter_id;
     return `<div onclick="selShalomAgency(${idx},${a.ter_id})"
       style="padding:12px 14px;border-bottom:1px solid var(--bd);cursor:pointer;background:${selected?'rgba(56,139,253,.12)':'transparent'};-webkit-tap-highlight-color:transparent"
       onmouseenter="this.style.background='rgba(56,139,253,.08)'" onmouseleave="this.style.background='${selected?'rgba(56,139,253,.12)':'transparent'}'">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <span style="font-size:13px;font-weight:700;color:var(--text);flex:1">${esc(a.lugar||a.zona||a.destino||'Sin nombre')}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text);flex:1">${esc(a.lugar)}</span>
         <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;
           background:${isAtend?'rgba(46,160,67,.15)':'rgba(139,148,158,.1)'};
           color:${isAtend?'var(--green)':'var(--text2)'}">
@@ -1082,8 +1097,7 @@ function onShalomSearch(q){
       ${a.hora_atencion?`<div style="font-size:10px;color:var(--text2);margin-top:3px;opacity:.7">🕐 ${esc(a.hora_atencion)}</div>`:''}
     </div>`;
   }).join('');
-  /* Store hits array for selShalomAgency access */
-  res._hits=hits;
+  res._hits=scored;
 }
 
 function selShalomAgency(idx, terId){
