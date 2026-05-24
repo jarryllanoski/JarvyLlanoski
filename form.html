@@ -1133,14 +1133,15 @@ function selShalomAgency(idx, terId){
 }
 
 function resetAgencySelection(){
-  agState.addr='';
+  agState.addr=''; agState.dept=''; agState.prov=''; agState.dist='';
+  agState.shalomId=null; agState.shalomDir='';
   const badge = document.querySelector('.sel-badge');
   if(badge) badge.remove();
   document.querySelectorAll('.agc-item').forEach(x=>x.classList.remove('active'));
 }
 
 function resetAgency(){
-  agState={dept:'',prov:'',dist:'',addr:''};
+  agState={dept:'',prov:'',dist:'',addr:'',shalomId:null,shalomDir:''};
 }
 
 /* ─── DELIVERY ADDRESS ──────────────────────────────────────────── */
