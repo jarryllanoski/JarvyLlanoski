@@ -840,6 +840,12 @@ function openForm(id){
     _autoFields={faltante:!!s.faltante,stockOk:!!s.stockOk,alistado:!!s.alistado,arrivedAtDest:!!s.arrivedAtDest,delivered:!!s.delivered};
     if($('fGuideNumber'))$('fGuideNumber').value=s.guideNumber||'';
     if($('fPendingBalance'))$('fPendingBalance').value=s.pendingBalance||'';
+    /* Shalom tracking box — visible solo si el courier es Shalom */
+    const isShalom=(s.courier||'').toUpperCase().includes('SHALOM');
+    const stb=$('shalomTrackBox');
+    if(stb) stb.style.display=isShalom?'block':'none';
+    if($('fShalomCode'))$('fShalomCode').value=s.shalomCode||'';
+    const str=$('shalomTrackResult'); if(str) str.style.display='none';
   }else{
     ['fName','fPhone','fAddr','fCost','fNotes'].forEach(i=>$(i).value='');
     $('fDate').valueAsDate=new Date();
