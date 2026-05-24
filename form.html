@@ -1039,8 +1039,11 @@ function renderShalomSearch(agBox){
   if(ld) ld.style.display='block';
   fetchShalomAgs(ags=>{
     if(ld) ld.style.display='none';
-    if(!ags) return;
     const hintEl=$('shalomHint');
+    if(!ags){
+      if(hintEl) hintEl.innerHTML='<span style="color:var(--red)">⚠️ No se pudo cargar las agencias — verifica tu internet e intenta de nuevo</span>';
+      return;
+    }
     if(hintEl) hintEl.textContent='🔍 '+ags.length+' agencias disponibles — escribe tu ciudad o distrito';
     const q=($('shalomQ')||{}).value;
     if(q&&q.trim()) onShalomSearch(q);
