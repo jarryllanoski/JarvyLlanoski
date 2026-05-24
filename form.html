@@ -1005,8 +1005,12 @@ const SHALOM_API = 'https://us-central1-total-tools-24ce8.cloudfunctions.net/age
 function fetchShalomAgs(cb){
   if(_shalomAgs){ cb(_shalomAgs); return; }
   fetch(SHALOM_API)
-    .then(r=>r.json())
-    .then(json=>{ _shalomAgs = (json.data||json||[]).filter(a=>a.lugar&&a.lugar.trim()); cb(_shalomAgs); })
+    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(json=>{
+      const all=(json.data||json||[]);
+      _shalomAgs = all.filter(a=>a.lugar&&a.lugar.trim());
+      cb(_shalomAgs);
+    })
     .catch(()=>cb(null));
 }
 
@@ -1035,8 +1039,11 @@ function renderShalomSearch(agBox){
   if(ld) ld.style.display='block';
   fetchShalomAgs(ags=>{
     if(ld) ld.style.display='none';
-    if(!ags) return;
     const hintEl=$('shalomHint');
+    if(!ags){
+      if(hintEl) hintEl.innerHTML='<span style="color:var(--red)">⚠️ No se pudo cargar las agencias — verifica tu internet e intenta de nuevo</span>';
+      return;
+    }
     if(hintEl) hintEl.textContent='🔍 '+ags.length+' agencias disponibles — escribe tu ciudad o distrito';
     const q=($('shalomQ')||{}).value;
     if(q&&q.trim()) onShalomSearch(q);
@@ -1126,14 +1133,15 @@ function selShalomAgency(idx, terId){
 }
 
 function resetAgencySelection(){
-  agState.addr='';
+  agState.addr=''; agState.dept=''; agState.prov=''; agState.dist='';
+  agState.shalomId=null; agState.shalomDir='';
   const badge = document.querySelector('.sel-badge');
   if(badge) badge.remove();
   document.querySelectorAll('.agc-item').forEach(x=>x.classList.remove('active'));
 }
 
 function resetAgency(){
-  agState={dept:'',prov:'',dist:'',addr:''};
+  agState={dept:'',prov:'',dist:'',addr:'',shalomId:null,shalomDir:''};
 }
 
 /* ─── DELIVERY ADDRESS ──────────────────────────────────────────── */
