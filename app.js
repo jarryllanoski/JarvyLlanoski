@@ -866,7 +866,7 @@ function saveShipment(){
   const name=$('fName').value.trim(),phone=$('fPhone').value.trim(),addr=$('fAddr').value.trim();
   if(!name||!phone||!addr){toast('⚠️ Nombre, teléfono y dirección requeridos');return;}
   const extra={}; document.querySelectorAll('.xf').forEach(el=>extra[el.dataset.f]=el.value);
-  const autoData={faltante:_autoFields.faltante,stockOk:_autoFields.stockOk,alistado:_autoFields.alistado,arrivedAtDest:_autoFields.arrivedAtDest,delivered:_autoFields.delivered,guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0};
+  const autoData={faltante:_autoFields.faltante,stockOk:_autoFields.stockOk,alistado:_autoFields.alistado,arrivedAtDest:_autoFields.arrivedAtDest,delivered:_autoFields.delivered,guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',shalomCode:$('fShalomCode')?$('fShalomCode').value.trim():'',pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0};
   const data={name,phone,address:addr,courier:$('fCourier').value,date:$('fDate').value,status:$('fStatus').value,cost:$('fCost').value,notes:$('fNotes').value.trim(),extra,docGuia:_docs.guia,docEmbalado:_docs.embalado,docComprobante:_docs.comprobante,links:JSON.parse(JSON.stringify(_links)),sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,...autoData};
   const autoSt=calcAutoStatus(data);
   if(autoSt&&statusPrio(autoSt)>statusPrio(data.status))data.status=autoSt;
