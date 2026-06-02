@@ -928,20 +928,41 @@ function importExcel(input){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws);
       if(!rows.length){res.innerHTML='⚠️ El archivo está vacío';return;}
-      let added=0,skipped=0;
+      let added=0,updated=0,skipped=0;
       rows.forEach(row=>{
         const name=(row['Nombre']||row['nombre']||'').toString().trim();
         const phone=(row['Teléfono']||row['Telefono']||row['telefono']||'').toString().trim();
         const address=(row['Dirección']||row['Direccion']||row['direccion']||'').toString().trim();
+        const courier=(row['Courier']||row['courier']||S.couriers[0]||'').toString().trim();
+        const date=(row['Fecha']||row['fecha']||new Date().toISOString().split('T')[0]).toString().trim();
+        const status=(row['Estado']||row['estado']||'Nuevo pedido').toString().trim();
+        const cost=(row['Costo']||row['costo']||'').toString().trim();
+        const notes=(row['Notas']||row['notas']||'').toString().trim();
+        const privateNote=(row['Nota privada']||'').toString().trim();
         if(!name||!phone){skipped++;return;}
-        if(S.shipments.find(x=>x.name===name&&x.phone===phone)){skipped++;return;}
-        S.shipments.push({id:'xl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name,phone,address,courier:(row['Courier']||row['courier']||S.couriers[0]||'').toString().trim(),date:(row['Fecha']||row['fecha']||new Date().toISOString().split('T')[0]).toString().trim(),status:(row['Estado']||row['estado']||'Nuevo pedido').toString().trim(),cost:(row['Costo']||row['costo']||'').toString().trim(),notes:(row['Notas']||row['notas']||'').toString().trim(),privateNote:(row['Nota privada']||'').toString().trim(),extra:{},docGuia:null,docEmbalado:null,docComprobante:null,links:[],sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,createdAt:new Date().toISOString()});
-        added++;
+        const existing=S.shipments.find(x=>x.name===name&&x.phone===phone&&x.date===date);
+        if(existing){
+          /* Actualizar campos sin tocar documentos ni id */
+          existing.address=address||existing.address;
+          existing.courier=courier||existing.courier;
+          existing.status=status||existing.status;
+          if(cost) existing.cost=cost;
+          if(notes) existing.notes=notes;
+          if(privateNote) existing.privateNote=privateNote;
+          updated++;
+        } else {
+          S.shipments.push({id:'xl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name,phone,address,courier,date,status,cost,notes,privateNote,extra:{},docGuia:null,docEmbalado:null,docComprobante:null,links:[],sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,createdAt:new Date().toISOString()});
+          added++;
+        }
       });
       save(); render();
-      res.style.color=added>0?'var(--green)':'var(--red)';
-      res.innerHTML=`✅ ${added} pedido${added!==1?'s':''} importado${added!==1?'s':''}${skipped>0?` · ${skipped} omitido${skipped!==1?'s':''}`:''}`;
-      if(added>0)toast(`✅ ${added} pedidos importados`);
+      const parts=[];
+      if(added>0) parts.push(`✅ ${added} nuevo${added!==1?'s':''}`);
+      if(updated>0) parts.push(`🔄 ${updated} actualizado${updated!==1?'s':''}`);
+      if(skipped>0) parts.push(`⏭ ${skipped} omitido${skipped!==1?'s':''}`);
+      res.style.color=(added+updated)>0?'var(--green)':'var(--red)';
+      res.innerHTML=parts.join(' · ')||'Sin cambios';
+      if((added+updated)>0) toast(`✅ ${added} nuevos · ${updated} actualizados`);
     }catch(err){res.style.color='var(--red)';res.innerHTML='❌ Error al leer el archivo.';}
     input.value='';
   };
