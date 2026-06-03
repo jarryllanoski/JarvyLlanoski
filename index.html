@@ -873,6 +873,19 @@ const _dbgLog = [];
     </div>
     <div class="fg"><label class="fl">Notas</label><input class="fi" id="fNotes" placeholder="Llamar antes..."></div>
     <div id="extraForm"></div>
+    <!-- GUÍA Y SHALOM — siempre visibles -->
+    <div style="margin-bottom:8px">
+      <label class="fl">🔢 N° de guía / seguimiento</label>
+      <input class="fi" id="fGuideNumber" placeholder="Ej: 123456789" oninput="onAutoFieldChange(this.value.trim().length>0)">
+    </div>
+    <div id="shalomTrackBox" style="display:none;margin-bottom:8px">
+      <label class="fl">🔑 Código Shalom (para tracking)</label>
+      <div style="display:flex;gap:6px">
+        <input class="fi" id="fShalomCode" placeholder="Ej: 3KTH" style="flex:1;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+        <button onclick="consultarTrackingShalom()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">📡 Consultar</button>
+      </div>
+      <div id="shalomTrackResult" style="margin-top:8px;display:none"></div>
+    </div>
     <!-- AUTO-STATUS FIELDS (solo visible si está ON) -->
     <div id="autoStatusForm" style="display:none;margin-bottom:11px">
       <div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;border-top:1px solid var(--bd);padding-top:12px">🤖 Seguimiento automático</div>
@@ -901,18 +914,6 @@ const _dbgLog = [];
           <div style="font-size:10px;color:var(--text2);margin-bottom:4px">💰 Saldo pendiente S/</div>
           <input class="fi" id="fPendingBalance" type="number" placeholder="0" min="0" step="0.5" style="padding:4px 8px;font-size:13px" oninput="onAutoFieldChange()">
         </div>
-      </div>
-      <div style="margin-bottom:8px">
-        <label class="fl">🔢 N° de guía / seguimiento</label>
-        <input class="fi" id="fGuideNumber" placeholder="Ej: 123456789" oninput="onAutoFieldChange(this.value.trim().length>0)">
-      </div>
-      <div id="shalomTrackBox" style="display:none;margin-bottom:8px">
-        <label class="fl">🔑 Código Shalom (para tracking)</label>
-        <div style="display:flex;gap:6px">
-          <input class="fi" id="fShalomCode" placeholder="Ej: 3KTH" style="flex:1;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
-          <button onclick="consultarTrackingShalom()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">📡 Consultar</button>
-        </div>
-        <div id="shalomTrackResult" style="margin-top:8px;display:none"></div>
       </div>
       <div id="autoStatusSuggestion" style="display:none;padding:10px 13px;background:rgba(46,160,67,.1);border:1px solid rgba(46,160,67,.35);border-radius:8px;font-size:12px;color:var(--green);font-weight:600"></div>
     </div>
