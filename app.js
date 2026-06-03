@@ -863,6 +863,7 @@ function openForm(id){
     const str=$('shalomTrackResult'); if(str) str.style.display='none';
   }else{
     ['fName','fPhone','fAddr','fCost','fNotes'].forEach(i=>$(i).value='');
+    if($('fDNI'))$('fDNI').value='';
     $('fDate').valueAsDate=new Date();
     _autoFields={faltante:false,stockOk:false,alistado:false,arrivedAtDest:false,delivered:false};
     if($('fGuideNumber'))$('fGuideNumber').value='';
