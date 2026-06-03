@@ -881,9 +881,10 @@ function syncFormModeBadge(){
 function saveShipment(){
   const name=$('fName').value.trim(),phone=$('fPhone').value.trim(),addr=$('fAddr').value.trim();
   if(!name||!phone||!addr){toast('⚠️ Nombre, teléfono y dirección requeridos');return;}
+  const dni=$('fDNI')?$('fDNI').value.trim():'';
   const extra={}; document.querySelectorAll('.xf').forEach(el=>extra[el.dataset.f]=el.value);
   const autoData={faltante:_autoFields.faltante,stockOk:_autoFields.stockOk,alistado:_autoFields.alistado,arrivedAtDest:_autoFields.arrivedAtDest,delivered:_autoFields.delivered,guideNumber:$('fGuideNumber')?$('fGuideNumber').value.trim():'',shalomCode:$('fShalomCode')?$('fShalomCode').value.trim():'',pendingBalance:parseFloat($('fPendingBalance')&&$('fPendingBalance').value)||0};
-  const data={name,phone,address:addr,courier:$('fCourier').value,date:$('fDate').value,status:$('fStatus').value,cost:$('fCost').value,notes:$('fNotes').value.trim(),extra,docGuia:_docs.guia,docEmbalado:_docs.embalado,docComprobante:_docs.comprobante,links:JSON.parse(JSON.stringify(_links)),sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,...autoData};
+  const data={name,phone,dni,address:addr,courier:$('fCourier').value,date:$('fDate').value,status:$('fStatus').value,cost:$('fCost').value,notes:$('fNotes').value.trim(),extra,docGuia:_docs.guia,docEmbalado:_docs.embalado,docComprobante:_docs.comprobante,links:JSON.parse(JSON.stringify(_links)),sel:false,chkGuia:false,chkEmbalado:false,chkComprobante:false,...autoData};
   const autoSt=calcAutoStatus(data);
   if(autoSt&&statusPrio(autoSt)>statusPrio(data.status))data.status=autoSt;
   if(_editId){const idx=S.shipments.findIndex(x=>x.id===_editId);S.shipments[idx]={...S.shipments[idx],...data};toast(autoSt?'🤖 Actualizado (estado automático)':'✅ Actualizado');}
