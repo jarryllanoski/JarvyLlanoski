@@ -1566,3 +1566,21 @@ async function consultarTrackingShalom(){
   }
 }
 
+/* Consultar tracking desde la tarjeta (sin abrir el formulario) */
+async function consultarTrackingShalomCard(id){
+  const s=S.shipments.find(x=>x.id===id); if(!s||!s.guideNumber||!s.shalomCode) return;
+  toast('⏳ Consultando Shalom...');
+  try {
+    const r=await fetch('https://us-central1-jarvyllanoski.cloudfunctions.net/trackingShalom',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({orderNumber:s.guideNumber,orderCode:s.shalomCode})
+    });
+    const data=await r.json();
+    if(!r.ok||data.error){toast('⚠️ '+(data.error||'Sin respuesta de Shalom'));return;}
+    s.shalomTracking=data; s.shalomTrackingAt=new Date().toISOString();
+    save(); render();
+    const estado=data.estado||data.status||'OK';
+    toast('📦 '+estado);
+  } catch(e){ toast('⚠️ Error de red'); }
+}
+
