@@ -430,6 +430,22 @@ function cardHTML(s) {
   </div>`;
 }
 
+function cardShalomSection(s) {
+  if (!(s.courier||'').toUpperCase().includes('SHALOM') || !s.guideNumber || !s.shalomCode) return '';
+  const st = s.shalomTracking ? (s.shalomTracking.estado||s.shalomTracking.status||'') : '';
+  const at = s.shalomTrackingAt ? new Date(s.shalomTrackingAt).toLocaleString('es-PE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  const stHtml = st ? `<br><span style="color:var(--green);font-weight:600">${st}${at?` <span style="opacity:.55;font-size:10px">${at}</span>`:''}</span>` : '';
+  return `<div style="padding:8px 10px;background:rgba(56,139,253,.07);border:1px solid rgba(56,139,253,.25);border-radius:8px;margin:4px 0">
+    <div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.5px;margin-bottom:3px">📦 TRACKING SHALOM</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:5px">🔢 Orden: ${s.guideNumber} · ${s.shalomCode}${stHtml}</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button onclick="event.stopPropagation();verTicketShalom('${s.guideNumber}','${s.shalomCode}')" style="font-size:10px;padding:3px 9px;border:1px solid rgba(56,139,253,.4);background:transparent;color:var(--blue);border-radius:6px;cursor:pointer;font-weight:600">🎫 Ticket</button>
+      <button onclick="event.stopPropagation();descargarEtiquetaShalom('${s.guideNumber}','${s.shalomCode}')" style="font-size:10px;padding:3px 9px;border:1px solid rgba(56,139,253,.4);background:transparent;color:var(--blue);border-radius:6px;cursor:pointer;font-weight:600">📋 Etiqueta</button>
+      <button onclick="event.stopPropagation();consultarTrackingShalomCard('${s.id}')" style="font-size:10px;padding:3px 9px;border:1px solid rgba(56,139,253,.4);background:transparent;color:var(--blue);border-radius:6px;cursor:pointer;font-weight:600">📡 Consultar</button>
+    </div>
+  </div>`;
+}
+
 function cardDocs(s, gChk, eChk, cChk) {
   const has = s.docGuia || s.docEmbalado || s.docComprobante || (s.links && s.links.length);
   if (!has) return '';
