@@ -416,6 +416,7 @@ function cardHTML(s) {
     <div class="card-addr">🏠 ${_isDeliveryCourier(s.courier) ? mapsLink(s.address, s.gpsCoords) : (s.address||'')}</div>
     ${s.notes?`<div class="card-note">📝 ${s.notes}</div>`:''}
     ${cardDocs(s, gChk, eChk, cChk)}
+    ${cardShalomSection(s)}
     ${(m1||m2)?`<div class="card-msgs">
       ${m1?`<button class="card-msg card-msg-a" onclick="quickMsg('${s.id}',0)"><span class="card-msg-ltr">A</span><span class="card-msg-txt">${fillVars(m1,s).substring(0,70)}${fillVars(m1,s).length>70?'…':''}</span></button>`:''}
       ${m2?`<button class="card-msg card-msg-b" onclick="quickMsg('${s.id}',1)"><span class="card-msg-ltr">B</span><span class="card-msg-txt">${fillVars(m2,s).substring(0,70)}${fillVars(m2,s).length>70?'…':''}</span></button>`:''}
