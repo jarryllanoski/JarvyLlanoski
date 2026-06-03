@@ -93,3 +93,95 @@ exports.trackingShalom = onRequest(
     }
   }
 );
+
+/* Helper para respuestas binarias (PNG, PDF) */
+function binaryRequest(method, path, body, apiKey) {
+  return new Promise((resolve, reject) => {
+    const payload = body ? JSON.stringify(body) : null;
+    const opts = {
+      hostname: HOST, path, method,
+      headers: {'x-api-key': apiKey, 'Accept': '*/*'}
+    };
+    if (payload) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.headers['Content-Length'] = Buffer.byteLength(payload);
+    }
+    const req = https.request(opts, res => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => resolve({
+        status: res.statusCode,
+        contentType: res.headers['content-type'] || 'application/octet-stream',
+        buffer: Buffer.concat(chunks)
+      }));
+    });
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
+
+/* ── POST /ticketShalom — imagen ticket PNG del envío ── */
+exports.ticketShalom = onRequest(
+  {secrets: [SHALOM_KEY], region: 'us-central1'},
+  async (req, res) => {
+    if (cors(req, res)) return;
+    if (req.method !== 'POST') { res.status(405).json({error: 'Solo POST'}); return; }
+    const {orderNumber, orderCode} = req.body || {};
+    if (!orderNumber || !orderCode) {
+      res.status(400).json({error: 'Faltan orderNumber y orderCode'}); return;
+    }
+    try {
+      const {status, contentType, buffer} = await binaryRequest(
+        'POST', '/api/ticket-image', {orderNumber, orderCode}, SHALOM_KEY.value()
+      );
+      res.set('Cache-Control', 'public, max-age=300');
+      res.status(status).set('Content-Type', contentType || 'image/png').send(buffer);
+    } catch (e) {
+      res.status(500).json({error: e.message});
+    }
+  }
+);
+
+/* ── POST /labelShalom — PDF etiqueta de envío ── */
+exports.labelShalom = onRequest(
+  {secrets: [SHALOM_KEY], region: 'us-central1'},
+  async (req, res) => {
+    if (cors(req, res)) return;
+    if (req.method !== 'POST') { res.status(405).json({error: 'Solo POST'}); return; }
+    const {orderNumber, orderCode} = req.body || {};
+    if (!orderNumber || !orderCode) {
+      res.status(400).json({error: 'Faltan orderNumber y orderCode'}); return;
+    }
+    try {
+      const {status, contentType, buffer} = await binaryRequest(
+        'POST', '/api/label', {orderNumber, orderCode}, SHALOM_KEY.value()
+      );
+      res.set('Content-Disposition', `attachment; filename="etiqueta-${orderNumber}.pdf"`);
+      res.status(status).set('Content-Type', contentType || 'application/pdf').send(buffer);
+    } catch (e) {
+      res.status(500).json({error: e.message});
+    }
+  }
+);
+
+/* ── POST /quoteShalom — cotización de envío ── */
+exports.quoteShalom = onRequest(
+  {secrets: [SHALOM_KEY], region: 'us-central1'},
+  async (req, res) => {
+    if (cors(req, res)) return;
+    if (req.method !== 'POST') { res.status(405).json({error: 'Solo POST'}); return; }
+    const {origin, destination} = req.body || {};
+    if (!origin || !destination) {
+      res.status(400).json({error: 'Faltan origin y destination'}); return;
+    }
+    try {
+      const {status, body} = await request(
+        'POST', '/api/quote', {origin: Number(origin), destination: Number(destination)}, SHALOM_KEY.value()
+      );
+      res.status(status).json(body);
+    } catch (e) {
+      res.status(500).json({error: e.message});
+    }
+  }
+);
