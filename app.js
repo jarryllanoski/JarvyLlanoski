@@ -842,7 +842,9 @@ function openForm(id){
   Object.values(DOC_META).flatMap(m=>m.inputs).forEach(i=>{const e=$(i);if(e)e.value='';});
   if(id){
     const s=S.shipments.find(x=>x.id===id);
-    $('fName').value=s.name; $('fPhone').value=s.phone; $('fAddr').value=s.address;
+    $('fName').value=s.name; $('fPhone').value=s.phone;
+    if($('fDNI'))$('fDNI').value=s.dni||'';
+    $('fAddr').value=s.address;
     $('fCourier').value=s.courier; $('fDate').value=s.date; $('fStatus').value=s.status;
     $('fCost').value=s.cost||''; $('fNotes').value=s.notes||'';
     document.querySelectorAll('.xf').forEach(el=>{el.value=(s.extra&&s.extra[el.dataset.f])||'';});
